@@ -2,149 +2,121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Obech's Financial Report System</title><style>
-
+<title>Finance SaaS</title><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script><style>
 body {
   font-family: 'Times New Roman', Times, serif;
   font-size: 12pt;
   line-height: 1.15;
   margin: 40px;
-  background: #ffffff;
-  color: #000000;
+  background: #fff;
+  color: #000;
 }
-
-h1, h2, h3 { font-weight: bold; }
-
-.header { text-align:center; margin-bottom:20px; }
-.header img { width:80px; display:block; margin:auto; }
-
-.section { margin-bottom: 20px; }
-.card { border: 1px solid #000; padding: 15px; }
-
-input, button {
-  font-family: 'Times New Roman';
-  font-size: 12pt;
-  padding: 6px;
-  margin: 5px 0;
-  border: 1px solid #000;
-}
-
-ul { list-style:none; padding:0; }
-li { border-bottom:1px solid #000; padding:6px 0; display:flex; justify-content:space-between; }
-
-@media print {
-  button, input { display:none; }
-}
-</style></head><body><div id="loginSection">
-  <h2>Login / Register</h2>
-  <input type="text" id="username" placeholder="Username">
-  <input type="password" id="password" placeholder="Password">
+.card { border:1px solid #000; padding:15px; margin-bottom:20px; }
+input, button { padding:6px; margin:5px 0; border:1px solid #000; }
+</style></head><body><h2>Finance Dashboard (Cloud)</h2><div id="auth">
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
   <button onclick="register()">Register</button>
   <button onclick="login()">Login</button>
-</div><div id="app" style="display:none;"><div class="header">
-  <img src="images/logo.png" alt="Logo">
-  <h1>Obech's Home Financial Report</h1>
-</div><div class="section card">
-  <h3>Add Expense</h3>
-  <input type="text" id="desc" placeholder="Description">
-  <input type="number" id="amount" placeholder="Amount">
-  <input type="date" id="date">
-  <button onclick="addExpense()">Add</button>
-</div><div class="section card">
-  <h3>Budget</h3>
-  <input type="number" id="budgetInput" placeholder="Set Monthly Budget">
-  <button onclick="setBudget()">Save Budget</button>
-  <p>Budget: KES <span id="budget">0</span></p>
-  <p>Remaining: KES <span id="remaining">0</span></p>
-</div><div class="section card">
-  <h3>Summary</h3>
-  <p>Total Expenses: KES <span id="monthTotal">0</span></p>
-  <p>Transactions: <span id="count">0</span></p>
-  <p>Average: KES <span id="average">0</span></p>
-  <p>Status: <span id="status"></span></p>
-</div><div class="section card">
-  <h3>Expenses</h3>
-  <ul id="list"></ul>
-</div><div class="section">
-  <button onclick="window.print()">Export to PDF</button>
-</div></div><script>
-let currentUser = null;
+</div><div id="app" style="display:none;">
+  <button onclick="logout()">Logout</button>  <div class="card">
+    <h3>Add Expense</h3>
+    <input id="desc" placeholder="Description">
+    <input id="amount" type="number" placeholder="Amount">
+    <button onclick="addExpense()">Add</button>
+  </div>  <div class="card">
+    <h3>Budget</h3>
+    <input id="budgetInput" placeholder="Budget">
+    <button onclick="setBudget()">Save</button>
+    <p>Budget: <span id="budget"></span></p>
+  </div>  <div class="card">
+    <h3>Summary</h3>
+    <p>Total: <span id="total"></span></p>
+  </div>  <ul id="list"></ul>
+</div><script>
+// 🔥 REPLACE WITH YOUR FIREBASE CONFIG
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+  authDomain: "expense-tracker-2ee7b.firebaseapp.com",
+  projectId: "expense-tracker-2ee7b",
+  storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
+  messagingSenderId: "306376576940",
+  appId: "1:306376576940:web:f7bf235be67524c9c8b409",
+  measurementId: "G-V7B8WSWCZ8"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 function register(){
-  const u = username.value;
-  const p = password.value;
-  if(!u||!p) return alert('Enter details');
-  let users = JSON.parse(localStorage.getItem('users'))||{};
-  if(users[u]) return alert('User exists');
-  users[u] = {password:p, expenses:[], budget:0};
-  localStorage.setItem('users', JSON.stringify(users));
-  alert('Registered');
+  auth.createUserWithEmailAndPassword(email.value, password.value);
 }
 
 function login(){
-  const u = username.value;
-  const p = password.value;
-  let users = JSON.parse(localStorage.getItem('users'))||{};
-  if(!users[u] || users[u].password!==p) return alert('Invalid');
-  currentUser = u;
-  document.getElementById('loginSection').style.display='none';
-  document.getElementById('app').style.display='block';
-  render();
+  auth.signInWithEmailAndPassword(email.value, password.value);
 }
 
-function getData(){
-  let users = JSON.parse(localStorage.getItem('users'));
-  return users[currentUser];
+function logout(){ auth.signOut(); }
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    document.getElementById('auth').style.display='none';
+    document.getElementById('app').style.display='block';
+    loadData();
+  }
+});
+
+async function addExpense(){
+  const user = auth.currentUser;
+  await db.collection('users').doc(user.uid).collection('expenses').add({
+    desc:desc.value,
+    amount:+amount.value,
+    created:new Date()
+  });
+  loadData();
 }
 
-function saveData(data){
-  let users = JSON.parse(localStorage.getItem('users'));
-  users[currentUser]=data;
-  localStorage.setItem('users', JSON.stringify(users));
+async function setBudget(){
+  const user = auth.currentUser;
+  await db.collection('users').doc(user.uid).set({
+    budget:+budgetInput.value
+  }, {merge:true});
+  loadData();
 }
 
-function addExpense(){
-  let data = getData();
-  data.expenses.push({desc:desc.value, amount:+amount.value, date:date.value});
-  saveData(data);
-  render();
-}
+async function loadData(){
+  const user = auth.currentUser;
+  const doc = await db.collection('users').doc(user.uid).get();
+  const data = doc.data()||{};
+  budget.textContent = data.budget||0;
 
-function setBudget(){
-  let data = getData();
-  data.budget = +budgetInput.value;
-  saveData(data);
-  render();
-}
-
-function render(){
-  let data = getData();
-  let list = document.getElementById('list');
+  const snapshot = await db.collection('users').doc(user.uid).collection('expenses').get();
+  let total=0;
   list.innerHTML='';
 
-  let total=0, count=0;
-  let now=new Date();
-
-  data.expenses.forEach(e=>{
-    let d=new Date(e.date);
-    if(d.getMonth()===now.getMonth()){
-      total+=e.amount;
-      count++;
-    }
-    let li=document.createElement('li');
-    li.textContent=`${e.desc} - KES ${e.amount}`;
+  snapshot.forEach(doc=>{
+    const e = doc.data();
+    total += e.amount;
+    let li = document.createElement('li');
+    li.textContent = `${e.desc} - ${e.amount}`;
     list.appendChild(li);
   });
 
-  let avg = count? (total/count).toFixed(2):0;
-  let remaining = data.budget - total;
-
-  monthTotal.textContent=total;
-  countEl = document.getElementById('count'); countEl.textContent=count;
-  average.textContent=avg;
-  budget.textContent=data.budget;
-  remainingSpan = document.getElementById('remaining'); remainingSpan.textContent=remaining;
-  status.textContent = remaining<0?'Over Budget':'Within Budget';
+  totalSpan = document.getElementById('total');
+  totalSpan.textContent = total;
 }
 </script></body>
 </html>
