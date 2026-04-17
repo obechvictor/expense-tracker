@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Financial Report</title><style>
+<title>Financial Report System</title><style>
 body {
   font-family: 'Times New Roman', Times, serif;
   font-size: 12pt;
@@ -12,49 +12,38 @@ body {
   color: #000000;
 }
 
-h1, h2, h3 {
-  font-weight: bold;
-  margin-bottom: 10px;
-}
+h1, h2, h3 { font-weight: bold; }
 
-h1 { text-align:center; }
+.header { text-align:center; margin-bottom:20px; }
+.header img { width:80px; display:block; margin:auto; }
 
-.section {
-  margin-bottom: 20px;
-}
-
-.card {
-  border: 1px solid #000;
-  padding: 15px;
-}
+.section { margin-bottom: 20px; }
+.card { border: 1px solid #000; padding: 15px; }
 
 input, button {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Times New Roman';
   font-size: 12pt;
   padding: 6px;
   margin: 5px 0;
   border: 1px solid #000;
-  background: #fff;
 }
-
-button { font-weight:bold; cursor:pointer; }
 
 ul { list-style:none; padding:0; }
-
-li {
-  border-bottom:1px solid #000;
-  padding:6px 0;
-  display:flex;
-  justify-content:space-between;
-}
-
-.summary p { margin:4px 0; }
+li { border-bottom:1px solid #000; padding:6px 0; display:flex; justify-content:space-between; }
 
 @media print {
   button, input { display:none; }
-  body { margin:20px; }
 }
-</style></head><body><h1>Company Financial Report</h1><div class="section card">
+</style></head><body><div id="loginSection">
+  <h2>Login / Register</h2>
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
+</div><div id="app" style="display:none;"><div class="header">
+  <img src="https://via.placeholder.com/80" alt="Logo">
+  <h1>Company Financial Report</h1>
+</div><div class="section card">
   <h3>Add Expense</h3>
   <input type="text" id="desc" placeholder="Description">
   <input type="number" id="amount" placeholder="Amount">
@@ -66,111 +55,95 @@ li {
   <button onclick="setBudget()">Save Budget</button>
   <p>Budget: KES <span id="budget">0</span></p>
   <p>Remaining: KES <span id="remaining">0</span></p>
-</div><div class="section card summary">
+</div><div class="section card">
   <h3>Summary</h3>
   <p>Total Expenses: KES <span id="monthTotal">0</span></p>
   <p>Transactions: <span id="count">0</span></p>
-  <p>Average Spending: KES <span id="average">0</span></p>
+  <p>Average: KES <span id="average">0</span></p>
   <p>Status: <span id="status"></span></p>
 </div><div class="section card">
-  <h3>Expense List</h3>
+  <h3>Expenses</h3>
   <ul id="list"></ul>
-</div><div class="section card">
-  <h3>Spending Chart</h3>
-  <canvas id="chart"></canvas>
 </div><div class="section">
   <button onclick="window.print()">Export to PDF</button>
-</div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
-let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
-let budget = localStorage.getItem('budget') || 0;
-let chart;
+</div></div><script>
+let currentUser = null;
 
-function saveData(){
-  localStorage.setItem('expenses', JSON.stringify(expenses));
-  localStorage.setItem('budget', budget);
+function register(){
+  const u = username.value;
+  const p = password.value;
+  if(!u||!p) return alert('Enter details');
+  let users = JSON.parse(localStorage.getItem('users'))||{};
+  if(users[u]) return alert('User exists');
+  users[u] = {password:p, expenses:[], budget:0};
+  localStorage.setItem('users', JSON.stringify(users));
+  alert('Registered');
+}
+
+function login(){
+  const u = username.value;
+  const p = password.value;
+  let users = JSON.parse(localStorage.getItem('users'))||{};
+  if(!users[u] || users[u].password!==p) return alert('Invalid');
+  currentUser = u;
+  document.getElementById('loginSection').style.display='none';
+  document.getElementById('app').style.display='block';
+  render();
+}
+
+function getData(){
+  let users = JSON.parse(localStorage.getItem('users'));
+  return users[currentUser];
+}
+
+function saveData(data){
+  let users = JSON.parse(localStorage.getItem('users'));
+  users[currentUser]=data;
+  localStorage.setItem('users', JSON.stringify(users));
 }
 
 function addExpense(){
-  const desc=document.getElementById('desc').value;
-  const amount=parseFloat(document.getElementById('amount').value);
-  const date=document.getElementById('date').value;
-
-  if(!desc||!amount||!date){alert('Fill all fields');return;}
-
-  expenses.push({desc,amount,date});
-  saveData();
-  render();
-
-  document.getElementById('desc').value='';
-  document.getElementById('amount').value='';
-  document.getElementById('date').value='';
-}
-
-function deleteExpense(i){
-  expenses.splice(i,1);
-  saveData();
+  let data = getData();
+  data.expenses.push({desc:desc.value, amount:+amount.value, date:date.value});
+  saveData(data);
   render();
 }
 
 function setBudget(){
-  budget=parseFloat(document.getElementById('budgetInput').value)||0;
-  saveData();
+  let data = getData();
+  data.budget = +budgetInput.value;
+  saveData(data);
   render();
 }
 
 function render(){
-  const list=document.getElementById('list');
+  let data = getData();
+  let list = document.getElementById('list');
   list.innerHTML='';
 
-  const now=new Date();
-  let monthTotal=0;
-  let count=0;
-  let dailyData={};
+  let total=0, count=0;
+  let now=new Date();
 
-  expenses.forEach((e,i)=>{
-    const d=new Date(e.date);
-    if(d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear()){
-      monthTotal+=e.amount;
+  data.expenses.forEach(e=>{
+    let d=new Date(e.date);
+    if(d.getMonth()===now.getMonth()){
+      total+=e.amount;
       count++;
-      let day=d.getDate();
-      dailyData[day]=(dailyData[day]||0)+e.amount;
     }
-
-    const li=document.createElement('li');
-    li.innerHTML=`${e.desc} - KES ${e.amount} <button onclick="deleteExpense(${i})">X</button>`;
+    let li=document.createElement('li');
+    li.textContent=`${e.desc} - KES ${e.amount}`;
     list.appendChild(li);
   });
 
-  let avg=count?(monthTotal/count).toFixed(2):0;
-  let remaining=budget-monthTotal;
+  let avg = count? (total/count).toFixed(2):0;
+  let remaining = data.budget - total;
 
-  document.getElementById('monthTotal').textContent=monthTotal;
-  document.getElementById('count').textContent=count;
-  document.getElementById('average').textContent=avg;
-  document.getElementById('budget').textContent=budget;
-  document.getElementById('remaining').textContent=remaining;
-
-  document.getElementById('status').textContent = remaining<0 ? 'Over Budget' : 'Within Budget';
-
-  updateChart(dailyData);
+  monthTotal.textContent=total;
+  countEl = document.getElementById('count'); countEl.textContent=count;
+  average.textContent=avg;
+  budget.textContent=data.budget;
+  remainingSpan = document.getElementById('remaining'); remainingSpan.textContent=remaining;
+  status.textContent = remaining<0?'Over Budget':'Within Budget';
 }
-
-function updateChart(data){
-  const ctx=document.getElementById('chart');
-  const labels=Object.keys(data);
-  const values=Object.values(data);
-
-  if(chart) chart.destroy();
-
-  chart=new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels:labels,
-      datasets:[{ label:'Daily Spending (KES)', data:values }]
-    }
-  });
-}
-
-render();
 </script></body>
 </html>
