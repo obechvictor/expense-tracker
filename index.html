@@ -1,17 +1,86 @@
-<style>
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Report</title><style>
 body {
   font-family: 'Times New Roman', Times, serif;
   font-size: 12pt;
   line-height: 1.15;
-  margin: 0;
-  background: #0f172a;
-  color: #fff;
-  font-weight: bold;
+  margin: 40px;
+  background: #ffffff;
+  color: #000000;
 }
-</style>  <div class="card">
-    <h3>Spending Chart</h3>
-    <canvas id="chart"></canvas>
-  </div></div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
+
+h1, h2, h3 {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+h1 { text-align:center; }
+
+.section {
+  margin-bottom: 20px;
+}
+
+.card {
+  border: 1px solid #000;
+  padding: 15px;
+}
+
+input, button {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12pt;
+  padding: 6px;
+  margin: 5px 0;
+  border: 1px solid #000;
+  background: #fff;
+}
+
+button { font-weight:bold; cursor:pointer; }
+
+ul { list-style:none; padding:0; }
+
+li {
+  border-bottom:1px solid #000;
+  padding:6px 0;
+  display:flex;
+  justify-content:space-between;
+}
+
+.summary p { margin:4px 0; }
+
+@media print {
+  button, input { display:none; }
+  body { margin:20px; }
+}
+</style></head><body><h1>Company Financial Report</h1><div class="section card">
+  <h3>Add Expense</h3>
+  <input type="text" id="desc" placeholder="Description">
+  <input type="number" id="amount" placeholder="Amount">
+  <input type="date" id="date">
+  <button onclick="addExpense()">Add</button>
+</div><div class="section card">
+  <h3>Budget</h3>
+  <input type="number" id="budgetInput" placeholder="Set Monthly Budget">
+  <button onclick="setBudget()">Save Budget</button>
+  <p>Budget: KES <span id="budget">0</span></p>
+  <p>Remaining: KES <span id="remaining">0</span></p>
+</div><div class="section card summary">
+  <h3>Summary</h3>
+  <p>Total Expenses: KES <span id="monthTotal">0</span></p>
+  <p>Transactions: <span id="count">0</span></p>
+  <p>Average Spending: KES <span id="average">0</span></p>
+  <p>Status: <span id="status"></span></p>
+</div><div class="section card">
+  <h3>Expense List</h3>
+  <ul id="list"></ul>
+</div><div class="section card">
+  <h3>Spending Chart</h3>
+  <canvas id="chart"></canvas>
+</div><div class="section">
+  <button onclick="window.print()">Export to PDF</button>
+</div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
 let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
 let budget = localStorage.getItem('budget') || 0;
 let chart;
@@ -56,16 +125,15 @@ function render(){
   const now=new Date();
   let monthTotal=0;
   let count=0;
-  let dailyData = {};
+  let dailyData={};
 
   expenses.forEach((e,i)=>{
     const d=new Date(e.date);
     if(d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear()){
       monthTotal+=e.amount;
       count++;
-
-      let day = d.getDate();
-      dailyData[day] = (dailyData[day] || 0) + e.amount;
+      let day=d.getDate();
+      dailyData[day]=(dailyData[day]||0)+e.amount;
     }
 
     const li=document.createElement('li');
@@ -73,37 +141,32 @@ function render(){
     list.appendChild(li);
   });
 
-  let avg = count ? (monthTotal/count).toFixed(2) : 0;
+  let avg=count?(monthTotal/count).toFixed(2):0;
+  let remaining=budget-monthTotal;
 
   document.getElementById('monthTotal').textContent=monthTotal;
   document.getElementById('count').textContent=count;
   document.getElementById('average').textContent=avg;
   document.getElementById('budget').textContent=budget;
+  document.getElementById('remaining').textContent=remaining;
 
-  let remaining = budget - monthTotal;
-  const remEl = document.getElementById('remaining');
-  remEl.textContent = remaining;
-  remEl.className = remaining < 0 ? 'danger' : '';
+  document.getElementById('status').textContent = remaining<0 ? 'Over Budget' : 'Within Budget';
 
   updateChart(dailyData);
 }
 
 function updateChart(data){
-  const ctx = document.getElementById('chart');
-
-  const labels = Object.keys(data);
-  const values = Object.values(data);
+  const ctx=document.getElementById('chart');
+  const labels=Object.keys(data);
+  const values=Object.values(data);
 
   if(chart) chart.destroy();
 
-  chart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Daily Spending (KES)',
-        data: values
-      }]
+  chart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:labels,
+      datasets:[{ label:'Daily Spending (KES)', data:values }]
     }
   });
 }
