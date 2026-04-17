@@ -1,0 +1,113 @@
+<style>
+body {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12pt;
+  line-height: 1.15;
+  margin: 0;
+  background: #0f172a;
+  color: #fff;
+  font-weight: bold;
+}
+</style>  <div class="card">
+    <h3>Spending Chart</h3>
+    <canvas id="chart"></canvas>
+  </div></div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
+let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+let budget = localStorage.getItem('budget') || 0;
+let chart;
+
+function saveData(){
+  localStorage.setItem('expenses', JSON.stringify(expenses));
+  localStorage.setItem('budget', budget);
+}
+
+function addExpense(){
+  const desc=document.getElementById('desc').value;
+  const amount=parseFloat(document.getElementById('amount').value);
+  const date=document.getElementById('date').value;
+
+  if(!desc||!amount||!date){alert('Fill all fields');return;}
+
+  expenses.push({desc,amount,date});
+  saveData();
+  render();
+
+  document.getElementById('desc').value='';
+  document.getElementById('amount').value='';
+  document.getElementById('date').value='';
+}
+
+function deleteExpense(i){
+  expenses.splice(i,1);
+  saveData();
+  render();
+}
+
+function setBudget(){
+  budget=parseFloat(document.getElementById('budgetInput').value)||0;
+  saveData();
+  render();
+}
+
+function render(){
+  const list=document.getElementById('list');
+  list.innerHTML='';
+
+  const now=new Date();
+  let monthTotal=0;
+  let count=0;
+  let dailyData = {};
+
+  expenses.forEach((e,i)=>{
+    const d=new Date(e.date);
+    if(d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear()){
+      monthTotal+=e.amount;
+      count++;
+
+      let day = d.getDate();
+      dailyData[day] = (dailyData[day] || 0) + e.amount;
+    }
+
+    const li=document.createElement('li');
+    li.innerHTML=`${e.desc} - KES ${e.amount} <button onclick="deleteExpense(${i})">X</button>`;
+    list.appendChild(li);
+  });
+
+  let avg = count ? (monthTotal/count).toFixed(2) : 0;
+
+  document.getElementById('monthTotal').textContent=monthTotal;
+  document.getElementById('count').textContent=count;
+  document.getElementById('average').textContent=avg;
+  document.getElementById('budget').textContent=budget;
+
+  let remaining = budget - monthTotal;
+  const remEl = document.getElementById('remaining');
+  remEl.textContent = remaining;
+  remEl.className = remaining < 0 ? 'danger' : '';
+
+  updateChart(dailyData);
+}
+
+function updateChart(data){
+  const ctx = document.getElementById('chart');
+
+  const labels = Object.keys(data);
+  const values = Object.values(data);
+
+  if(chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Daily Spending (KES)',
+        data: values
+      }]
+    }
+  });
+}
+
+render();
+</script></body>
+</html>
