@@ -1,66 +1,105 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Finance SaaS Pro</title><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><style>
-body { margin:0; font-family:Arial; background:#0f172a; color:#fff; }
-.header { background:#020617; padding:15px; display:flex; justify-content:space-between; }
-.container { padding:15px; }
-.card { background:#1e293b; padding:15px; margin-bottom:15px; border-radius:10px; }
-input, button { width:100%; padding:10px; margin:5px 0; border:none; border-radius:6px; }
-button { background:#22c55e; color:#fff; font-weight:bold; }
-ul { list-style:none; padding:0; }
-li { background:#334155; margin:5px 0; padding:10px; border-radius:6px; }
-.dashboard { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-</style></head>
-<body><div id="auth" class="container">
-<h2>Login</h2>
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<button onclick="register()">Register</button>
-<button onclick="login()">Login</button>
-</div><div id="app" style="display:none;">
-<div class="header">
-<div>💰 Finance SaaS</div>
-<button onclick="logout()">Logout</button>
-</div><div class="container"><div class="dashboard">
-<div class="card">
-<h3>Add Expense</h3>
-<input id="desc" placeholder="Description">
-<input id="amount" type="number" placeholder="Amount">
-<button onclick="addExpense()">Add</button>
-</div><div class="card">
-<h3>Budget</h3>
-<input id="budgetInput" placeholder="Budget">
-<button onclick="setBudget()">Save</button>
-<p>Budget: <span id="budget"></span></p>
-</div><div class="card">
-<h3>Analytics</h3>
-<p>Total: <span id="total"></span></p>
-<p>Transactions: <span id="count"></span></p>
-<canvas id="chart"></canvas>
-</div><div class="card">
-<h3>Subscription</h3>
-<p>Status: <span id="plan">Free</span></p>
-<button onclick="upgrade()">Upgrade</button>
-</div>
-</div><div class="card">
-<h3>Expenses</h3>
-<ul id="list"></ul>
-</div><div class="card" id="adminPanel" style="display:none;">
-<h3>Admin Panel</h3>
-<ul id="usersList"></ul>
-</div></div>
-</div><script>
-const firebaseConfig = 
-  // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+<title>Finance SaaS</title>
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+<!-- Firebase (COMPAT version) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: #fff;
+}
+
+.container {
+  padding: 20px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+}
+
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  border: none;
+  border-radius: 6px;
+}
+
+button {
+  background: #22c55e;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: #334155;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 6px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="auth" class="container">
+  <h2>Login</h2>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
+</div>
+
+<!-- APP -->
+<div id="app" class="container" style="display:none;">
+  <button onclick="logout()">Logout</button>
+
+  <div class="card">
+    <h3>Add Expense</h3>
+    <input id="desc" placeholder="Description">
+    <input id="amount" type="number" placeholder="Amount">
+    <button onclick="addExpense()">Add</button>
+  </div>
+
+  <div class="card">
+    <h3>Budget</h3>
+    <input id="budgetInput" placeholder="Set Budget">
+    <button onclick="setBudget()">Save</button>
+    <p>Budget: <span id="budget">0</span></p>
+  </div>
+
+  <div class="card">
+    <h3>Summary</h3>
+    <p>Total: <span id="total">0</span></p>
+  </div>
+
+  <div class="card">
+    <h3>Expenses</h3>
+    <ul id="list"></ul>
+  </div>
+</div>
+
+<script>
+/* ✅ YOUR FIREBASE CONFIG (WORKING) */
 const firebaseConfig = {
   apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
   authDomain: "expense-tracker-2ee7b.firebaseapp.com",
@@ -69,115 +108,111 @@ const firebaseConfig = {
   messagingSenderId: "306376576940",
   appId: "1:306376576940:web:f7bf235be67524c9c8b409",
   measurementId: "G-V7B8WSWCZ8"
-  
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-"
+/* ✅ INIT FIREBASE */
+firebase.initializeApp(firebaseConfig);
 
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* 🔐 AUTH FUNCTIONS */
 async function register(){
- if(password.value.length<6) return alert('Weak password');
- await auth.createUserWithEmailAndPassword(email.value,password.value);
+  try {
+    if(password.value.length < 6){
+      alert("Password must be at least 6 characters");
+      return;
+    }
+    await auth.createUserWithEmailAndPassword(email.value, password.value);
+    alert("Registered successfully");
+  } catch(e){
+    alert(e.message);
+  }
 }
 
 async function login(){
- await auth.signInWithEmailAndPassword(email.value,password.value);
+  try {
+    await auth.signInWithEmailAndPassword(email.value, password.value);
+  } catch(e){
+    alert(e.message);
+  }
 }
 
-function logout(){ auth.signOut(); }
+function logout(){
+  auth.signOut();
+}
 
-auth.onAuthStateChanged(async user=>{
- if(user){
- authDiv.style.display='none';
- app.style.display='block';
- await initUser(user);
- } else {
- authDiv.style.display='block';
- app.style.display='none';
- }
+/* 🔄 AUTH STATE */
+auth.onAuthStateChanged(user => {
+  if(user){
+    document.getElementById("auth").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    loadData();
+  } else {
+    document.getElementById("auth").style.display = "block";
+    document.getElementById("app").style.display = "none";
+  }
 });
 
-async function initUser(user){
- const ref=db.collection('users').doc(user.uid);
- const doc=await ref.get();
- if(!doc.exists){ await ref.set({budget:0,plan:'Free',role:'user'}); }
- loadData();
- loadAdmin();
-}
-
+/* 💰 ADD EXPENSE */
 async function addExpense(){
- const user=auth.currentUser;
- await db.collection('users').doc(user.uid).collection('expenses').add({
- desc:desc.value, amount:+amount.value, created:new Date()
- });
+  const user = auth.currentUser;
+
+  await db.collection("users")
+    .doc(user.uid)
+    .collection("expenses")
+    .add({
+      desc: desc.value,
+      amount: +amount.value,
+      created: new Date()
+    });
+
+  desc.value = "";
+  amount.value = "";
 }
 
+/* 💳 SET BUDGET */
 async function setBudget(){
- const user=auth.currentUser;
- await db.collection('users').doc(user.uid).set({budget:+budgetInput.value},{merge:true});
+  const user = auth.currentUser;
+
+  await db.collection("users")
+    .doc(user.uid)
+    .set({
+      budget: +budgetInput.value
+    }, { merge: true });
 }
 
-async function upgrade(){
- const user=auth.currentUser;
- await db.collection('users').doc(user.uid).set({plan:'Pro'},{merge:true});
- alert('Upgraded!');
-}
-
+/* 📊 LOAD DATA */
 function loadData(){
- const user=auth.currentUser;
+  const user = auth.currentUser;
 
- db.collection('users').doc(user.uid).onSnapshot(doc=>{
- const d=doc.data();
- budget.textContent=d.budget;
- plan.textContent=d.plan;
- });
+  db.collection("users").doc(user.uid)
+  .onSnapshot(doc => {
+    const data = doc.data() || {};
+    document.getElementById("budget").textContent = data.budget || 0;
+  });
 
- db.collection('users').doc(user.uid).collection('expenses')
- .onSnapshot(snapshot=>{
- let total=0, count=0;
- let daily={};
- list.innerHTML='';
+  db.collection("users").doc(user.uid)
+  .collection("expenses")
+  .onSnapshot(snapshot => {
 
- snapshot.forEach(doc=>{
- let e=doc.data();
- total+=e.amount; count++;
- let day=new Date(e.created).getDate();
- daily[day]=(daily[day]||0)+e.amount;
+    let total = 0;
+    const list = document.getElementById("list");
+    list.innerHTML = "";
 
- let li=document.createElement('li');
- li.textContent=`${e.desc} - ${e.amount}`;
- list.appendChild(li);
- });
+    snapshot.forEach(doc => {
+      const e = doc.data();
+      total += e.amount;
 
- totalEl.textContent=total;
- countEl.textContent=count;
- drawChart(daily);
- });
+      const li = document.createElement("li");
+      li.textContent = `${e.desc} - KES ${e.amount}`;
+      list.appendChild(li);
+    });
+
+    document.getElementById("total").textContent = total;
+  });
 }
+</script>
 
-function drawChart(data){
- const ctx=document.getElementById('chart');
- if(chart) chart.destroy();
- chart=new Chart(ctx,{type:'bar',data:{labels:Object.keys(data),datasets:[{data:Object.values(data)}]}});
-}
-
-function loadAdmin(){
- const user=auth.currentUser;
- db.collection('users').doc(user.uid).get().then(doc=>{
- if(doc.data().role==='admin'){
- adminPanel.style.display='block';
- db.collection('users').onSnapshot(snapshot=>{
- usersList.innerHTML='';
- snapshot.forEach(d=>{
- let li=document.createElement('li');
- li.textContent=`User: ${d.id} | Plan: ${d.data().plan}`;
- usersList.appendChild(li);
- });
- });
- }
- });
-}
-</script></body>
-</html>
+</body>
+  </html>
