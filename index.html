@@ -223,22 +223,42 @@ function drawChart(data){
 
 /* ADMIN */
 function loadAdmin(){
-  const user=auth.currentUser;
+  const user = auth.currentUser;
 
   db.collection("users").doc(user.uid).get().then(doc=>{
-    if(doc.data().role==="admin"){
-      adminPanel.style.display="block";
+    if(doc.data().role === "admin"){
+      adminPanel.style.display = "block";
 
       db.collection("users").onSnapshot(snapshot=>{
-        usersList.innerHTML="";
+        usersList.innerHTML = "";
+
         snapshot.forEach(d=>{
-          let li=document.createElement("li");
-          li.textContent=`User: ${d.id}`;
-          usersList.appendChild(li);
+          let userData = d.data();
+
+          let row = document.createElement("tr");
+          row.innerHTML = `
+            <td style="padding:10px;">${d.id}</td>
+            <td>${userData.role}</td>
+            <td>
+              <button onclick="makeAdmin('${d.id}')">Make Admin</button>
+              <button onclick="deleteUser('${d.id}')">Delete</button>
+            </td>
+          `;
+
+          usersList.appendChild(row);
         });
       });
     }
   });
+  }
+  async function makeAdmin(uid){
+  await db.collection("users").doc(uid).update({
+    role: "admin"
+  });
+}
+
+async function deleteUser(uid){
+  await db.collection("users").doc(uid).delete();
 }
 </script>
 
