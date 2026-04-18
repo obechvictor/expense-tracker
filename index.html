@@ -44,7 +44,12 @@ li { background:#334155; padding:10px; margin:5px 0; border-radius:6px; display:
     <option>Food</option>
     <option>Transport</option>
     <option>Bills</option>
-    <option>Other</option>
+    <option>Household items</option>
+    <option>Clothing</option>
+    <option>Rent</option>
+    <option>Water</option>
+    <option>Electricity</option>
+    <option>Parents</option>
   </select>
 
   <button onclick="addExpense()">Add</button>
@@ -68,11 +73,19 @@ li { background:#334155; padding:10px; margin:5px 0; border-radius:6px; display:
   <ul id="list"></ul>
 </div>
 
-<div class="card" id="adminPanel" style="display:none;">
-  <h3>Admin Panel</h3>
-  <ul id="usersList"></ul>
-</div>
+<div class="card" id="adminPanel" style="display:none; border:2px solid #22c55e;">
+  <h2>⚙️ Admin Dashboard</h2>
 
+  <table style="width:100%; border-collapse: collapse;">
+    <thead>
+      <tr style="background:#334155;">
+        <th style="padding:10px;">User ID</th>
+        <th>Role</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="usersList"></tbody>
+  </table>
 </div>
 
 <script>
