@@ -246,6 +246,7 @@ function loadAdmin(){
   const user = auth.currentUser;
 
   db.collection("users").doc(user.uid).get().then(doc=>{
+    console.log("USER DATA:", doc.data());
     if(doc.data().role === "admin"){
       adminPanel.style.display = "block";
 
