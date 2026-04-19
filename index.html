@@ -247,12 +247,12 @@ function loadAdmin(){
 
   if(!user) return;
 
-  db.collection("admin").doc(user.uid).get().then(doc=>{
+  db.collection("users").doc(user.uid).get().then(doc=>{
     const data = doc.data();
 
-    console.log("ADMIN CHECK:", data); // 👈 DEBUG
-    console.log(auth.currentUser.uid);
-    if(true){
+    console.log("ADMIN CHECK:", data);
+
+    if(data && data.role === "admin"){
       document.getElementById("adminPanel").style.display = "block";
 
       db.collection("users").onSnapshot(snapshot=>{
@@ -263,12 +263,12 @@ function loadAdmin(){
 
           let row = document.createElement("tr");
           row.innerHTML = `
-            <td>${userData.email || d.id}</td>
-            <td>${userData.role}</td>
-            <td>
-              <button onclick="makeAdmin('${d.id}')">Make Admin</button>
-              <button onclick="deleteUser('${d.id}')">Delete</button>
-            </td>
+          <td>${userData.email || d.id}</td>
+          <td>${userData.role}</td>
+          <td>
+          <button onclick="makeAdmin('${d.id}')">Make Admin</button>
+          <button onclick="deleteUser('${d.id}')">Delete</button>
+          </td>
           `;
 
           usersList.appendChild(row);
