@@ -5,9 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finance SaaS</title>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+<!-- Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -18,11 +21,14 @@ input, select, button { width:100%; padding:10px; margin:5px 0; border:none; bor
 button { background:#22c55e; color:#fff; font-weight:bold; }
 ul { list-style:none; padding:0; }
 li { background:#334155; padding:10px; margin:5px 0; border-radius:6px; display:flex; justify-content:space-between; }
+table { width:100%; border-collapse: collapse; }
+th, td { padding:10px; border-bottom:1px solid #334155; }
 </style>
 </head>
 
 <body>
 
+<!-- AUTH -->
 <div id="auth" class="container">
   <h2>Login</h2>
   <input id="email" placeholder="Email">
@@ -31,6 +37,7 @@ li { background:#334155; padding:10px; margin:5px 0; border-radius:6px; display:
   <button onclick="login()">Login</button>
 </div>
 
+<!-- APP -->
 <div id="app" class="container" style="display:none;">
 
 <button onclick="logout()">Logout</button>
@@ -39,19 +46,12 @@ li { background:#334155; padding:10px; margin:5px 0; border-radius:6px; display:
   <h3>Add Expense</h3>
   <input id="desc" placeholder="Description">
   <input id="amount" type="number" placeholder="Amount">
-  
   <select id="category">
     <option>Food</option>
     <option>Transport</option>
     <option>Bills</option>
-    <option>Household items</option>
-    <option>Clothing</option>
-    <option>Rent</option>
-    <option>Water</option>
-    <option>Electricity</option>
-    <option>Parents</option>
+    <option>Other</option>
   </select>
-
   <button onclick="addExpense()">Add</button>
 </div>
 
@@ -73,13 +73,13 @@ li { background:#334155; padding:10px; margin:5px 0; border-radius:6px; display:
   <ul id="list"></ul>
 </div>
 
+<!-- ADMIN PANEL -->
 <div class="card" id="adminPanel" style="display:none; border:2px solid #22c55e;">
   <h2>⚙️ Admin Dashboard</h2>
-
-  <table style="width:100%; border-collapse: collapse;">
+  <table>
     <thead>
-      <tr style="background:#334155;">
-        <th style="padding:10px;">User ID</th>
+      <tr>
+        <th>User</th>
         <th>Role</th>
         <th>Actions</th>
       </tr>
@@ -88,7 +88,10 @@ li { background:#334155; padding:10px; margin:5px 0; border-radius:6px; display:
   </table>
 </div>
 
+</div>
+
 <script>
+/* FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
   authDomain: "expense-tracker-2ee7b.firebaseapp.com",
@@ -99,14 +102,14 @@ firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const db = firebase.firestore();
+
 let chart;
 
-/* AUTH */
+/* REGISTER */
 async function register(){
   try{
     const userCred = await auth.createUserWithEmailAndPassword(email.value, password.value);
 
-    // ✅ Save user info in Firestore
     await db.collection("users").doc(userCred.user.uid).set({
       email: email.value,
       role: "user",
@@ -114,37 +117,39 @@ async function register(){
     });
 
     alert("Registered!");
-  }catch(e){
-    alert(e.message);
-  }
+  }catch(e){ alert(e.message); }
 }
 
+/* LOGIN */
 async function login(){
   try{
-    await auth.signInWithEmailAndPassword(email.value,password.value);
+    await auth.signInWithEmailAndPassword(email.value, password.value);
   }catch(e){ alert(e.message); }
 }
 
 function logout(){ auth.signOut(); }
 
+/* AUTH STATE */
 auth.onAuthStateChanged(async user=>{
   if(user){
-    authDiv = document.getElementById("auth");
-    appDiv = document.getElementById("app");
+    document.getElementById("auth").style.display="none";
+    document.getElementById("app").style.display="block";
 
-    authDiv.style.display="none";
-    appDiv.style.display="block";
-
-    const ref=db.collection("users").doc(user.uid);
-    const doc=await ref.get();
+    const ref = db.collection("users").doc(user.uid);
+    const doc = await ref.get();
 
     if(!doc.exists){
-      await ref.set({budget:0,role:"user"});
+      await ref.set({
+        email: user.email,
+        role: "user",
+        budget: 0
+      });
     }
 
     loadData();
     loadAdmin();
-  }else{
+
+  } else {
     document.getElementById("auth").style.display="block";
     document.getElementById("app").style.display="none";
   }
@@ -152,58 +157,61 @@ auth.onAuthStateChanged(async user=>{
 
 /* ADD EXPENSE */
 async function addExpense(){
-  const user=auth.currentUser;
+  const user = auth.currentUser;
 
   await db.collection("users").doc(user.uid)
   .collection("expenses").add({
-    desc:desc.value,
-    amount:+amount.value,
-    category:category.value,
-    created:new Date()
+    desc: desc.value,
+    amount: +amount.value,
+    category: category.value,
+    created: new Date()
   });
 
-  desc.value=""; amount.value="";
+  desc.value = "";
+  amount.value = "";
 }
 
-/* DELETE */
+/* DELETE EXPENSE */
 async function deleteExpense(id){
-  const user=auth.currentUser;
+  const user = auth.currentUser;
+
   await db.collection("users").doc(user.uid)
   .collection("expenses").doc(id).delete();
 }
 
 /* BUDGET */
 async function setBudget(){
-  const user=auth.currentUser;
+  const user = auth.currentUser;
+
   await db.collection("users").doc(user.uid)
-  .set({budget:+budgetInput.value},{merge:true});
+  .set({ budget: +budgetInput.value }, { merge:true });
 }
 
 /* LOAD DATA */
 function loadData(){
-  const user=auth.currentUser;
+  const user = auth.currentUser;
 
   db.collection("users").doc(user.uid)
   .onSnapshot(doc=>{
-    const d=doc.data();
-    budget.textContent=d.budget||0;
+    const d = doc.data() || {};
+    budget.textContent = d.budget || 0;
   });
 
   db.collection("users").doc(user.uid)
   .collection("expenses")
   .onSnapshot(snapshot=>{
 
-    let total=0;
-    let categories={};
-    list.innerHTML="";
+    let total = 0;
+    let categories = {};
+    list.innerHTML = "";
 
     snapshot.forEach(doc=>{
-      let e=doc.data();
-      total+=e.amount;
+      let e = doc.data();
+      total += e.amount;
 
-      categories[e.category]=(categories[e.category]||0)+e.amount;
+      categories[e.category] = (categories[e.category] || 0) + e.amount;
 
-      let li=document.createElement("li");
+      let li = document.createElement("li");
       li.innerHTML = `
         ${e.desc} - ${e.amount} (${e.category})
         <button onclick="deleteExpense('${doc.id}')">X</button>
@@ -211,27 +219,29 @@ function loadData(){
       list.appendChild(li);
     });
 
-    totalEl.textContent=total;
+    totalEl = document.getElementById("total");
+    totalEl.textContent = total;
+
     drawChart(categories);
   });
 }
 
 /* CHART */
 function drawChart(data){
-  const ctx=document.getElementById("chart");
+  const ctx = document.getElementById("chart");
 
   if(chart) chart.destroy();
 
-  chart=new Chart(ctx,{
+  chart = new Chart(ctx,{
     type:"pie",
     data:{
       labels:Object.keys(data),
-      datasets:[{data:Object.values(data)}]
+      datasets:[{ data:Object.values(data) }]
     }
   });
 }
 
-/* ADMIN */
+/* ADMIN PANEL */
 function loadAdmin(){
   const user = auth.currentUser;
 
@@ -247,7 +257,7 @@ function loadAdmin(){
 
           let row = document.createElement("tr");
           row.innerHTML = `
-            <td style="padding:10px;">${userData.email || d.id}</td>
+            <td>${userData.email || d.id}</td>
             <td>${userData.role}</td>
             <td>
               <button onclick="makeAdmin('${d.id}')">Make Admin</button>
@@ -260,8 +270,10 @@ function loadAdmin(){
       });
     }
   });
-  }
-  async function makeAdmin(uid){
+}
+
+/* ADMIN ACTIONS */
+async function makeAdmin(uid){
   await db.collection("users").doc(uid).update({
     role: "admin"
   });
@@ -270,8 +282,7 @@ function loadAdmin(){
 async function deleteUser(uid){
   await db.collection("users").doc(uid).delete();
 }
-  
 </script>
 
 </body>
-</html>
+                       </html>
