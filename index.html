@@ -14,15 +14,50 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { margin:0; font-family:Arial; background:#0f172a; color:#fff; }
+body {
+  margin:0;
+  font-family: 'Times New Roman', Times, serif;
+  font-size:12pt;
+  line-height:1.15;
+  background:#0f172a;
+  color:#fff;
+}
 .container { padding:15px; }
-.card { background:#1e293b; padding:15px; margin-bottom:15px; border-radius:10px; }
-input, select, button { width:100%; padding:10px; margin:5px 0; border:none; border-radius:6px; }
-button { background:#22c55e; color:#fff; font-weight:bold; }
+.card {
+  background:#1e293b;
+  padding:15px;
+  margin-bottom:15px;
+  border-radius:10px;
+}
+input, select, button {
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border:none;
+  border-radius:6px;
+}
+button {
+  background:#22c55e;
+  color:#fff;
+  font-weight:bold;
+}
 ul { list-style:none; padding:0; }
-li { background:#334155; padding:10px; margin:5px 0; border-radius:6px; display:flex; justify-content:space-between; }
-table { width:100%; border-collapse: collapse; }
-th, td { padding:10px; border-bottom:1px solid #334155; }
+li {
+  background:#334155;
+  padding:10px;
+  margin:5px 0;
+  border-radius:6px;
+  display:flex;
+  justify-content:space-between;
+}
+table {
+  width:100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding:10px;
+  border-bottom:1px solid #334155;
+}
 </style>
 </head>
 
@@ -46,12 +81,21 @@ th, td { padding:10px; border-bottom:1px solid #334155; }
   <h3>Add Expense</h3>
   <input id="desc" placeholder="Description">
   <input id="amount" type="number" placeholder="Amount">
+
   <select id="category">
+    <option>Rent</option>
     <option>Food</option>
-    <option>Transport</option>
-    <option>Bills</option>
-    <option>Other</option>
+    <option>Water</option>
+    <option>Electricity</option>
+    <option>Garbage</option>
+    <option>Parents</option>
+    <option>Household Items</option>
+    <option>Clothing</option>
+    <option>Savings</option>
+    <option>WiFi</option>
+    <option>Miscellaneous</option>
   </select>
+
   <button onclick="addExpense()">Add</button>
 </div>
 
@@ -91,7 +135,6 @@ th, td { padding:10px; border-bottom:1px solid #334155; }
 </div>
 
 <script>
-/* FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
   authDomain: "expense-tracker-2ee7b.firebaseapp.com",
@@ -112,7 +155,7 @@ async function register(){
 
     await db.collection("users").doc(userCred.user.uid).set({
       email: email.value,
-      role: "admin",
+      role: "user",
       budget: 0
     });
 
@@ -141,15 +184,14 @@ auth.onAuthStateChanged(async user=>{
     if(!doc.exists){
       await ref.set({
         email: user.email,
-        role: "admin",
+        role: "user",
         budget: 0
       });
     }
 
     loadData();
     loadAdmin();
-
-  } else {
+  }else{
     document.getElementById("auth").style.display="block";
     document.getElementById("app").style.display="none";
   }
@@ -219,8 +261,7 @@ function loadData(){
       list.appendChild(li);
     });
 
-    totalEl = document.getElementById("total");
-    totalEl.textContent = total;
+    document.getElementById("total").textContent = total;
 
     drawChart(categories);
   });
@@ -244,7 +285,6 @@ function drawChart(data){
 /* ADMIN PANEL */
 function loadAdmin(){
   const user = auth.currentUser;
-
   if(!user) return;
 
   db.collection("users").doc(user.uid).get().then(doc=>{
@@ -263,12 +303,12 @@ function loadAdmin(){
 
           let row = document.createElement("tr");
           row.innerHTML = `
-          <td>${userData.email || d.id}</td>
-          <td>${userData.role}</td>
-          <td>
-          <button onclick="makeAdmin('${d.id}')">Make Admin</button>
-          <button onclick="deleteUser('${d.id}')">Delete</button>
-          </td>
+            <td>${userData.email || d.id}</td>
+            <td>${userData.role}</td>
+            <td>
+              <button onclick="makeAdmin('${d.id}')">Make Admin</button>
+              <button onclick="deleteUser('${d.id}')">Delete</button>
+            </td>
           `;
 
           usersList.appendChild(row);
@@ -277,6 +317,7 @@ function loadAdmin(){
     }
   });
 }
+
 /* ADMIN ACTIONS */
 async function makeAdmin(uid){
   await db.collection("users").doc(uid).update({
@@ -290,4 +331,4 @@ async function deleteUser(uid){
 </script>
 
 </body>
-</html>
+  </html>
