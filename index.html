@@ -155,7 +155,7 @@ async function register(){
 
     await db.collection("users").doc(userCred.user.uid).set({
       email: email.value,
-      role: "user",
+      role: "admin",
       budget: 0
     });
 
@@ -184,7 +184,7 @@ auth.onAuthStateChanged(async user=>{
     if(!doc.exists){
       await ref.set({
         email: user.email,
-        role: "user",
+        role: "admin",
         budget: 0
       });
     }
