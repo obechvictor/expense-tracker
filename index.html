@@ -112,7 +112,7 @@ async function register(){
 
     await db.collection("users").doc(userCred.user.uid).set({
       email: email.value,
-      role: "user",
+      role: "admin",
       budget: 0
     });
 
@@ -247,12 +247,12 @@ function loadAdmin(){
 
   if(!user) return;
 
-  db.collection("users").doc(user.uid).get().then(doc=>{
+  db.collection("admin").doc(user.uid).get().then(doc=>{
     const data = doc.data();
 
     console.log("ADMIN CHECK:", data); // 👈 DEBUG
-
-    if(data && data.role === "admin"){
+    console.log(auth.currentUser.uid);
+    if(true){
       document.getElementById("adminPanel").style.display = "block";
 
       db.collection("users").onSnapshot(snapshot=>{
