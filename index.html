@@ -245,10 +245,15 @@ function drawChart(data){
 function loadAdmin(){
   const user = auth.currentUser;
 
+  if(!user) return;
+
   db.collection("users").doc(user.uid).get().then(doc=>{
-    console.log("USER DATA:", doc.data());
-    if(doc.data().role === "admin"){
-      adminPanel.style.display = "block";
+    const data = doc.data();
+
+    console.log("ADMIN CHECK:", data); // 👈 DEBUG
+
+    if(data && data.role === "admin"){
+      document.getElementById("adminPanel").style.display = "block";
 
       db.collection("users").onSnapshot(snapshot=>{
         usersList.innerHTML = "";
@@ -272,7 +277,6 @@ function loadAdmin(){
     }
   });
 }
-
 /* ADMIN ACTIONS */
 async function makeAdmin(uid){
   await db.collection("users").doc(uid).update({
@@ -286,4 +290,4 @@ async function deleteUser(uid){
 </script>
 
 </body>
-                       </html>
+</html>
