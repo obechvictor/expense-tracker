@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Finance SaaS</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#22c55e">
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -155,7 +160,7 @@ async function register(){
 
     await db.collection("users").doc(userCred.user.uid).set({
       email: email.value,
-      role: "admin",
+      role: "user",
       budget: 0
     });
 
@@ -184,7 +189,7 @@ auth.onAuthStateChanged(async user=>{
     if(!doc.exists){
       await ref.set({
         email: user.email,
-        role: "admin",
+        role: "user",
         budget: 0
       });
     }
@@ -290,8 +295,6 @@ function loadAdmin(){
   db.collection("users").doc(user.uid).get().then(doc=>{
     const data = doc.data();
 
-    console.log("ADMIN CHECK:", data);
-
     if(data && data.role === "admin"){
       document.getElementById("adminPanel").style.display = "block";
 
@@ -328,7 +331,13 @@ async function makeAdmin(uid){
 async function deleteUser(uid){
   await db.collection("users").doc(uid).delete();
 }
+
+/* SERVICE WORKER REGISTER */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(() => console.log("Service Worker Registered"));
+}
 </script>
 
 </body>
-  </html>
+</html>
