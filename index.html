@@ -1,25 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Finance SaaS</title>
 
-<!-- Firebase -->
+<title>Finance Dashboard</title>
+
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
-  margin:0;
   font-family:'Times New Roman';
-  font-size:12pt;
   background:#0f172a;
   color:#fff;
+  margin:0;
 }
 .container{padding:15px;}
 .card{
@@ -35,34 +32,23 @@ input,select,button{
   border:none;
   border-radius:6px;
 }
-button{background:#22c55e;color:#fff;font-weight:bold;}
-ul{list-style:none;padding:0;}
-li{
-  background:#334155;
-  padding:10px;
-  margin:5px 0;
-  border-radius:6px;
-  display:flex;
-  justify-content:space-between;
-}
-table{width:100%;}
-td,th{padding:8px;}
+button{background:#22c55e;color:white;font-weight:bold;}
 </style>
 </head>
 
 <body>
 
-<!-- AUTH -->
+<!-- LOGIN -->
 <div id="auth" class="container">
-  <h2>Login</h2>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="register()">Register</button>
-  <button onclick="login()">Login</button>
+<h2>Login</h2>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="register()">Register</button>
+<button onclick="login()">Login</button>
 </div>
 
 <!-- APP -->
-<div id="app" class="container" style="display:none;">
+<div id="app" class="container" style="display:none">
 
 <button onclick="logout()">Logout</button>
 
@@ -89,7 +75,7 @@ td,th{padding:8px;}
 
 <div class="card">
 <h3>Budget</h3>
-<input id="budgetInput" placeholder="Enter budget">
+<input id="budgetInput">
 <button onclick="setBudget()">Save</button>
 <p>Budget: <span id="budget">0</span></p>
 </div>
@@ -111,30 +97,11 @@ td,th{padding:8px;}
 <canvas id="monthlyChart"></canvas>
 </div>
 
-<div class="card">
-<h3>Backups</h3>
-<button onclick="createBackup()">Backup Now</button>
-<ul id="backupList"></ul>
-</div>
-
-<div class="card">
-<h3>Expenses</h3>
-<ul id="list"></ul>
-</div>
-
-<div class="card" id="adminPanel" style="display:none;">
-<h3>Admin Panel</h3>
-<table>
-<thead><tr><th>Email</th><th>Role</th><th>Action</th></tr></thead>
-<tbody id="usersList"></tbody>
-</table>
-</div>
-
 </div>
 
 <script>
 
-// ✅ FULL FIREBASE CONFIG
+// FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
   authDomain: "expense-tracker-2ee7b.firebaseapp.com",
@@ -151,15 +118,19 @@ const db = firebase.firestore();
 
 let categoryChart, monthlyChart;
 
+// 🔴 CONTROL FLAGS (FIX)
+let expLoaded = false;
+let incLoaded = false;
+
 // AUTH
 async function register(){
   try{
-    const user = await auth.createUserWithEmailAndPassword(email.value,password.value);
+    let u = await auth.createUserWithEmailAndPassword(email.value,password.value);
 
-    await db.collection("users").doc(user.user.uid).set({
+    await db.collection("users").doc(u.user.uid).set({
       email: email.value,
-      role: "user",
-      budget: 0
+      role:"user",
+      budget:0
     });
 
   }catch(e){ alert(e.message); }
@@ -176,12 +147,13 @@ function logout(){ auth.signOut(); }
 // AUTH STATE
 auth.onAuthStateChanged(user=>{
   if(user){
-    document.getElementById("auth").style.display="none";
-    document.getElementById("app").style.display="block";
+    authDiv = document.getElementById("auth");
+    appDiv = document.getElementById("app");
+
+    authDiv.style.display="none";
+    appDiv.style.display="block";
 
     loadData();
-    loadAdmin();
-    loadBackups();
 
   }else{
     document.getElementById("auth").style.display="block";
@@ -191,45 +163,53 @@ auth.onAuthStateChanged(user=>{
 
 // ADD
 async function addExpense(){
-  const u=auth.currentUser;
+  const u = auth.currentUser;
+
   await db.collection("users").doc(u.uid).collection("expenses").add({
-    desc:desc.value,
-    amount:+amount.value,
-    category:category.value,
-    created:new Date()
+    desc: desc.value,
+    amount: parseFloat(amount.value),
+    category: category.value,
+    created: new Date()
   });
 }
 
 async function addIncome(){
-  const u=auth.currentUser;
+  const u = auth.currentUser;
+
+  if(!incomeAmount.value) return alert("Enter amount");
+
   await db.collection("users").doc(u.uid).collection("income").add({
-    desc:incomeDesc.value,
-    amount:+incomeAmount.value,
-    created:new Date()
+    desc: incomeDesc.value || "Income",
+    amount: parseFloat(incomeAmount.value),
+    created: new Date()
   });
 }
 
 // BUDGET
 async function setBudget(){
-  const u=auth.currentUser;
+  const u = auth.currentUser;
+
   await db.collection("users").doc(u.uid).set({
-    budget:+budgetInput.value
+    budget: parseFloat(budgetInput.value)
   },{merge:true});
 }
 
 // LOAD DATA
 function loadData(){
-  const u=auth.currentUser;
 
-  let exp=0,inc=0,cat={},mExp={},mInc={};
+  const u = auth.currentUser;
 
+  let exp=0, inc=0, cat={}, mExp={}, mInc={};
+
+  // BUDGET
   db.collection("users").doc(u.uid).onSnapshot(doc=>{
-    budget.textContent=doc.data().budget||0;
+    budget.textContent = doc.data().budget || 0;
   });
 
+  // EXPENSES
   db.collection("users").doc(u.uid).collection("expenses")
   .onSnapshot(s=>{
-    exp=0;cat={};mExp={};list.innerHTML="";
+    exp=0; cat={}; mExp={};
 
     s.forEach(d=>{
       let e=d.data();
@@ -239,18 +219,19 @@ function loadData(){
 
       let k=e.created.toDate().toLocaleString('default',{month:'short',year:'numeric'});
       mExp[k]=(mExp[k]||0)+e.amount;
-
-      let li=document.createElement("li");
-      li.innerHTML=`${e.desc} - ${e.amount}`;
-      list.appendChild(li);
     });
 
-    update(exp,inc,cat,mExp,mInc);
+    expLoaded = true;
+
+    if(expLoaded && incLoaded){
+      update(exp,inc,cat,mExp,mInc);
+    }
   });
 
+  // INCOME
   db.collection("users").doc(u.uid).collection("income")
   .onSnapshot(s=>{
-    inc=0;mInc={};
+    inc=0; mInc={};
 
     s.forEach(d=>{
       let i=d.data();
@@ -260,36 +241,44 @@ function loadData(){
       mInc[k]=(mInc[k]||0)+i.amount;
     });
 
-    update(exp,inc,cat,mExp,mInc);
+    incLoaded = true;
+
+    if(expLoaded && incLoaded){
+      update(exp,inc,cat,mExp,mInc);
+    }
   });
 }
 
-// UPDATE DASHBOARD
+// UPDATE
 function update(exp,inc,cat,mExp,mInc){
 
-  expenseTotal.textContent=exp;
-  incomeTotal.textContent=inc;
+  expenseTotal.textContent = exp;
+  incomeTotal.textContent = inc;
 
-  let profitVal=inc-exp;
-  profit.textContent=profitVal>=0?"Profit: "+profitVal:"Loss: "+Math.abs(profitVal);
+  let p = inc - exp;
 
-  let bal=(parseFloat(budget.textContent)||0)-exp;
-  budgetStatus.textContent=bal>=0?"Remaining: "+bal:"Overspent: "+Math.abs(bal);
+  profit.textContent = p>=0 ? "Profit: "+p : "Loss: "+Math.abs(p);
 
-  health.textContent=inc>exp?"Status: Healthy":"Status: Risk";
+  let b = parseFloat(budget.textContent)||0;
+  let remain = b - exp;
 
-  // Monthly
-  let months=Object.keys(mExp);
+  budgetStatus.textContent = remain>=0 ? "Remaining: "+remain : "Overspent: "+Math.abs(remain);
+
+  health.textContent = inc>exp ? "Status: Healthy" : "Status: Risk";
+
+  // MONTHLY
+  let months = Object.keys(mExp);
+
   if(months.length){
-    let cur=months[months.length-1];
-    monthlySummary.textContent="Current ("+cur+"): "+(mExp[cur]||0);
+    let cur = months[months.length-1];
+    monthlySummary.textContent = "Current: "+mExp[cur];
   }
 
   if(months.length>=2){
-    let prev=mExp[months[months.length-2]];
-    let curr=mExp[months[months.length-1]];
-    let growth=((curr-prev)/prev)*100;
-    monthlyComparison.textContent="Growth: "+growth.toFixed(1)+"%";
+    let prev = mExp[months[months.length-2]];
+    let curr = mExp[months[months.length-1]];
+    let growth = ((curr-prev)/prev)*100;
+    monthlyComparison.textContent = "Growth: "+growth.toFixed(1)+"%";
   }
 
   drawCat(cat);
@@ -300,9 +289,7 @@ function update(exp,inc,cat,mExp,mInc){
 function drawCat(data){
   if(categoryChart) categoryChart.destroy();
 
-  const ctx=document.getElementById("categoryChart");
-
-  categoryChart=new Chart(ctx,{
+  categoryChart = new Chart(document.getElementById("categoryChart"),{
     type:"pie",
     data:{
       labels:Object.keys(data),
@@ -314,11 +301,9 @@ function drawCat(data){
 function drawMonth(exp,inc){
   if(monthlyChart) monthlyChart.destroy();
 
-  const ctx=document.getElementById("monthlyChart");
-
   let labels=[...new Set([...Object.keys(exp),...Object.keys(inc)])];
 
-  monthlyChart=new Chart(ctx,{
+  monthlyChart = new Chart(document.getElementById("monthlyChart"),{
     type:"bar",
     data:{
       labels:labels,
@@ -330,82 +315,7 @@ function drawMonth(exp,inc){
   });
 }
 
-// BACKUP
-async function createBackup(){
-  const u=auth.currentUser;
-
-  const expSnap=await db.collection("users").doc(u.uid).collection("expenses").get();
-  const incSnap=await db.collection("users").doc(u.uid).collection("income").get();
-
-  let exp=[],inc=[];
-  expSnap.forEach(d=>exp.push(d.data()));
-  incSnap.forEach(d=>inc.push(d.data()));
-
-  let date=new Date().toISOString().split("T")[0];
-
-  await db.collection("users").doc(u.uid).collection("backups").doc(date).set({exp,inc});
-}
-
-// LOAD BACKUPS
-function loadBackups(){
-  const u=auth.currentUser;
-
-  db.collection("users").doc(u.uid).collection("backups")
-  .onSnapshot(s=>{
-    backupList.innerHTML="";
-    s.forEach(d=>{
-      let li=document.createElement("li");
-      li.innerHTML=`${d.id} <button onclick="restore('${d.id}')">Restore</button>`;
-      backupList.appendChild(li);
-    });
-  });
-}
-
-// RESTORE
-async function restore(date){
-  const u=auth.currentUser;
-
-  let doc=await db.collection("users").doc(u.uid).collection("backups").doc(date).get();
-  let data=doc.data();
-
-  let old=await db.collection("users").doc(u.uid).collection("expenses").get();
-  old.forEach(d=>d.ref.delete());
-
-  data.exp.forEach(async e=>{
-    await db.collection("users").doc(u.uid).collection("expenses").add(e);
-  });
-}
-
-// ADMIN
-function loadAdmin(){
-  const u=auth.currentUser;
-
-  db.collection("users").doc(u.uid).get().then(doc=>{
-    if(doc.data().role==="admin"){
-      adminPanel.style.display="block";
-
-      db.collection("users").onSnapshot(s=>{
-        usersList.innerHTML="";
-
-        s.forEach(d=>{
-          let row=document.createElement("tr");
-          row.innerHTML=`
-            <td>${d.data().email}</td>
-            <td>${d.data().role}</td>
-            <td><button onclick="makeAdmin('${d.id}')">Admin</button></td>
-          `;
-          usersList.appendChild(row);
-        });
-      });
-    }
-  });
-}
-
-async function makeAdmin(id){
-  await db.collection("users").doc(id).update({role:"admin"});
-}
-
 </script>
 
 </body>
-  </html>
+              </html>
