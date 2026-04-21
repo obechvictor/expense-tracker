@@ -123,41 +123,41 @@ let expLoaded = false;
 let incLoaded = false;
 
 // AUTH
+async function login(){
+  try {
+    await auth.signInWithEmailAndPassword(email.value, password.value);
+  } catch(e){
+    alert(e.message);
+  }
+}
+
 async function register(){
-  try{
-    let u = await auth.createUserWithEmailAndPassword(email.value,password.value);
+  try {
+    let u = await auth.createUserWithEmailAndPassword(email.value, password.value);
 
     await db.collection("users").doc(u.user.uid).set({
       email: email.value,
-      role:"user",
-      budget:0
+      role: "user",
+      budget: 0
     });
 
-  }catch(e){ alert(e.message); }
-}
-
-async function login(){
-  try{
-    await auth.signInWithEmailAndPassword(email.value,password.value);
-  }catch(e){ alert(e.message); }
-}
-
-function logout(){ auth.signOut(); }
-
+  } catch(e){
+    alert(e.message);
+  }
+  }
 // AUTH STATE
-auth.onAuthStateChanged(user=>{
+auth.onAuthStateChanged(user => {
   if(user){
-    authDiv = document.getElementById("auth");
-    appDiv = document.getElementById("app");
-
-    authDiv.style.display="none";
-    appDiv.style.display="block";
+    document.getElementById("auth").style.display = "none";
+    document.getElementById("app").style.display = "block";
 
     loadData();
+    loadAdmin();
+    loadBackups();
 
-  }else{
-    document.getElementById("auth").style.display="block";
-    document.getElementById("app").style.display="none";
+  } else {
+    document.getElementById("auth").style.display = "block";
+    document.getElementById("app").style.display = "none";
   }
 });
 
@@ -297,27 +297,38 @@ function update(exp,inc,cat,mExp,mInc){
 function drawCat(data){
   if(categoryChart) categoryChart.destroy();
 
-  categoryChart = new Chart(document.getElementById("categoryChart"),{
-    type:"pie",
-    data:{
-      labels:Object.keys(data),
-      datasets:[{data:Object.values(data)}]
+  const ctx = document.getElementById("categoryChart");
+
+  categoryChart = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: Object.keys(data),
+      datasets: [{
+        data: Object.values(data)
+      }]
     }
   });
 }
 
-function drawMonth(exp,inc){
+function drawMonth(exp, inc){
   if(monthlyChart) monthlyChart.destroy();
 
-  let labels=[...new Set([...Object.keys(exp),...Object.keys(inc)])];
+  const ctx = document.getElementById("monthlyChart");
 
-  monthlyChart = new Chart(document.getElementById("monthlyChart"),{
-    type:"bar",
-    data:{
-      labels:labels,
-      datasets:[
-        {label:"Expenses",data:labels.map(l=>exp[l]||0)},
-        {label:"Income",data:labels.map(l=>inc[l]||0)}
+  let labels = [...new Set([...Object.keys(exp), ...Object.keys(inc)])];
+
+  monthlyChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        { label: "Expenses", data: labels.map(l => exp[l] || 0) },
+        { label: "Income", data: labels.map(l => inc[l] || 0) }
+      ]
+    }
+  });
+ }
+
  // BACKUP
 async function createBackup(){
   const u=auth.currentUser;
