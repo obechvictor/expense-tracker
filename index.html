@@ -318,9 +318,34 @@ function drawMonth(exp,inc){
       datasets:[
         {label:"Expenses",data:labels.map(l=>exp[l]||0)},
         {label:"Income",data:labels.map(l=>inc[l]||0)}
-      ]
+        
+ // ADMIN
+function loadAdmin(){
+  const u=auth.currentUser;
+
+  db.collection("users").doc(u.uid).get().then(doc=>{
+    if(doc.data().role==="admin"){
+      adminPanel.style.display="block";
+
+      db.collection("users").onSnapshot(s=>{
+        usersList.innerHTML="";
+
+        s.forEach(d=>{
+          let row=document.createElement("tr");
+          row.innerHTML=`
+            <td>${d.data().email}</td>
+            <td>${d.data().role}</td>
+            <td><button onclick="makeAdmin('${d.id}')">Admin</button></td>
+          `;
+          usersList.appendChild(row);
+        });
+      });
     }
-  });
+    });
+}
+
+async function makeAdmin(id){
+  await db.collection("users").doc(id).update({role:"admin"});
 }
 
 </script>
