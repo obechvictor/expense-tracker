@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Finance SaaS</title>
+<title>Finance SaaS Pro</title>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -14,34 +14,30 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body {
+body{
   margin:0;
   font-family:'Times New Roman';
   font-size:12pt;
   background:#0f172a;
   color:#fff;
 }
-.container { padding:15px; }
-.card {
+.container{padding:15px;}
+.card{
   background:#1e293b;
   padding:15px;
   margin-bottom:15px;
   border-radius:10px;
 }
-input,select,button {
+input,select,button{
   width:100%;
   padding:10px;
   margin:5px 0;
   border:none;
   border-radius:6px;
 }
-button {
-  background:#22c55e;
-  color:#fff;
-  font-weight:bold;
-}
-ul { list-style:none; padding:0; }
-li {
+button{background:#22c55e;color:#fff;font-weight:bold;}
+ul{list-style:none;padding:0;}
+li{
   background:#334155;
   padding:10px;
   margin:5px 0;
@@ -49,327 +45,306 @@ li {
   display:flex;
   justify-content:space-between;
 }
-table {
-  width:100%;
-}
-td,th {
-  padding:8px;
-}
+table{width:100%;}
+td,th{padding:8px;}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
 <div id="auth" class="container">
   <h2>Login</h2>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
+  <input id="email">
+  <input id="password" type="password">
   <button onclick="register()">Register</button>
   <button onclick="login()">Login</button>
 </div>
 
-<!-- APP -->
 <div id="app" class="container" style="display:none;">
 
 <button onclick="logout()">Logout</button>
 
-<!-- INCOME -->
 <div class="card">
-  <h3>Add Income</h3>
-  <input id="incomeDesc" placeholder="Source">
-  <input id="incomeAmount" type="number">
-  <button onclick="addIncome()">Add Income</button>
+<h3>Add Income</h3>
+<input id="incomeDesc">
+<input id="incomeAmount" type="number">
+<button onclick="addIncome()">Add Income</button>
 </div>
 
-<!-- EXPENSE -->
 <div class="card">
-  <h3>Add Expense</h3>
-  <input id="desc" placeholder="Description">
-  <input id="amount" type="number">
-
-  <select id="category">
-    <option>Rent</option>
-    <option>Food</option>
-    <option>Water</option>
-    <option>Electricity</option>
-    <option>Garbage</option>
-    <option>Parents</option>
-    <option>Household Items</option>
-    <option>Clothing</option>
-    <option>Savings</option>
-    <option>WiFi</option>
-    <option>Miscellaneous</option>
-  </select>
-
-  <button onclick="addExpense()">Add</button>
+<h3>Add Expense</h3>
+<input id="desc">
+<input id="amount" type="number">
+<select id="category">
+<option>Rent</option><option>Food</option><option>Water</option>
+<option>Electricity</option><option>Garbage</option>
+<option>Parents</option><option>Household Items</option>
+<option>Clothing</option><option>Savings</option>
+<option>WiFi</option><option>Miscellaneous</option>
+</select>
+<button onclick="addExpense()">Add</button>
 </div>
 
-<!-- BUDGET -->
 <div class="card">
-  <h3>Budget</h3>
-  <input id="budgetInput">
-  <button onclick="setBudget()">Save</button>
-  <p>Budget: <span id="budget">0</span></p>
+<h3>Budget</h3>
+<input id="budgetInput">
+<button onclick="setBudget()">Save</button>
+<p>Budget: <span id="budget">0</span></p>
 </div>
 
-<!-- ANALYTICS -->
 <div class="card">
-  <h3>Financial Dashboard</h3>
-
-  <p>Income: <span id="incomeTotal">0</span></p>
-  <p>Expenses: <span id="expenseTotal">0</span></p>
-  <p id="profit"></p>
-  <p id="budgetStatus"></p>
-
-  <canvas id="chart"></canvas>
+<h3>Dashboard</h3>
+<p>Income: <span id="incomeTotal">0</span></p>
+<p>Expenses: <span id="expenseTotal">0</span></p>
+<p id="profit"></p>
+<p id="budgetStatus"></p>
+<p id="health"></p>
+<canvas id="categoryChart"></canvas>
 </div>
 
-<!-- EXPENSE LIST -->
 <div class="card">
-  <h3>Expenses</h3>
-  <ul id="list"></ul>
+<h3>Monthly Report</h3>
+<p id="monthlySummary"></p>
+<p id="monthlyComparison"></p>
+<canvas id="monthlyChart"></canvas>
 </div>
 
-<!-- ADMIN PANEL -->
+<div class="card">
+<h3>Backups</h3>
+<button onclick="createBackup()">Backup Now</button>
+<ul id="backupList"></ul>
+</div>
+
+<div class="card">
+<h3>Expenses</h3>
+<ul id="list"></ul>
+</div>
+
 <div class="card" id="adminPanel" style="display:none;">
-  <h3>Admin Panel</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="usersList"></tbody>
-  </table>
+<h3>Admin Panel</h3>
+<table>
+<thead><tr><th>Email</th><th>Role</th><th>Action</th></tr></thead>
+<tbody id="usersList"></tbody>
+</table>
 </div>
 
 </div>
 
 <script>
 // FIREBASE
-const firebaseConfig = {
-  apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+firebase.initializeApp({
+  apiKey:"AIzaSy...",
   authDomain:"expense-tracker-2ee7b.firebaseapp.com",
   projectId:"expense-tracker-2ee7b"
-};
+});
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const auth=firebase.auth();
+const db=firebase.firestore();
 
-let chart;
+let categoryChart,monthlyChart;
 
 // AUTH
 async function register(){
-  const userCred = await auth.createUserWithEmailAndPassword(email.value,password.value);
-
-  await db.collection("users").doc(userCred.user.uid).set({
-    email: email.value,
-    role: "user",
-    budget: 0
-  });
+let u=await auth.createUserWithEmailAndPassword(email.value,password.value);
+await db.collection("users").doc(u.user.uid).set({
+email:email.value,role:"user",budget:0
+});
 }
+function login(){auth.signInWithEmailAndPassword(email.value,password.value);}
+function logout(){auth.signOut();}
 
-function login(){
-  auth.signInWithEmailAndPassword(email.value,password.value);
+auth.onAuthStateChanged(user=>{
+if(user){
+authDiv.style.display="none";
+app.style.display="block";
+loadData();
+loadAdmin();
+loadBackups();
+}else{
+authDiv.style.display="block";
+app.style.display="none";
 }
-
-function logout(){
-  auth.signOut();
-}
-
-// AUTH STATE
-auth.onAuthStateChanged(async user=>{
-  if(user){
-    authDiv.style.display="none";
-    app.style.display="block";
-
-    const ref = db.collection("users").doc(user.uid);
-    const doc = await ref.get();
-
-    if(!doc.exists){
-      await ref.set({
-        email:user.email,
-        role:"user",
-        budget:0
-      });
-    }
-
-    loadData();
-    loadAdmin();
-
-  }else{
-    authDiv.style.display="block";
-    app.style.display="none";
-  }
 });
 
-// ADD DATA
+// ADD
 async function addExpense(){
-  const u = auth.currentUser;
-
-  await db.collection("users").doc(u.uid).collection("expenses").add({
-    desc: desc.value,
-    amount: +amount.value,
-    category: category.value,
-    created: new Date()
-  });
+let u=auth.currentUser;
+await db.collection("users").doc(u.uid).collection("expenses").add({
+desc:desc.value,amount:+amount.value,category:category.value,created:new Date()
+});
 }
-
 async function addIncome(){
-  const u = auth.currentUser;
-
-  await db.collection("users").doc(u.uid).collection("income").add({
-    desc: incomeDesc.value,
-    amount: +incomeAmount.value,
-    created: new Date()
-  });
+let u=auth.currentUser;
+await db.collection("users").doc(u.uid).collection("income").add({
+desc:incomeDesc.value,amount:+incomeAmount.value,created:new Date()
+});
 }
 
 // BUDGET
 async function setBudget(){
-  const u = auth.currentUser;
-
-  await db.collection("users").doc(u.uid).set({
-    budget: +budgetInput.value
-  }, {merge:true});
+let u=auth.currentUser;
+await db.collection("users").doc(u.uid).set({budget:+budgetInput.value},{merge:true});
 }
 
-// LOAD DATA
+// LOAD
 function loadData(){
-  const u = auth.currentUser;
+let u=auth.currentUser;
 
-  let expenses = 0;
-  let income = 0;
-  let categories = {};
+let exp=0,inc=0,cat={},mExp={},mInc={};
 
-  // Budget
-  db.collection("users").doc(u.uid).onSnapshot(doc=>{
-    budget.textContent = doc.data().budget || 0;
-  });
+db.collection("users").doc(u.uid).onSnapshot(doc=>{
+budget.textContent=doc.data().budget||0;
+});
 
-  // Expenses
-  db.collection("users").doc(u.uid).collection("expenses")
-  .onSnapshot(snapshot=>{
-    expenses = 0;
-    categories = {};
-    list.innerHTML = "";
+db.collection("users").doc(u.uid).collection("expenses")
+.onSnapshot(s=>{
+exp=0;cat={};mExp={};list.innerHTML="";
+s.forEach(d=>{
+let e=d.data();
+exp+=e.amount;
+cat[e.category]=(cat[e.category]||0)+e.amount;
+let k=e.created.toDate().toLocaleString('default',{month:'short',year:'numeric'});
+mExp[k]=(mExp[k]||0)+e.amount;
+let li=document.createElement("li");
+li.innerHTML=`${e.desc}-${e.amount}`;
+list.appendChild(li);
+});
+update(exp,inc,cat,mExp,mInc);
+});
 
-    snapshot.forEach(d=>{
-      const e = d.data();
-      expenses += e.amount;
-
-      categories[e.category] = (categories[e.category]||0)+e.amount;
-
-      let li = document.createElement("li");
-      li.innerHTML = `
-        ${e.desc} - ${e.amount}
-        <button onclick="deleteExpense('${d.id}')">X</button>
-      `;
-      list.appendChild(li);
-    });
-
-    updateDashboard(expenses, income, categories);
-  });
-
-  // Income
-  db.collection("users").doc(u.uid).collection("income")
-  .onSnapshot(snapshot=>{
-    income = 0;
-
-    snapshot.forEach(d=>{
-      income += d.data().amount;
-    });
-
-    updateDashboard(expenses, income, categories);
-  });
+db.collection("users").doc(u.uid).collection("income")
+.onSnapshot(s=>{
+inc=0;mInc={};
+s.forEach(d=>{
+let i=d.data();
+inc+=i.amount;
+let k=i.created.toDate().toLocaleString('default',{month:'short',year:'numeric'});
+mInc[k]=(mInc[k]||0)+i.amount;
+});
+update(exp,inc,cat,mExp,mInc);
+});
 }
 
-// DELETE
-async function deleteExpense(id){
-  const u = auth.currentUser;
-  await db.collection("users").doc(u.uid).collection("expenses").doc(id).delete();
+// UPDATE
+function update(exp,inc,cat,mExp,mInc){
+
+expenseTotal.textContent=exp;
+incomeTotal.textContent=inc;
+
+let profitVal=inc-exp;
+profit.textContent=profitVal>=0?"Profit: "+profitVal:"Loss: "+Math.abs(profitVal);
+
+let bal=(parseFloat(budget.textContent)||0)-exp;
+budgetStatus.textContent=bal>=0?"Remaining: "+bal:"Overspent: "+Math.abs(bal);
+
+health.textContent=inc>exp?"Healthy":"Risk";
+
+// MONTH
+let months=Object.keys(mExp);
+let cur=months[months.length-1];
+monthlySummary.textContent="Current: "+cur+" "+(mExp[cur]||0);
+
+if(months.length>=2){
+let prev=mExp[months[months.length-2]];
+let diff=((mExp[cur]-prev)/prev)*100;
+monthlyComparison.textContent="Growth: "+diff.toFixed(1)+"%";
 }
 
-// DASHBOARD
-function updateDashboard(expenses, income, categories){
-
-  document.getElementById("expenseTotal").textContent = expenses;
-  document.getElementById("incomeTotal").textContent = income;
-
-  let profitVal = income - expenses;
-
-  document.getElementById("profit").textContent =
-    profitVal >= 0 ? "Profit: "+profitVal : "Loss: "+Math.abs(profitVal);
-
-  let budgetVal = parseFloat(budget.textContent) || 0;
-  let balance = budgetVal - expenses;
-
-  document.getElementById("budgetStatus").textContent =
-    balance >= 0 ? "Remaining Budget: "+balance : "Overspent: "+Math.abs(balance);
-
-  drawChart(categories);
+// CHARTS
+drawCat(cat);
+drawMonth(mExp,mInc);
 }
 
-// CHART
-function drawChart(data){
-  if(chart) chart.destroy();
-
-  chart = new Chart(document.getElementById("chart"), {
-    type: "pie",
-    data: {
-      labels: Object.keys(data),
-      datasets: [{ data: Object.values(data) }]
-    }
-  });
+// CHARTS
+function drawCat(d){
+if(categoryChart)categoryChart.destroy();
+categoryChart=new Chart(categoryChart,{
+type:"pie",
+data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]}
+});
 }
 
-// ADMIN PANEL
+function drawMonth(exp,inc){
+if(monthlyChart)monthlyChart.destroy();
+let labels=[...new Set([...Object.keys(exp),...Object.keys(inc)])];
+monthlyChart=new Chart(monthlyChart,{
+type:"bar",
+data:{
+labels:labels,
+datasets:[
+{label:"Expenses",data:labels.map(l=>exp[l]||0)},
+{label:"Income",data:labels.map(l=>inc[l]||0)}
+]
+}
+});
+}
+
+// BACKUP
+async function createBackup(){
+let u=auth.currentUser;
+let expSnap=await db.collection("users").doc(u.uid).collection("expenses").get();
+let incSnap=await db.collection("users").doc(u.uid).collection("income").get();
+
+let exp=[],inc=[];
+expSnap.forEach(d=>exp.push(d.data()));
+incSnap.forEach(d=>inc.push(d.data()));
+
+let date=new Date().toISOString().split("T")[0];
+
+await db.collection("users").doc(u.uid).collection("backups").doc(date).set({
+exp,inc
+});
+}
+
+function loadBackups(){
+let u=auth.currentUser;
+db.collection("users").doc(u.uid).collection("backups")
+.onSnapshot(s=>{
+backupList.innerHTML="";
+s.forEach(d=>{
+let li=document.createElement("li");
+li.innerHTML=`${d.id}<button onclick="restore('${d.id}')">Restore</button>`;
+backupList.appendChild(li);
+});
+});
+}
+
+async function restore(date){
+let u=auth.currentUser;
+let doc=await db.collection("users").doc(u.uid).collection("backups").doc(date).get();
+let data=doc.data();
+
+let old=await db.collection("users").doc(u.uid).collection("expenses").get();
+old.forEach(d=>d.ref.delete());
+
+data.exp.forEach(async e=>{
+await db.collection("users").doc(u.uid).collection("expenses").add(e);
+});
+}
+
+// ADMIN
 function loadAdmin(){
-  const u = auth.currentUser;
-
-  db.collection("users").doc(u.uid).get().then(doc=>{
-    if(doc.data().role === "admin"){
-      document.getElementById("adminPanel").style.display = "block";
-
-      db.collection("users").onSnapshot(snapshot=>{
-        usersList.innerHTML = "";
-
-        snapshot.forEach(d=>{
-          let data = d.data();
-
-          let row = document.createElement("tr");
-
-          row.innerHTML = `
-            <td>${data.email || d.id}</td>
-            <td>${data.role}</td>
-            <td>
-              <button onclick="makeAdmin('${d.id}')">Admin</button>
-              <button onclick="deleteUser('${d.id}')">Delete</button>
-            </td>
-          `;
-
-          usersList.appendChild(row);
-        });
-      });
-    }
-  });
+let u=auth.currentUser;
+db.collection("users").doc(u.uid).get().then(doc=>{
+if(doc.data().role==="admin"){
+adminPanel.style.display="block";
+db.collection("users").onSnapshot(s=>{
+usersList.innerHTML="";
+s.forEach(d=>{
+let row=document.createElement("tr");
+row.innerHTML=`<td>${d.data().email}</td><td>${d.data().role}</td>
+<td><button onclick="makeAdmin('${d.id}')">Admin</button></td>`;
+usersList.appendChild(row);
+});
+});
+}
+});
 }
 
-// ADMIN ACTIONS
-async function makeAdmin(uid){
-  await db.collection("users").doc(uid).update({
-    role:"admin"
-  });
-}
-
-async function deleteUser(uid){
-  await db.collection("users").doc(uid).delete();
+async function makeAdmin(id){
+await db.collection("users").doc(id).update({role:"admin"});
 }
 </script>
 
 </body>
-    </html>
+</html>
