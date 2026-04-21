@@ -318,8 +318,53 @@ function drawMonth(exp,inc){
       datasets:[
         {label:"Expenses",data:labels.map(l=>exp[l]||0)},
         {label:"Income",data:labels.map(l=>inc[l]||0)}
-        
- // ADMIN
+ // BACKUP
+async function createBackup(){
+  const u=auth.currentUser;
+
+  const expSnap=await db.collection("users").doc(u.uid).collection("expenses").get();
+  const incSnap=await db.collection("users").doc(u.uid).collection("income").get();
+
+  let exp=[],inc=[];
+  expSnap.forEach(d=>exp.push(d.data()));
+  incSnap.forEach(d=>inc.push(d.data()));
+
+  let date=new Date().toISOString().split("T")[0];
+
+  await db.collection("users").doc(u.uid).collection("backups").doc(date).set({exp,inc});
+}
+
+// LOAD BACKUPS
+function loadBackups(){
+  const u=auth.currentUser;
+
+  db.collection("users").doc(u.uid).collection("backups")
+  .onSnapshot(s=>{
+    backupList.innerHTML="";
+    s.forEach(d=>{
+      let li=document.createElement("li");
+      li.innerHTML=`${d.id} <button onclick="restore('${d.id}')">Restore</button>`;
+      backupList.appendChild(li);
+    });
+  });
+}
+
+// RESTORE
+async function restore(date){
+  const u=auth.currentUser;
+
+  let doc=await db.collection("users").doc(u.uid).collection("backups").doc(date).get();
+  let data=doc.data();
+
+  let old=await db.collection("users").doc(u.uid).collection("expenses").get();
+  old.forEach(d=>d.ref.delete());
+
+  data.exp.forEach(async e=>{
+    await db.collection("users").doc(u.uid).collection("expenses").add(e);
+  });
+}
+
+// ADMIN
 function loadAdmin(){
   const u=auth.currentUser;
 
@@ -341,12 +386,12 @@ function loadAdmin(){
         });
       });
     }
-    });
+  });
 }
 
 async function makeAdmin(id){
   await db.collection("users").doc(id).update({role:"admin"});
-}
+}       
 
 </script>
 
