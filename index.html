@@ -1,68 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Finance SaaS</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance SaaS</title>
 
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#22c55e">
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<!-- Charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Charts -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Times New Roman';
-      font-size: 12pt;
-      line-height: 1.15;
-      background: #0f172a;
-      color: #fff;
-    }
-    .container { padding: 15px; }
-    .card {
-      background: #1e293b;
-      padding: 15px;
-      margin-bottom: 15px;
-      border-radius: 10px;
-    }
-    input, select, button {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0;
-      border: none;
-      border-radius: 6px;
-    }
-    button {
-      background: #22c55e;
-      color: white;
-      font-weight: bold;
-    }
-    ul { list-style: none; padding: 0; }
-    li {
-      background: #334155;
-      padding: 10px;
-      margin: 5px 0;
-      border-radius: 6px;
-      display: flex;
-      justify-content: space-between;
-    }
-    #adminPanel { display:none; }
-  </style>
+<style>
+body {
+  margin:0;
+  font-family:'Times New Roman';
+  font-size:12pt;
+  background:#0f172a;
+  color:#fff;
+}
+.container { padding:15px; }
+.card {
+  background:#1e293b;
+  padding:15px;
+  margin-bottom:15px;
+  border-radius:10px;
+}
+input,select,button {
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border:none;
+  border-radius:6px;
+}
+button {
+  background:#22c55e;
+  color:#fff;
+  font-weight:bold;
+}
+ul { list-style:none; padding:0; }
+li {
+  background:#334155;
+  padding:10px;
+  margin:5px 0;
+  border-radius:6px;
+  display:flex;
+  justify-content:space-between;
+}
+table {
+  width:100%;
+}
+td,th {
+  padding:8px;
+}
+</style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
 <div id="auth" class="container">
   <h2>Login</h2>
   <input id="email" placeholder="Email">
@@ -71,239 +69,307 @@
   <button onclick="login()">Login</button>
 </div>
 
+<!-- APP -->
 <div id="app" class="container" style="display:none;">
 
-  <button onclick="logout()">Logout</button>
+<button onclick="logout()">Logout</button>
 
-  <div class="card">
-    <h3>Add Expense</h3>
-    <input id="desc" placeholder="Description">
-    <input id="amount" type="number">
+<!-- INCOME -->
+<div class="card">
+  <h3>Add Income</h3>
+  <input id="incomeDesc" placeholder="Source">
+  <input id="incomeAmount" type="number">
+  <button onclick="addIncome()">Add Income</button>
+</div>
 
-    <select id="category">
-      <option>Rent</option>
-      <option>Food</option>
-      <option>Water</option>
-      <option>Electricity</option>
-      <option>Garbage</option>
-      <option>Parents</option>
-      <option>Household Items</option>
-      <option>Clothing</option>
-      <option>Savings</option>
-      <option>WiFi</option>
-      <option>Miscellaneous</option>
-    </select>
+<!-- EXPENSE -->
+<div class="card">
+  <h3>Add Expense</h3>
+  <input id="desc" placeholder="Description">
+  <input id="amount" type="number">
 
-    <button onclick="addExpense()">Add</button>
-  </div>
+  <select id="category">
+    <option>Rent</option>
+    <option>Food</option>
+    <option>Water</option>
+    <option>Electricity</option>
+    <option>Garbage</option>
+    <option>Parents</option>
+    <option>Household Items</option>
+    <option>Clothing</option>
+    <option>Savings</option>
+    <option>WiFi</option>
+    <option>Miscellaneous</option>
+  </select>
 
-  <div class="card">
-    <h3>Budget</h3>
-    <input id="budgetInput">
-    <button onclick="setBudget()">Save</button>
-    <p>Budget: <span id="budget">0</span></p>
-  </div>
+  <button onclick="addExpense()">Add</button>
+</div>
 
-  <div class="card">
-    <h3>Analytics</h3>
-    <p>Total: <span id="total">0</span></p>
-    <p id="balanceStatus"></p>
-    <p id="monthlyChange"></p>
-    <canvas id="chart"></canvas>
-  </div>
+<!-- BUDGET -->
+<div class="card">
+  <h3>Budget</h3>
+  <input id="budgetInput">
+  <button onclick="setBudget()">Save</button>
+  <p>Budget: <span id="budget">0</span></p>
+</div>
 
-  <div class="card">
-    <h3>Expenses</h3>
-    <ul id="list"></ul>
-  </div>
+<!-- ANALYTICS -->
+<div class="card">
+  <h3>Financial Dashboard</h3>
 
-  <div class="card" id="adminPanel">
-    <h3>Admin Panel</h3>
-    <ul id="usersList"></ul>
-  </div>
+  <p>Income: <span id="incomeTotal">0</span></p>
+  <p>Expenses: <span id="expenseTotal">0</span></p>
+  <p id="profit"></p>
+  <p id="budgetStatus"></p>
+
+  <canvas id="chart"></canvas>
+</div>
+
+<!-- EXPENSE LIST -->
+<div class="card">
+  <h3>Expenses</h3>
+  <ul id="list"></ul>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="card" id="adminPanel" style="display:none;">
+  <h3>Admin Panel</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="usersList"></tbody>
+  </table>
+</div>
 
 </div>
 
 <script>
-  // FIREBASE CONFIG
-  const firebaseConfig = {
-    apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
-    authDomain: "expense-tracker-2ee7b.firebaseapp.com",
-    projectId: "expense-tracker-2ee7b"
-  };
+// FIREBASE
+const firebaseConfig = {
+  apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+  authDomain:"expense-tracker-2ee7b.firebaseapp.com",
+  projectId:"expense-tracker-2ee7b"
+};
 
-  firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+let chart;
 
-  let chart;
+// AUTH
+async function register(){
+  const userCred = await auth.createUserWithEmailAndPassword(email.value,password.value);
 
-  // AUTH
-  async function register(){
-    const user = await auth.createUserWithEmailAndPassword(email.value, password.value);
-    await db.collection("users").doc(user.user.uid).set({
-      email: email.value,
-      role: "user",
-      budget: 0
-    });
-  }
+  await db.collection("users").doc(userCred.user.uid).set({
+    email: email.value,
+    role: "user",
+    budget: 0
+  });
+}
 
-  function login(){
-    auth.signInWithEmailAndPassword(email.value, password.value);
-  }
+function login(){
+  auth.signInWithEmailAndPassword(email.value,password.value);
+}
 
-  function logout(){
-    auth.signOut();
-  }
+function logout(){
+  auth.signOut();
+}
 
-  auth.onAuthStateChanged(async user => {
-    if(user){
-      document.getElementById("auth").style.display = "none";
-      document.getElementById("app").style.display = "block";
+// AUTH STATE
+auth.onAuthStateChanged(async user=>{
+  if(user){
+    authDiv.style.display="none";
+    app.style.display="block";
 
-      loadData();
-      loadAdmin();
-    } else {
-      document.getElementById("auth").style.display = "block";
-      document.getElementById("app").style.display = "none";
+    const ref = db.collection("users").doc(user.uid);
+    const doc = await ref.get();
+
+    if(!doc.exists){
+      await ref.set({
+        email:user.email,
+        role:"user",
+        budget:0
+      });
     }
+
+    loadData();
+    loadAdmin();
+
+  }else{
+    authDiv.style.display="block";
+    app.style.display="none";
+  }
+});
+
+// ADD DATA
+async function addExpense(){
+  const u = auth.currentUser;
+
+  await db.collection("users").doc(u.uid).collection("expenses").add({
+    desc: desc.value,
+    amount: +amount.value,
+    category: category.value,
+    created: new Date()
+  });
+}
+
+async function addIncome(){
+  const u = auth.currentUser;
+
+  await db.collection("users").doc(u.uid).collection("income").add({
+    desc: incomeDesc.value,
+    amount: +incomeAmount.value,
+    created: new Date()
+  });
+}
+
+// BUDGET
+async function setBudget(){
+  const u = auth.currentUser;
+
+  await db.collection("users").doc(u.uid).set({
+    budget: +budgetInput.value
+  }, {merge:true});
+}
+
+// LOAD DATA
+function loadData(){
+  const u = auth.currentUser;
+
+  let expenses = 0;
+  let income = 0;
+  let categories = {};
+
+  // Budget
+  db.collection("users").doc(u.uid).onSnapshot(doc=>{
+    budget.textContent = doc.data().budget || 0;
   });
 
-  // EXPENSE
-  async function addExpense(){
-    const u = auth.currentUser;
-    await db.collection("users").doc(u.uid).collection("expenses").add({
-      desc: desc.value,
-      amount: +amount.value,
-      category: category.value,
-      created: new Date()
-    });
-  }
+  // Expenses
+  db.collection("users").doc(u.uid).collection("expenses")
+  .onSnapshot(snapshot=>{
+    expenses = 0;
+    categories = {};
+    list.innerHTML = "";
 
-  async function deleteExpense(id){
-    const u = auth.currentUser;
-    await db.collection("users").doc(u.uid).collection("expenses").doc(id).delete();
-  }
+    snapshot.forEach(d=>{
+      const e = d.data();
+      expenses += e.amount;
 
-  async function setBudget(){
-    const u = auth.currentUser;
-    await db.collection("users").doc(u.uid).set({
-      budget: +budgetInput.value
-    }, {merge:true});
-  }
+      categories[e.category] = (categories[e.category]||0)+e.amount;
 
-  function loadData(){
-    const u = auth.currentUser;
-
-    db.collection("users").doc(u.uid).onSnapshot(doc=>{
-      budget.textContent = doc.data().budget || 0;
+      let li = document.createElement("li");
+      li.innerHTML = `
+        ${e.desc} - ${e.amount}
+        <button onclick="deleteExpense('${d.id}')">X</button>
+      `;
+      list.appendChild(li);
     });
 
-    db.collection("users").doc(u.uid).collection("expenses")
-    .onSnapshot(snapshot=>{
-      let total = 0;
-      let categories = {};
-      let monthly = {};
+    updateDashboard(expenses, income, categories);
+  });
 
-      list.innerHTML = "";
+  // Income
+  db.collection("users").doc(u.uid).collection("income")
+  .onSnapshot(snapshot=>{
+    income = 0;
 
-      snapshot.forEach(d=>{
-        let e = d.data();
-        total += e.amount;
-
-        categories[e.category] = (categories[e.category]||0)+e.amount;
-
-        let date = e.created.toDate();
-        let key = date.getFullYear()+"-"+(date.getMonth()+1);
-        monthly[key] = (monthly[key]||0)+e.amount;
-
-        let li = document.createElement("li");
-        li.innerHTML = `
-          ${e.desc} - ${e.amount}
-          <button onclick="deleteExpense('${d.id}')">X</button>
-        `;
-        list.appendChild(li);
-      });
-
-      totalSpan.textContent = total;
-
-      let budgetVal = parseFloat(budget.textContent)||0;
-      let balance = budgetVal - total;
-
-      balanceStatus.textContent = balance >= 0
-        ? "Remaining: " + balance
-        : "Overspent: " + Math.abs(balance);
-
-      let months = Object.keys(monthly).sort();
-      if(months.length >= 2){
-        let last = monthly[months[months.length-1]];
-        let prev = monthly[months[months.length-2]];
-        monthlyChange.textContent = "Change: " + (last - prev);
-      }
-
-      drawChart(categories);
+    snapshot.forEach(d=>{
+      income += d.data().amount;
     });
-  }
 
-  function drawChart(data){
-    if(chart) chart.destroy();
+    updateDashboard(expenses, income, categories);
+  });
+}
 
-    chart = new Chart(document.getElementById("chart"), {
-      type: "pie",
-      data: {
-        labels: Object.keys(data),
-        datasets: [{
-          data: Object.values(data)
-        }]
-      }
-    });
-  }
+// DELETE
+async function deleteExpense(id){
+  const u = auth.currentUser;
+  await db.collection("users").doc(u.uid).collection("expenses").doc(id).delete();
+}
 
-  function loadAdmin(){
-    const u = auth.currentUser;
+// DASHBOARD
+function updateDashboard(expenses, income, categories){
 
-    db.collection("users").doc(u.uid).get().then(doc=>{
-      if(doc.data().role === "admin"){
-        adminPanel.style.display = "block";
+  document.getElementById("expenseTotal").textContent = expenses;
+  document.getElementById("incomeTotal").textContent = income;
 
-        db.collection("users").onSnapshot(snapshot=>{
-          usersList.innerHTML = "";
+  let profitVal = income - expenses;
 
-          snapshot.forEach(d=>{
-            let data = d.data();
+  document.getElementById("profit").textContent =
+    profitVal >= 0 ? "Profit: "+profitVal : "Loss: "+Math.abs(profitVal);
 
-            let li = document.createElement("li");
-            li.innerHTML = `
-              ${data.email} (${data.role})
+  let budgetVal = parseFloat(budget.textContent) || 0;
+  let balance = budgetVal - expenses;
+
+  document.getElementById("budgetStatus").textContent =
+    balance >= 0 ? "Remaining Budget: "+balance : "Overspent: "+Math.abs(balance);
+
+  drawChart(categories);
+}
+
+// CHART
+function drawChart(data){
+  if(chart) chart.destroy();
+
+  chart = new Chart(document.getElementById("chart"), {
+    type: "pie",
+    data: {
+      labels: Object.keys(data),
+      datasets: [{ data: Object.values(data) }]
+    }
+  });
+}
+
+// ADMIN PANEL
+function loadAdmin(){
+  const u = auth.currentUser;
+
+  db.collection("users").doc(u.uid).get().then(doc=>{
+    if(doc.data().role === "admin"){
+      document.getElementById("adminPanel").style.display = "block";
+
+      db.collection("users").onSnapshot(snapshot=>{
+        usersList.innerHTML = "";
+
+        snapshot.forEach(d=>{
+          let data = d.data();
+
+          let row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td>${data.email || d.id}</td>
+            <td>${data.role}</td>
+            <td>
               <button onclick="makeAdmin('${d.id}')">Admin</button>
-            `;
-            usersList.appendChild(li);
-          });
+              <button onclick="deleteUser('${d.id}')">Delete</button>
+            </td>
+          `;
+
+          usersList.appendChild(row);
         });
-      }
-    });
-  }
+      });
+    }
+  });
+}
 
-  async function makeAdmin(uid){
-    await db.collection("users").doc(uid).update({
-      role: "admin"
-    });
-  }
+// ADMIN ACTIONS
+async function makeAdmin(uid){
+  await db.collection("users").doc(uid).update({
+    role:"admin"
+  });
+}
 
-  // AUTO UPDATE SYSTEM
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then(reg => {
-      reg.update();
-    });
-  }
-
-  // FORCE REFRESH EVERY 60 SECONDS
-  setInterval(() => {
-    fetch(window.location.href, { cache: "no-store" })
-      .then(() => location.reload());
-  }, 60000);
+async function deleteUser(uid){
+  await db.collection("users").doc(uid).delete();
+}
 </script>
 
 </body>
-      </html>
+    </html>
