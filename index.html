@@ -14,7 +14,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!-- Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -106,6 +106,7 @@ th, td {
   <input id="password" type="password" placeholder="Password">
   <button onclick="register()">Register</button>
   <button onclick="login()">Login</button>
+  <button onclick="exportPDF()">Download Monthly Report</button>
 </div>
 
 <!-- APP -->
@@ -278,31 +279,71 @@ function loadData(){
   db.collection("users").doc(user.uid)
   .collection("expenses")
   .onSnapshot(snapshot=>{
-
     let total = 0;
     let categories = {};
-    list.innerHTML = "";
+    let monthly = {};
 
     snapshot.forEach(doc=>{
-      let e = doc.data();
-      total += e.amount;
+     let e = doc.data();
+     total += e.amount;
 
-      categories[e.category] = (categories[e.category] || 0) + e.amount;
+  // category sum
+    categories[e.category] = (categories[e.category] || 0) + e.amount;
 
-      let li = document.createElement("li");
-      li.innerHTML = `
-        ${e.desc} - ${e.amount} (${e.category})
-        <button onclick="deleteExpense('${doc.id}')">X</button>
-      `;
-      list.appendChild(li);
-    });
+  // monthly grouping
+     let date = e.created.toDate();
+     let monthKey = date.getFullYear() + "-" + (date.getMonth()+1);
 
-    document.getElementById("total").textContent = total;
+  monthly[monthKey] = (monthly[monthKey] || 0) + e.amount;
 
-    drawChart(categories);
-  });
+  let li = document.createElement("li");
+  li.innerHTML = `
+    ${e.desc} - ${e.amount} (${e.category})
+    <button onclick="deleteExpense('${doc.id}')">X</button>
+  `;
+  list.appendChild(li);
+});
+
+document.getElementById("total").textContent = total;
+
+// 🔥 Budget vs Expense
+const budgetVal = parseFloat(document.getElementById("budget").textContent) || 0;
+const balance = budgetVal - total;
+
+const status = document.getElementById("balanceStatus");
+
+if(balance >= 0){
+  status.textContent = "Remaining: " + balance;
+  status.style.color = "#22c55e";
+}else{
+  status.textContent = "Overspent: " + Math.abs(balance);
+  status.style.color = "red";
 }
+function exportPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
 
+  doc.text("Financial Report", 20, 20);
+  doc.text("Income: " + document.getElementById("incomeTotal").textContent, 20, 40);
+  doc.text("Expenses: " + document.getElementById("total").textContent, 20, 50);
+  doc.text("Budget: " + document.getElementById("budget").textContent, 20, 60);
+  doc.text("Profit/Loss: " + document.getElementById("profit").textContent, 20, 70);
+
+  doc.save("report.pdf");
+}
+// Draw charts
+drawChart(categories);
+drawMonthlyChart(monthly);
+let months = Object.keys(monthly);
+
+if(months.length >= 2){
+  let last = monthly[months[months.length-1]];
+  let prev = monthly[months[months.length-2]];
+
+  let diff = last - prev;
+
+  console.log("Monthly Change:", diff);
+  }    
 /* CHART */
 function drawChart(data){
   const ctx = document.getElementById("chart");
@@ -314,6 +355,21 @@ function drawChart(data){
     data:{
       labels:Object.keys(data),
       datasets:[{ data:Object.values(data) }]
+      let monthlyChart;
+
+function drawMonthlyChart(data){
+  const ctx = document.getElementById("monthlyChart");
+
+  if(monthlyChart) monthlyChart.destroy();
+
+  monthlyChart = new Chart(ctx,{
+    type:"bar",
+    data:{
+      labels:Object.keys(data),
+      datasets:[{
+        label:"Monthly Spending",
+        data:Object.values(data)
+      }]
     }
   });
 }
