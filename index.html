@@ -172,7 +172,6 @@ async function addExpense(){
     created: new Date()
   });
 }
-
 async function addIncome(){
   const u = auth.currentUser;
 
@@ -183,7 +182,10 @@ async function addIncome(){
     amount: parseFloat(incomeAmount.value),
     created: new Date()
   });
-}
+
+  incomeDesc.value = "";
+  incomeAmount.value = "";
+  }
 
 // BUDGET
 async function setBudget(){
@@ -207,47 +209,53 @@ function loadData(){
   });
 
   // EXPENSES
-  db.collection("users").doc(u.uid).collection("expenses")
-  .onSnapshot(s=>{
-    exp=0; cat={}; mExp={};
+db.collection("users").doc(u.uid).collection("expenses")
+.onSnapshot(s=>{
+  exp = 0;
+  cat = {};
+  mExp = {};
+  list.innerHTML = "";
 
-    s.forEach(d=>{
-      let e=d.data();
-      exp+=e.amount;
+  s.forEach(d=>{
+    let e = d.data();
+    exp += e.amount;
 
-      cat[e.category]=(cat[e.category]||0)+e.amount;
+    cat[e.category] = (cat[e.category] || 0) + e.amount;
 
-      let k=e.created.toDate().toLocaleString('default',{month:'short',year:'numeric'});
-      mExp[k]=(mExp[k]||0)+e.amount;
-    });
+    let k = e.created.toDate().toLocaleString('default',{month:'short',year:'numeric'});
+    mExp[k] = (mExp[k] || 0) + e.amount;
 
-    expLoaded = true;
-
-    if(expLoaded && incLoaded){
-      update(exp,inc,cat,mExp,mInc);
-    }
+    let li = document.createElement("li");
+    li.innerHTML = `${e.desc} - ${e.amount}`;
+    list.appendChild(li);
   });
 
+  expLoaded = true;
+
+  if(expLoaded && incLoaded){
+    update(exp, inc, cat, mExp, mInc);
+  }
+});
   // INCOME
   db.collection("users").doc(u.uid).collection("income")
-  .onSnapshot(s=>{
-    inc=0; mInc={};
+   .onSnapshot(s=>{
+    inc = 0;
+    mInc = {};
 
-    s.forEach(d=>{
-      let i=d.data();
-      inc+=i.amount;
+  s.forEach(d=>{
+    let i = d.data();
+    inc += i.amount;
 
-      let k=i.created.toDate().toLocaleString('default',{month:'short',year:'numeric'});
-      mInc[k]=(mInc[k]||0)+i.amount;
-    });
-
-    incLoaded = true;
-
-    if(expLoaded && incLoaded){
-      update(exp,inc,cat,mExp,mInc);
-    }
+    let k = i.created.toDate().toLocaleString('default',{month:'short',year:'numeric'});
+    mInc[k] = (mInc[k] || 0) + i.amount;
   });
-}
+
+  incLoaded = true;
+
+  if(expLoaded && incLoaded){
+    update(exp, inc, cat, mExp, mInc);
+  }
+});
 
 // UPDATE
 function update(exp,inc,cat,mExp,mInc){
