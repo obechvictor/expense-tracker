@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+w<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -151,11 +151,18 @@ async function register(){
 }
 
 async function login(){
-  await auth.signInWithEmailAndPassword(email.value,password.value);
+  console.log("LOGIN CLICKED");
+
+  try{
+    await auth.signInWithEmailAndPassword(email.value,password.value);
+    console.log("LOGIN SUCCESS");
+  }catch(e){
+    console.error(e);
+    alert(e.message);
+    
+    function logout(){ auth.signOut(); }
 }
-
-function logout(){ auth.signOut(); }
-
+    
 // STATE
 auth.onAuthStateChanged(user=>{
   if(user){
