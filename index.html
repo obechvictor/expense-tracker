@@ -1,9 +1,8 @@
-w<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Finance Dashboard</title>
 
 <!-- Firebase -->
@@ -15,38 +14,34 @@ w<!DOCTYPE html>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body {
-  font-family: 'Times New Roman';
-  background: #0f172a;
-  color: #fff;
-  margin: 0;
+body{
+  font-family:'Times New Roman';
+  background:#0f172a;
+  color:#fff;
+  margin:0;
 }
-.container { padding: 15px; }
-.card {
-  background: #1e293b;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 10px;
+.container{padding:15px;}
+.card{
+  background:#1e293b;
+  padding:15px;
+  margin-bottom:15px;
+  border-radius:10px;
 }
-input, select, button {
-  width: 100%;
-  padding: 10px;
-  margin: 5px 0;
-  border: none;
-  border-radius: 6px;
+input,select,button{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border:none;
+  border-radius:6px;
 }
-button {
-  background: #22c55e;
-  color: #fff;
-  font-weight: bold;
-}
-canvas { margin-top: 10px; }
+button{background:#22c55e;color:#fff;font-weight:bold;}
+canvas{margin-top:10px;}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
+<!-- AUTH -->
 <div id="auth" class="container">
   <h2>Login</h2>
   <input id="email" placeholder="Email">
@@ -89,7 +84,7 @@ canvas { margin-top: 10px; }
 
 <div class="card">
   <h3>Budget</h3>
-  <input id="budgetInput">
+  <input id="budgetInput" placeholder="Enter budget">
   <button onclick="setBudget()">Save Budget</button>
   <p>Budget: <span id="budget">0</span></p>
 </div>
@@ -123,7 +118,7 @@ canvas { margin-top: 10px; }
 
 <script>
 
-// FIREBASE CONFIG
+// 🔥 FIREBASE CONFIG (YOUR REAL ONE)
 const firebaseConfig = {
   apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
   authDomain: "expense-tracker-2ee7b.firebaseapp.com",
@@ -138,47 +133,62 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// Charts
 let categoryChart, monthlyChart, dailyChart, trendChart;
-let expLoaded=false, incLoaded=false;
 
-// AUTH
+// Sync flags
+let expLoaded = false;
+let incLoaded = false;
+
+// AUTH FUNCTIONS
 async function register(){
-  let u = await auth.createUserWithEmailAndPassword(email.value,password.value);
-  await db.collection("users").doc(u.user.uid).set({
-    email: email.value,
-    budget:0
-  });
+  try{
+    const user = await auth.createUserWithEmailAndPassword(email.value,password.value);
+
+    await db.collection("users").doc(user.user.uid).set({
+      email: email.value,
+      budget: 0
+    });
+
+    alert("Registered successfully");
+
+  }catch(e){
+    alert(e.message);
+  }
 }
 
 async function login(){
-  console.log("LOGIN CLICKED");
-
   try{
     await auth.signInWithEmailAndPassword(email.value,password.value);
-    console.log("LOGIN SUCCESS");
   }catch(e){
-    console.error(e);
     alert(e.message);
-    
-    function logout(){ auth.signOut(); }
+  }
 }
-    
-// STATE
+
+function logout(){
+  auth.signOut();
+}
+
+// AUTH STATE
 auth.onAuthStateChanged(user=>{
   if(user){
-    authDiv.style.display="none";
-    app.style.display="block";
+    document.getElementById("auth").style.display = "none";
+    document.getElementById("app").style.display = "block";
+
     loadData();
   } else {
-    authDiv.style.display="block";
-    app.style.display="none";
+    document.getElementById("auth").style.display = "block";
+    document.getElementById("app").style.display = "none";
   }
 });
 
 // ADD DATA
 function addExpense(){
-  db.collection("users").doc(auth.currentUser.uid)
-  .collection("expenses").add({
+  const u = auth.currentUser;
+
+  if(!amount.value) return alert("Enter amount");
+
+  db.collection("users").doc(u.uid).collection("expenses").add({
     desc: desc.value,
     amount: parseFloat(amount.value),
     category: category.value,
@@ -187,8 +197,11 @@ function addExpense(){
 }
 
 function addIncome(){
-  db.collection("users").doc(auth.currentUser.uid)
-  .collection("income").add({
+  const u = auth.currentUser;
+
+  if(!incomeAmount.value) return alert("Enter amount");
+
+  db.collection("users").doc(u.uid).collection("income").add({
     desc: incomeDesc.value || "Income",
     amount: parseFloat(incomeAmount.value),
     created: new Date()
@@ -197,51 +210,58 @@ function addIncome(){
 
 // BUDGET
 function setBudget(){
-  db.collection("users").doc(auth.currentUser.uid).set({
+  const u = auth.currentUser;
+
+  db.collection("users").doc(u.uid).set({
     budget: parseFloat(budgetInput.value)
   },{merge:true});
 }
 
 // LOAD DATA
 function loadData(){
-  console.log("LOAD DATA RUNNING");
-  let u = auth.currentUser;
+
+  const u = auth.currentUser;
+
   let exp=0, inc=0, cat={}, mExp={}, mInc={};
 
+  // Budget
   db.collection("users").doc(u.uid).onSnapshot(doc=>{
     budget.textContent = doc.data().budget || 0;
   });
 
+  // Expenses
   db.collection("users").doc(u.uid).collection("expenses")
-  .onSnapshot(s=>{
-    exp=0; cat={}; mExp={};
+  .onSnapshot(snapshot=>{
+    exp = 0; cat = {}; mExp = {};
 
-    s.forEach(d=>{
-      let e=d.data();
-      exp+=e.amount;
-      cat[e.category]=(cat[e.category]||0)+e.amount;
+    snapshot.forEach(doc=>{
+      let e = doc.data();
+      exp += e.amount;
 
-      let k=e.created.toDate().toLocaleString('default',{month:'short',year:'numeric'});
-      mExp[k]=(mExp[k]||0)+e.amount;
+      cat[e.category] = (cat[e.category] || 0) + e.amount;
+
+      let month = e.created.toDate().toLocaleString('default',{month:'short',year:'numeric'});
+      mExp[month] = (mExp[month] || 0) + e.amount;
     });
 
-    expLoaded=true;
+    expLoaded = true;
     if(expLoaded && incLoaded) update(exp,inc,cat,mExp,mInc);
   });
 
+  // Income
   db.collection("users").doc(u.uid).collection("income")
-  .onSnapshot(s=>{
-    inc=0; mInc={};
+  .onSnapshot(snapshot=>{
+    inc = 0; mInc = {};
 
-    s.forEach(d=>{
-      let i=d.data();
-      inc+=i.amount;
+    snapshot.forEach(doc=>{
+      let i = doc.data();
+      inc += i.amount;
 
-      let k=i.created.toDate().toLocaleString('default',{month:'short',year:'numeric'});
-      mInc[k]=(mInc[k]||0)+i.amount;
+      let month = i.created.toDate().toLocaleString('default',{month:'short',year:'numeric'});
+      mInc[month] = (mInc[month] || 0) + i.amount;
     });
 
-    incLoaded=true;
+    incLoaded = true;
     if(expLoaded && incLoaded) update(exp,inc,cat,mExp,mInc);
   });
 }
@@ -253,35 +273,40 @@ function update(exp,inc,cat,mExp,mInc){
   expenseTotal.textContent = exp;
 
   let profitVal = inc - exp;
-  profit.textContent = profitVal>=0 ? "Profit: "+profitVal : "Loss: "+Math.abs(profitVal);
+  profit.textContent = profitVal >= 0 ? "Profit: " + profitVal : "Loss: " + Math.abs(profitVal);
 
-  let b = parseFloat(budget.textContent)||0;
+  let b = parseFloat(budget.textContent) || 0;
   let remain = b - exp;
-  budgetStatus.textContent = remain>=0 ? "Remaining: "+remain : "Overspent: "+Math.abs(remain);
+  budgetStatus.textContent = remain >= 0 ? "Remaining: " + remain : "Overspent: " + Math.abs(remain);
 
-  health.textContent = inc>exp ? "Healthy" : "Risk";
+  health.textContent = inc > exp ? "Healthy" : "Risk";
 
-  let rate = inc>0 ? ((inc-exp)/inc*100).toFixed(1) : 0;
-  savingsRate.textContent = "Savings Rate: "+rate+"%";
+  let rate = inc > 0 ? ((inc - exp) / inc * 100).toFixed(1) : 0;
+  savingsRate.textContent = "Savings Rate: " + rate + "%";
 
   drawCategory(cat);
   drawMonthly(mExp,mInc);
-  drawDailyChart();
+  drawDaily();
   drawTrend(mExp,mInc);
 }
 
 // CHARTS
 function drawCategory(data){
   if(categoryChart) categoryChart.destroy();
-  categoryChart = new Chart(categoryChart=document.getElementById("categoryChart"),{
+
+  categoryChart = new Chart(document.getElementById("categoryChart"),{
     type:"pie",
-    data:{labels:Object.keys(data),datasets:[{data:Object.values(data)}]}
+    data:{
+      labels:Object.keys(data),
+      datasets:[{data:Object.values(data)}]
+    }
   });
 }
 
 function drawMonthly(exp,inc){
   if(monthlyChart) monthlyChart.destroy();
-  let labels=[...new Set([...Object.keys(exp),...Object.keys(inc)])];
+
+  let labels = [...new Set([...Object.keys(exp),...Object.keys(inc)])];
 
   monthlyChart = new Chart(document.getElementById("monthlyChart"),{
     type:"bar",
@@ -295,15 +320,16 @@ function drawMonthly(exp,inc){
   });
 }
 
-function drawDailyChart(){
-  let daily={};
+function drawDaily(){
+  let daily = {};
 
   db.collection("users").doc(auth.currentUser.uid)
-  .collection("expenses").get().then(s=>{
-    s.forEach(d=>{
-      let e=d.data();
-      let day=e.created.toDate().toLocaleDateString();
-      daily[day]=(daily[day]||0)+e.amount;
+  .collection("expenses").get().then(snapshot=>{
+
+    snapshot.forEach(doc=>{
+      let e = doc.data();
+      let day = e.created.toDate().toLocaleDateString();
+      daily[day] = (daily[day] || 0) + e.amount;
     });
 
     if(dailyChart) dailyChart.destroy();
@@ -316,13 +342,14 @@ function drawDailyChart(){
       }
     });
 
-    dailySummary.textContent="Days tracked: "+Object.keys(daily).length;
+    dailySummary.textContent = "Days tracked: " + Object.keys(daily).length;
   });
 }
 
 function drawTrend(exp,inc){
   if(trendChart) trendChart.destroy();
-  let labels=[...new Set([...Object.keys(exp),...Object.keys(inc)])];
+
+  let labels = [...new Set([...Object.keys(exp),...Object.keys(inc)])];
 
   trendChart = new Chart(document.getElementById("trendChart"),{
     type:"line",
