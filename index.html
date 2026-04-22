@@ -1,58 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Finance SaaS</title>
+
+<title>Finance Dashboard</title>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-<!-- Chart.js -->
+<!-- Charts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-  margin:0;
-  font-family:'Times New Roman';
-  font-size:12pt;
-  background:#0f172a;
-  color:#fff;
+body {
+  font-family: 'Times New Roman';
+  background: #0f172a;
+  color: #fff;
+  margin: 0;
 }
-.container{padding:15px;}
-.card{
-  background:#1e293b;
-  padding:15px;
-  margin-bottom:15px;
-  border-radius:10px;
+.container { padding: 15px; }
+.card {
+  background: #1e293b;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 10px;
 }
-input,select,button{
-  width:100%;
-  padding:10px;
-  margin:5px 0;
-  border:none;
-  border-radius:6px;
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  border: none;
+  border-radius: 6px;
 }
-button{background:#22c55e;color:#fff;font-weight:bold;}
-ul{list-style:none;padding:0;}
-li{
-  background:#334155;
-  padding:10px;
-  margin:5px 0;
-  border-radius:6px;
-  display:flex;
-  justify-content:space-between;
+button {
+  background: #22c55e;
+  color: #fff;
+  font-weight: bold;
 }
-table{width:100%;}
-td,th{padding:8px;}
+canvas { margin-top: 10px; }
 </style>
 </head>
 
 <body>
 
-<!-- AUTH -->
+<!-- LOGIN -->
 <div id="auth" class="container">
   <h2>Login</h2>
   <input id="email" placeholder="Email">
@@ -67,74 +61,69 @@ td,th{padding:8px;}
 <button onclick="logout()">Logout</button>
 
 <div class="card">
-<h3>Add Income</h3>
-<input id="incomeDesc" placeholder="Source">
-<input id="incomeAmount" type="number">
-<button onclick="addIncome()">Add Income</button>
+  <h3>Add Income</h3>
+  <input id="incomeDesc" placeholder="Source">
+  <input id="incomeAmount" type="number">
+  <button onclick="addIncome()">Add Income</button>
 </div>
 
 <div class="card">
-<h3>Add Expense</h3>
-<input id="desc" placeholder="Description">
-<input id="amount" type="number">
-<select id="category">
-<option>Rent</option><option>Food</option><option>Water</option>
-<option>Electricity</option><option>Garbage</option>
-<option>Parents</option><option>Household Items</option>
-<option>Clothing</option><option>Savings</option>
-<option>WiFi</option><option>Miscellaneous</option>
-</select>
-<button onclick="addExpense()">Add</button>
+  <h3>Add Expense</h3>
+  <input id="desc" placeholder="Description">
+  <input id="amount" type="number">
+  <select id="category">
+    <option>Rent</option>
+    <option>Food</option>
+    <option>Water</option>
+    <option>Electricity</option>
+    <option>Garbage</option>
+    <option>Parents</option>
+    <option>Household Items</option>
+    <option>Clothing</option>
+    <option>Savings</option>
+    <option>WiFi</option>
+    <option>Miscellaneous</option>
+  </select>
+  <button onclick="addExpense()">Add Expense</button>
 </div>
 
 <div class="card">
-<h3>Budget</h3>
-<input id="budgetInput" placeholder="Enter budget">
-<button onclick="setBudget()">Save</button>
-<p>Budget: <span id="budget">0</span></p>
+  <h3>Budget</h3>
+  <input id="budgetInput">
+  <button onclick="setBudget()">Save Budget</button>
+  <p>Budget: <span id="budget">0</span></p>
 </div>
 
 <div class="card">
-<h3>Dashboard</h3>
-<p>Income: <span id="incomeTotal">0</span></p>
-<p>Expenses: <span id="expenseTotal">0</span></p>
-<p id="profit"></p>
-<p id="budgetStatus"></p>
-<p id="health"></p>
-<canvas id="categoryChart"></canvas>
+  <h3>Dashboard</h3>
+  <p>Income: <span id="incomeTotal">0</span></p>
+  <p>Expenses: <span id="expenseTotal">0</span></p>
+  <p id="profit"></p>
+  <p id="budgetStatus"></p>
+  <p id="health"></p>
+  <p id="savingsRate"></p>
+  <canvas id="categoryChart"></canvas>
 </div>
 
 <div class="card">
-<h3>Monthly Report</h3>
-<p id="monthlySummary"></p>
-<p id="monthlyComparison"></p>
-<canvas id="monthlyChart"></canvas>
+  <h3>Monthly Report</h3>
+  <p id="monthlySummary"></p>
+  <p id="monthlyComparison"></p>
+  <canvas id="monthlyChart"></canvas>
 </div>
 
 <div class="card">
-<h3>Backups</h3>
-<button onclick="createBackup()">Backup Now</button>
-<ul id="backupList"></ul>
-</div>
-
-<div class="card">
-<h3>Expenses</h3>
-<ul id="list"></ul>
-</div>
-
-<div class="card" id="adminPanel" style="display:none;">
-<h3>Admin Panel</h3>
-<table>
-<thead><tr><th>Email</th><th>Role</th><th>Action</th></tr></thead>
-<tbody id="usersList"></tbody>
-</table>
+  <h3>Advanced Reports</h3>
+  <p id="dailySummary"></p>
+  <canvas id="dailyChart"></canvas>
+  <canvas id="trendChart"></canvas>
 </div>
 
 </div>
 
 <script>
 
-// ✅ FULL FIREBASE CONFIG
+// FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
   authDomain: "expense-tracker-2ee7b.firebaseapp.com",
@@ -149,108 +138,93 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let categoryChart, monthlyChart;
+let categoryChart, monthlyChart, dailyChart, trendChart;
+let expLoaded=false, incLoaded=false;
 
 // AUTH
 async function register(){
-  try{
-    const user = await auth.createUserWithEmailAndPassword(email.value,password.value);
-
-    await db.collection("users").doc(user.user.uid).set({
-      email: email.value,
-      role: "user",
-      budget: 0
-    });
-
-  }catch(e){ alert(e.message); }
+  let u = await auth.createUserWithEmailAndPassword(email.value,password.value);
+  await db.collection("users").doc(u.user.uid).set({
+    email: email.value,
+    budget:0
+  });
 }
 
 async function login(){
-  try{
-    await auth.signInWithEmailAndPassword(email.value,password.value);
-  }catch(e){ alert(e.message); }
+  await auth.signInWithEmailAndPassword(email.value,password.value);
 }
 
 function logout(){ auth.signOut(); }
 
-// AUTH STATE
+// STATE
 auth.onAuthStateChanged(user=>{
   if(user){
-    document.getElementById("auth").style.display="none";
-    document.getElementById("app").style.display="block";
-
+    authDiv.style.display="none";
+    app.style.display="block";
     loadData();
-    loadAdmin();
-    loadBackups();
-
-  }else{
-    document.getElementById("auth").style.display="block";
-    document.getElementById("app").style.display="none";
+  } else {
+    authDiv.style.display="block";
+    app.style.display="none";
   }
 });
 
-// ADD
-async function addExpense(){
-  const u=auth.currentUser;
-  await db.collection("users").doc(u.uid).collection("expenses").add({
-    desc:desc.value,
-    amount:+amount.value,
-    category:category.value,
-    created:new Date()
+// ADD DATA
+function addExpense(){
+  db.collection("users").doc(auth.currentUser.uid)
+  .collection("expenses").add({
+    desc: desc.value,
+    amount: parseFloat(amount.value),
+    category: category.value,
+    created: new Date()
   });
 }
 
-async function addIncome(){
-  const u=auth.currentUser;
-  await db.collection("users").doc(u.uid).collection("income").add({
-    desc:incomeDesc.value,
-    amount:+incomeAmount.value,
-    created:new Date()
+function addIncome(){
+  db.collection("users").doc(auth.currentUser.uid)
+  .collection("income").add({
+    desc: incomeDesc.value || "Income",
+    amount: parseFloat(incomeAmount.value),
+    created: new Date()
   });
 }
 
 // BUDGET
-async function setBudget(){
-  const u=auth.currentUser;
-  await db.collection("users").doc(u.uid).set({
-    budget:+budgetInput.value
+function setBudget(){
+  db.collection("users").doc(auth.currentUser.uid).set({
+    budget: parseFloat(budgetInput.value)
   },{merge:true});
 }
 
 // LOAD DATA
 function loadData(){
-  const u=auth.currentUser;
 
-  let exp=0,inc=0,cat={},mExp={},mInc={};
+  let u = auth.currentUser;
+  let exp=0, inc=0, cat={}, mExp={}, mInc={};
 
   db.collection("users").doc(u.uid).onSnapshot(doc=>{
-    budget.textContent=doc.data().budget||0;
+    budget.textContent = doc.data().budget || 0;
   });
 
   db.collection("users").doc(u.uid).collection("expenses")
   .onSnapshot(s=>{
-    exp=0;cat={};mExp={};list.innerHTML="";
+    exp=0; cat={}; mExp={};
 
     s.forEach(d=>{
       let e=d.data();
       exp+=e.amount;
-
       cat[e.category]=(cat[e.category]||0)+e.amount;
 
       let k=e.created.toDate().toLocaleString('default',{month:'short',year:'numeric'});
       mExp[k]=(mExp[k]||0)+e.amount;
-
-      let li=document.createElement("li");
-      li.innerHTML=`${e.desc} - ${e.amount}`;
-      list.appendChild(li);
     });
 
-    update(exp,inc,cat,mExp,mInc);
+    expLoaded=true;
+    if(expLoaded && incLoaded) update(exp,inc,cat,mExp,mInc);
   });
 
   db.collection("users").doc(u.uid).collection("income")
   .onSnapshot(s=>{
-    inc=0;mInc={};
+    inc=0; mInc={};
 
     s.forEach(d=>{
       let i=d.data();
@@ -260,65 +234,49 @@ function loadData(){
       mInc[k]=(mInc[k]||0)+i.amount;
     });
 
-    update(exp,inc,cat,mExp,mInc);
+    incLoaded=true;
+    if(expLoaded && incLoaded) update(exp,inc,cat,mExp,mInc);
   });
 }
 
-// UPDATE DASHBOARD
+// UPDATE UI
 function update(exp,inc,cat,mExp,mInc){
 
-  expenseTotal.textContent=exp;
-  incomeTotal.textContent=inc;
+  incomeTotal.textContent = inc;
+  expenseTotal.textContent = exp;
 
-  let profitVal=inc-exp;
-  profit.textContent=profitVal>=0?"Profit: "+profitVal:"Loss: "+Math.abs(profitVal);
+  let profitVal = inc - exp;
+  profit.textContent = profitVal>=0 ? "Profit: "+profitVal : "Loss: "+Math.abs(profitVal);
 
-  let bal=(parseFloat(budget.textContent)||0)-exp;
-  budgetStatus.textContent=bal>=0?"Remaining: "+bal:"Overspent: "+Math.abs(bal);
+  let b = parseFloat(budget.textContent)||0;
+  let remain = b - exp;
+  budgetStatus.textContent = remain>=0 ? "Remaining: "+remain : "Overspent: "+Math.abs(remain);
 
-  health.textContent=inc>exp?"Status: Healthy":"Status: Risk";
+  health.textContent = inc>exp ? "Healthy" : "Risk";
 
-  // Monthly
-  let months=Object.keys(mExp);
-  if(months.length){
-    let cur=months[months.length-1];
-    monthlySummary.textContent="Current ("+cur+"): "+(mExp[cur]||0);
-  }
+  let rate = inc>0 ? ((inc-exp)/inc*100).toFixed(1) : 0;
+  savingsRate.textContent = "Savings Rate: "+rate+"%";
 
-  if(months.length>=2){
-    let prev=mExp[months[months.length-2]];
-    let curr=mExp[months[months.length-1]];
-    let growth=((curr-prev)/prev)*100;
-    monthlyComparison.textContent="Growth: "+growth.toFixed(1)+"%";
-  }
-
-  drawCat(cat);
-  drawMonth(mExp,mInc);
+  drawCategory(cat);
+  drawMonthly(mExp,mInc);
+  drawDailyChart();
+  drawTrend(mExp,mInc);
 }
 
 // CHARTS
-function drawCat(data){
+function drawCategory(data){
   if(categoryChart) categoryChart.destroy();
-
-  const ctx=document.getElementById("categoryChart");
-
-  categoryChart=new Chart(ctx,{
+  categoryChart = new Chart(categoryChart=document.getElementById("categoryChart"),{
     type:"pie",
-    data:{
-      labels:Object.keys(data),
-      datasets:[{data:Object.values(data)}]
-    }
+    data:{labels:Object.keys(data),datasets:[{data:Object.values(data)}]}
   });
 }
 
-function drawMonth(exp,inc){
+function drawMonthly(exp,inc){
   if(monthlyChart) monthlyChart.destroy();
-
-  const ctx=document.getElementById("monthlyChart");
-
   let labels=[...new Set([...Object.keys(exp),...Object.keys(inc)])];
 
-  monthlyChart=new Chart(ctx,{
+  monthlyChart = new Chart(document.getElementById("monthlyChart"),{
     type:"bar",
     data:{
       labels:labels,
@@ -330,79 +288,45 @@ function drawMonth(exp,inc){
   });
 }
 
-// BACKUP
-async function createBackup(){
-  const u=auth.currentUser;
+function drawDailyChart(){
+  let daily={};
 
-  const expSnap=await db.collection("users").doc(u.uid).collection("expenses").get();
-  const incSnap=await db.collection("users").doc(u.uid).collection("income").get();
-
-  let exp=[],inc=[];
-  expSnap.forEach(d=>exp.push(d.data()));
-  incSnap.forEach(d=>inc.push(d.data()));
-
-  let date=new Date().toISOString().split("T")[0];
-
-  await db.collection("users").doc(u.uid).collection("backups").doc(date).set({exp,inc});
-}
-
-// LOAD BACKUPS
-function loadBackups(){
-  const u=auth.currentUser;
-
-  db.collection("users").doc(u.uid).collection("backups")
-  .onSnapshot(s=>{
-    backupList.innerHTML="";
+  db.collection("users").doc(auth.currentUser.uid)
+  .collection("expenses").get().then(s=>{
     s.forEach(d=>{
-      let li=document.createElement("li");
-      li.innerHTML=`${d.id} <button onclick="restore('${d.id}')">Restore</button>`;
-      backupList.appendChild(li);
+      let e=d.data();
+      let day=e.created.toDate().toLocaleDateString();
+      daily[day]=(daily[day]||0)+e.amount;
     });
+
+    if(dailyChart) dailyChart.destroy();
+
+    dailyChart = new Chart(document.getElementById("dailyChart"),{
+      type:"line",
+      data:{
+        labels:Object.keys(daily),
+        datasets:[{label:"Daily Spending",data:Object.values(daily)}]
+      }
+    });
+
+    dailySummary.textContent="Days tracked: "+Object.keys(daily).length;
   });
 }
 
-// RESTORE
-async function restore(date){
-  const u=auth.currentUser;
+function drawTrend(exp,inc){
+  if(trendChart) trendChart.destroy();
+  let labels=[...new Set([...Object.keys(exp),...Object.keys(inc)])];
 
-  let doc=await db.collection("users").doc(u.uid).collection("backups").doc(date).get();
-  let data=doc.data();
-
-  let old=await db.collection("users").doc(u.uid).collection("expenses").get();
-  old.forEach(d=>d.ref.delete());
-
-  data.exp.forEach(async e=>{
-    await db.collection("users").doc(u.uid).collection("expenses").add(e);
-  });
-}
-
-// ADMIN
-function loadAdmin(){
-  const u=auth.currentUser;
-
-  db.collection("users").doc(u.uid).get().then(doc=>{
-    if(doc.data().role==="admin"){
-      adminPanel.style.display="block";
-
-      db.collection("users").onSnapshot(s=>{
-        usersList.innerHTML="";
-
-        s.forEach(d=>{
-          let row=document.createElement("tr");
-          row.innerHTML=`
-            <td>${d.data().email}</td>
-            <td>${d.data().role}</td>
-            <td><button onclick="makeAdmin('${d.id}')">Admin</button></td>
-          `;
-          usersList.appendChild(row);
-        });
-      });
+  trendChart = new Chart(document.getElementById("trendChart"),{
+    type:"line",
+    data:{
+      labels:labels,
+      datasets:[
+        {label:"Expenses",data:labels.map(l=>exp[l]||0)},
+        {label:"Income",data:labels.map(l=>inc[l]||0)}
+      ]
     }
   });
-}
-
-async function makeAdmin(id){
-  await db.collection("users").doc(id).update({role:"admin"});
 }
 
 </script>
