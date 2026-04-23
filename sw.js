@@ -1,15 +1,13 @@
-const CACHE_NAME = "finance-app-v3";
+const CACHE_NAME="finance-v1";
 
-self.addEventListener("install", e=>{
+self.addEventListener("install",e=>{
   e.waitUntil(
-    caches.open(CACHE_NAME).then(cache=>{
-      return cache.addAll(["./"]);
-    })
+    caches.open(CACHE_NAME).then(cache=>cache.addAll(["./"]))
   );
 });
 
-self.addEventListener("fetch", e=>{
+self.addEventListener("fetch",e=>{
   e.respondWith(
-    caches.match(e.request).then(res=> res || fetch(e.request))
+    caches.match(e.request).then(res=>res||fetch(e.request))
   );
 });
