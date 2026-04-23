@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
 <title>Finance Dashboard</title>
 
 <!-- Firebase -->
@@ -81,7 +82,11 @@ canvas{margin-top:10px;}
   </select>
   <button onclick="addExpense()">Add Expense</button>
 </div>
-
+<div class="card">
+  <h3>Expenses List</h3>
+  <ul id="expenseList"></ul>
+</div>
+  
 <div class="card">
   <h3>Budget</h3>
   <input id="budgetInput" placeholder="Enter budget">
@@ -117,7 +122,7 @@ canvas{margin-top:10px;}
 </div>
 
 <script>
-
+  
 // 🔥 FIREBASE CONFIG (YOUR REAL ONE)
 const firebaseConfig = {
   apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
@@ -228,26 +233,40 @@ function loadData(){
   db.collection("users").doc(u.uid).onSnapshot(doc=>{
     budget.textContent = doc.data().budget || 0;
   });
+ function setBudget(){
+  const u = auth.currentUser;
 
+  let val = parseFloat(budgetInput.value);
+
+  if(isNaN(val)) return alert("Enter valid number");
+
+  db.collection("users").doc(u.uid).set({
+    budget: val
+  },{merge:true});
+
+  alert("Budget updated");
+ }
   // Expenses
-  db.collection("users").doc(u.uid).collection("expenses")
-  .onSnapshot(snapshot=>{
-    exp = 0; cat = {}; mExp = {};
+  let list = document.getElementById("expenseList");
+list.innerHTML = "";
 
-    snapshot.forEach(doc=>{
-      let e = doc.data();
-      exp += e.amount;
+snapshot.forEach(doc=>{
+  let e = doc.data();
+  exp += e.amount;
 
-      cat[e.category] = (cat[e.category] || 0) + e.amount;
-
-      let month = e.created.toDate().toLocaleString('default',{month:'short',year:'numeric'});
-      mExp[month] = (mExp[month] || 0) + e.amount;
-    });
-
-    expLoaded = true;
-    if(expLoaded && incLoaded) update(exp,inc,cat,mExp,mInc);
+  let li = document.createElement("li");
+  li.innerHTML = `
+    ${e.desc} - ${e.amount}
+    <button onclick="deleteExpense('${doc.id}')">❌</button>
+  `;
+  list.appendChild(li);
   });
+function deleteExpense(id){
+  const u = auth.currentUser;
 
+  db.collection("users").doc(u.uid)
+    .collection("expenses").doc(id).delete();
+}
   // Income
   db.collection("users").doc(u.uid).collection("income")
   .onSnapshot(snapshot=>{
@@ -265,7 +284,26 @@ function loadData(){
     if(expLoaded && incLoaded) update(exp,inc,cat,mExp,mInc);
   });
 }
+let ilist = document.getElementById("incomeList");
+ilist.innerHTML = "";
 
+snapshot.forEach(doc=>{
+  let i = doc.data();
+  inc += i.amount;
+
+  let li = document.createElement("li");
+  li.innerHTML = `
+    ${i.desc} - ${i.amount}
+    <button onclick="deleteIncome('${doc.id}')">❌</button>
+  `;
+  ilist.appendChild(li);
+});
+  function deleteIncome(id){
+  const u = auth.currentUser;
+
+  db.collection("users").doc(u.uid)
+    .collection("income").doc(id).delete();
+                }
 // UPDATE UI
 function update(exp,inc,cat,mExp,mInc){
 
@@ -360,6 +398,9 @@ function drawTrend(exp,inc){
         {label:"Income",data:labels.map(l=>inc[l]||0)}
       ]
     }
+  });
+  if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
   });
 }
 
