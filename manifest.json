@@ -1,11 +1,10 @@
 {
-  "name": "Finance SaaS",
-  "short_name": "Finance",
-  "start_url": "./index.html",
+  "name": "Finance Pro Dashboard",
+  "short_name": "FinancePro",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#0f172a",
-  "theme_color": "#22c55e",
-  "orientation": "portrait",
+  "theme_color": "#0f172a",
   "icons": [
     {
       "src": "icon-192.png",
