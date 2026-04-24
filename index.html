@@ -101,209 +101,237 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+<script>
 
+// INIT
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let pieChart, monthlyChart, dailyChart;
-let mExp={}, mInc={}, dailyData={};
+let pieChart, monthlyChart, dailyChart, balanceChart;
 
 // AUTH
 async function register(){
-  let res = await auth.createUserWithEmailAndPassword(email.value,password.value);
-  await db.collection("users").doc(res.user.uid).set({role:"user",budget:0});
+  try{
+    const res = await auth.createUserWithEmailAndPassword(email.value,password.value);
+    await db.collection("users").doc(res.user.uid).set({
+      budget:0,
+      role:"user"
+    });
+  }catch(e){ alert(e.message); }
 }
 
 async function login(){
-  try {
-    const emailVal = document.getElementById("email").value;
-    const passVal = document.getElementById("password").value;
+  try{
+    await auth.signInWithEmailAndPassword(email.value,password.value);
+  }catch(e){ alert(e.message); }
+}
 
-    console.log("Trying login:", emailVal);
+function logout(){ auth.signOut(); }
 
-    await auth.signInWithEmailAndPassword(emailVal, passVal);
-
-    console.log("Login success");
-
-  } catch(e) {
-    console.error(e);
-    alert("Login error: " + e.message);
-  }
- }
-auth.onAuthStateChanged(user => {
-  console.log("Auth state:", user);
-
+auth.onAuthStateChanged(user=>{
   if(user){
-    document.getElementById("auth").style.display = "none";
-    document.getElementById("app").style.display = "block";
-  } else {
-    document.getElementById("auth").style.display = "block";
-    document.getElementById("app").style.display = "none";
+    document.getElementById("auth").style.display="none";
+    document.getElementById("app").style.display="block";
+    loadData();
+    loadAdmin();
+  }else{
+    document.getElementById("auth").style.display="block";
+    document.getElementById("app").style.display="none";
   }
-});  
+});
 
-// ADD DATA
+// ADD
 function addIncome(){
-  const desc = document.getElementById("incomeDesc").value;
-  const amount = Number(document.getElementById("incomeAmount").value);
+  db.collection("users").doc(auth.currentUser.uid)
+  .collection("income").add({
+    desc:incomeDesc.value,
+    amount:Number(incomeAmount.value),
+    date:new Date()
+  });
+}
 
-  if(!desc || !amount){
-    alert("Enter valid income");
-    return;
+function addExpense(){
+  db.collection("users").doc(auth.currentUser.uid)
+  .collection("expenses").add({
+    desc:desc.value,
+    amount:Number(amount.value),
+    category:category.value,
+    date:new Date()
+  });
+}
+
+function del(type,id){
+  db.collection("users").doc(auth.currentUser.uid)
+  .collection(type).doc(id).delete();
+}
+
+// DATA
+function loadData(){
+  const uid = auth.currentUser.uid;
+
+  let incomeTotalVal = 0;
+  let expenseTotalVal = 0;
+
+  let monthlyIncome = {};
+  let monthlyExpense = {};
+  let categoryData = {};
+  let dailyData = {};
+  let balanceTrend = [];
+
+  db.collection("users").doc(uid).collection("income")
+  .onSnapshot(snap=>{
+    incomeTotalVal = 0;
+    monthlyIncome = {};
+    incomeList.innerHTML = "";
+
+    snap.forEach(d=>{
+      let data = d.data();
+      let date = new Date(data.date);
+
+      incomeTotalVal += data.amount;
+
+      let m = date.getMonth();
+      monthlyIncome[m] = (monthlyIncome[m]||0)+data.amount;
+
+      incomeList.innerHTML += `
+      <li>${data.desc} - ${data.amount}
+      <button onclick="del('income','${d.id}')">x</button></li>`;
+    });
+
+    incomeTotal.innerText = incomeTotalVal;
+    updateDashboard();
+    drawCharts();
+  });
+
+  db.collection("users").doc(uid).collection("expenses")
+  .onSnapshot(snap=>{
+    expenseTotalVal = 0;
+    monthlyExpense = {};
+    categoryData = {};
+    dailyData = {};
+    expenseList.innerHTML = "";
+
+    snap.forEach(d=>{
+      let e = d.data();
+      let date = new Date(e.date);
+
+      expenseTotalVal += e.amount;
+
+      categoryData[e.category] = (categoryData[e.category]||0)+e.amount;
+
+      let m = date.getMonth();
+      monthlyExpense[m] = (monthlyExpense[m]||0)+e.amount;
+
+      let day = date.toLocaleDateString();
+      dailyData[day] = (dailyData[day]||0)+e.amount;
+
+      expenseList.innerHTML += `
+      <li>${e.desc} - ${e.amount}
+      <button onclick="del('expenses','${d.id}')">x</button></li>`;
+    });
+
+    expenseTotal.innerText = expenseTotalVal;
+
+    // BALANCE TREND
+    let balance = incomeTotalVal - expenseTotalVal;
+    balanceTrend.push(balance);
+
+    updateDashboard();
+    drawCharts();
+  });
+
+  function updateDashboard(){
+    let inc = Number(incomeTotal.innerText)||0;
+    let exp = Number(expenseTotal.innerText)||0;
+
+    let p = inc - exp;
+
+    profit.innerText = p>=0 ? "Profit: "+p : "Loss: "+Math.abs(p);
+
+    let r = "LOW";
+    if(exp>inc) r="HIGH";
+    else if(exp>inc*0.7) r="MEDIUM";
+
+    risk.innerText = "Risk: "+r;
   }
 
-  db.collection("users")
-    .doc(auth.currentUser.uid)
-    .collection("income")
-    .add({
-      desc: desc,
-      amount: amount,
-      date: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(()=>{
-      alert("Income added");
-    })
-    .catch(err=>{
-      alert(err.message);
-      console.error(err);
+  function drawCharts(){
+
+    // PIE
+    if(pieChart) pieChart.destroy();
+    pieChart = new Chart(document.getElementById("pieChart"),{
+      type:"pie",
+      data:{labels:Object.keys(categoryData),datasets:[{data:Object.values(categoryData)}]}
+    });
+
+    // MONTHLY
+    let months = [...new Set([...Object.keys(monthlyIncome),...Object.keys(monthlyExpense)])];
+
+    if(monthlyChart) monthlyChart.destroy();
+    monthlyChart = new Chart(document.getElementById("monthlyChart"),{
+      type:"bar",
+      data:{
+        labels:months,
+        datasets:[
+          {label:"Income",data:months.map(m=>monthlyIncome[m]||0)},
+          {label:"Expenses",data:months.map(m=>monthlyExpense[m]||0)}
+        ]
+      }
+    });
+
+    // DAILY
+    if(dailyChart) dailyChart.destroy();
+    dailyChart = new Chart(document.getElementById("dailyChart"),{
+      type:"line",
+      data:{
+        labels:Object.keys(dailyData),
+        datasets:[{label:"Daily Expenses",data:Object.values(dailyData)}]
+      }
     });
   }
-function addExpense(){
-db.collection("users").doc(auth.currentUser.uid).collection("expenses").add({
-desc:desc.value,amount:+amount.value,category:category.value,date:new Date()
-});
-}
-
-function setBudget(){
-db.collection("users").doc(auth.currentUser.uid).update({budget:+budgetInput.value});
-}
-
-// LOAD DATA
-function loadData(){
-let uid=auth.currentUser.uid;
-
-db.collection("users").doc(uid).onSnapshot(doc=>{
-budget.innerText=doc.data().budget||0;
-});
-
-db.collection("users").doc(uid).collection("income").onSnapshot(s=>{
-let total=0; mInc={}; incomeList.innerHTML="";
-s.forEach(d=>{
-let i=d.data(); total+=i.amount;
-let m=new Date(i.date.seconds*1000).getMonth();
-mInc[m]=(mInc[m]||0)+i.amount;
-});
-incomeTotal.innerText=total;
-update();
-});
-
-db.collection("users").doc(uid).collection("expenses").onSnapshot(s=>{
-let total=0,cat={}; mExp={}; dailyData={}; expenseList.innerHTML="";
-s.forEach(d=>{
-let e=d.data(); total+=e.amount;
-cat[e.category]=(cat[e.category]||0)+e.amount;
-
-let date=new Date(e.date.seconds*1000);
-let m=date.getMonth();
-let day=date.toLocaleDateString();
-
-mExp[m]=(mExp[m]||0)+e.amount;
-dailyData[day]=(dailyData[day]||0)+e.amount;
-});
-expenseTotal.innerText=total;
-update();
-drawCharts(cat);
-});
-}
-
-// UPDATE
-function update(){
-let inc=+incomeTotal.innerText||0;
-let exp=+expenseTotal.innerText||0;
-let p=inc-exp;
-
-profit.innerText=p>=0?"Profit:"+p:"Loss:"+Math.abs(p);
-
-// RISK
-let r="LOW";
-if(exp>inc) r="HIGH";
-else if(exp>inc*0.7) r="MEDIUM";
-risk.innerText="Risk: "+r;
-}
-
-// CHARTS
-function drawCharts(cat){
-
-if(pieChart) pieChart.destroy();
-pieChart=new Chart(pieChart,{
-type:'pie',
-data:{labels:Object.keys(cat),datasets:[{data:Object.values(cat)}]}
-});
-
-let labels=[...new Set([...Object.keys(mExp),...Object.keys(mInc)])];
-
-if(monthlyChart) monthlyChart.destroy();
-monthlyChart=new Chart(monthlyChart,{
-type:'bar',
-data:{labels:labels,datasets:[
-{label:'Expenses',data:labels.map(l=>mExp[l]||0)},
-{label:'Income',data:labels.map(l=>mInc[l]||0)}
-]}
-});
-
-if(dailyChart) dailyChart.destroy();
-dailyChart=new Chart(dailyChart,{
-type:'line',
-data:{labels:Object.keys(dailyData),
-datasets:[{label:'Daily',data:Object.values(dailyData)}]}
-});
 }
 
 // ADMIN
-function checkAdmin(){
-db.collection("users").doc(auth.currentUser.uid).get().then(doc=>{
-if(doc.data().role==="admin"){
-adminPanel.style.display="block";
-db.collection("users").onSnapshot(s=>{
-usersList.innerHTML="";
-s.forEach(d=>{
-usersList.innerHTML+=`<li>${d.id}
-<button onclick="makeAdmin('${d.id}')">Admin</button></li>`;
-});
-});
-}
-});
+function loadAdmin(){
+  db.collection("users").doc(auth.currentUser.uid).get().then(doc=>{
+    if(doc.data().role==="admin"){
+      document.getElementById("adminPanel").style.display="block";
+
+      db.collection("users").onSnapshot(snap=>{
+        usersList.innerHTML="";
+        snap.forEach(d=>{
+          usersList.innerHTML+=`
+          <li>${d.id}
+          <button onclick="makeAdmin('${d.id}')">Make Admin</button></li>`;
+        });
+      });
+    }
+  });
 }
 
 function makeAdmin(uid){
-db.collection("users").doc(uid).update({role:"admin"});
+  db.collection("users").doc(uid).update({role:"admin"});
 }
 
 // PDF
 async function generatePDF(){
-const { jsPDF } = window.jspdf;
-const doc = new jsPDF();
-let y=20;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
 
-doc.text("Finance Report",20,y); y+=10;
+  let y=20;
+  doc.text("Finance Report",20,y);
 
-let snap=await db.collection("users")
-.doc(auth.currentUser.uid)
-.collection("expenses").get();
+  const snap = await db.collection("users")
+  .doc(auth.currentUser.uid)
+  .collection("expenses").get();
 
-snap.forEach(d=>{
-let e=d.data();
-let date=new Date(e.date.seconds*1000).toLocaleDateString();
-doc.text(`${date} - ${e.desc} - ${e.amount}`,20,y);
-y+=8;
-});
+  snap.forEach(d=>{
+    let e=d.data();
+    y+=10;
+    doc.text(`${e.desc} - ${e.amount}`,20,y);
+  });
 
-doc.save("report.pdf");
-}
-
-// SW
-if("serviceWorker" in navigator){
-navigator.serviceWorker.register("sw.js");
+  doc.save("report.pdf");
 }
 
 </script>
