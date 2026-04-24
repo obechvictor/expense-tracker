@@ -114,20 +114,33 @@ async function register(){
   await db.collection("users").doc(res.user.uid).set({role:"user",budget:0});
 }
 
-async function login(){ await auth.signInWithEmailAndPassword(email.value,password.value); }
-function logout(){ auth.signOut(); }
+async function login(){
+  try {
+    const emailVal = document.getElementById("email").value;
+    const passVal = document.getElementById("password").value;
 
-auth.onAuthStateChanged(user=>{
-  if(user){
-    auth.style.display="none";
-    app.style.display="block";
-    loadData();
-    checkAdmin();
-  }else{
-    auth.style.display="block";
-    app.style.display="none";
+    console.log("Trying login:", emailVal);
+
+    await auth.signInWithEmailAndPassword(emailVal, passVal);
+
+    console.log("Login success");
+
+  } catch(e) {
+    console.error(e);
+    alert("Login error: " + e.message);
   }
-});
+ }
+auth.onAuthStateChanged(user => {
+  console.log("Auth state:", user);
+
+  if(user){
+    document.getElementById("auth").style.display = "none";
+    document.getElementById("app").style.display = "block";
+  } else {
+    document.getElementById("auth").style.display = "block";
+    document.getElementById("app").style.display = "none";
+  }
+});  
 
 // ADD DATA
 function addIncome(){
