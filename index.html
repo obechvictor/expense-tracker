@@ -113,7 +113,7 @@ async function register(){
     const res = await auth.createUserWithEmailAndPassword(email.value,password.value);
     await db.collection("users").doc(res.user.uid).set({
       budget:0,
-      role:"user"
+      role:"admin"
     });
   }catch(e){ alert(e.message); }
 }
