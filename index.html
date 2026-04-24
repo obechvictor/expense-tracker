@@ -130,19 +130,25 @@ function register(){
 
 function login(){
   auth.signInWithEmailAndPassword(email.value,password.value)
-  .catch(e=>alert(e.message));
+  .then(()=>{
+    console.log("LOGIN SUCCESS");
+  })
+  .catch(e=>{
+    console.error(e);
+    alert(e.message);
+  });
 }
-
+  
 auth.onAuthStateChanged(user=>{
   if(user){
-    auth.style.display="none";
-    app.style.display="block";
+    document.getElementById("auth").style.display="none";
+    document.getElementById("app").style.display="block";
     loadData();
   }else{
-    auth.style.display="block";
-    app.style.display="none";
+    document.getElementById("auth").style.display="block";
+    document.getElementById("app").style.display="none";
   }
-});
+})
 
 // LOAD DATA
 function loadData(){
