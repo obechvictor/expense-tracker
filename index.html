@@ -144,11 +144,30 @@ auth.onAuthStateChanged(user => {
 
 // ADD DATA
 function addIncome(){
-db.collection("users").doc(auth.currentUser.uid).collection("income").add({
-desc:incomeDesc.value,amount:+incomeAmount.value,date:new Date()
-});
-}
+  const desc = document.getElementById("incomeDesc").value;
+  const amount = Number(document.getElementById("incomeAmount").value);
 
+  if(!desc || !amount){
+    alert("Enter valid income");
+    return;
+  }
+
+  db.collection("users")
+    .doc(auth.currentUser.uid)
+    .collection("income")
+    .add({
+      desc: desc,
+      amount: amount,
+      date: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(()=>{
+      alert("Income added");
+    })
+    .catch(err=>{
+      alert(err.message);
+      console.error(err);
+    });
+  }
 function addExpense(){
 db.collection("users").doc(auth.currentUser.uid).collection("expenses").add({
 desc:desc.value,amount:+amount.value,category:category.value,date:new Date()
