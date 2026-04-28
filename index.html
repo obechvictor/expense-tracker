@@ -287,24 +287,16 @@ function loadData(){
   .onSnapshot(snap=>{
     expenses=[];
     let categories={};
-    let dailyTotals = {};
-    
+    let trend=[];
+
     snap.forEach(d=>{
-      let e = d.data(); 
-      e.id = d.id;
+      let e=d.data(); e.id=d.id;
       expenses.push(e);
 
-      categories[e.category] = (categories[e.category] || 0) + e.amount;
-
-      let day = new Date(e.date).toLocaleDateString();
-
-      dailyTotals[day] = (dailyTotals[day] || 0) + e.amount;
+      categories[e.category]=(categories[e.category]||0)+e.amount;
+      trend.push(e.amount);
     });
-    
-  db.collection("users").doc(uid).collection("expenses").add({
-  amount: val,
-  category: cat,
-  date: new Date().toISOString()   // ✅ ADD THIS
+
     let totalExpense=expenses.reduce((a,b)=>a+b.amount,0);
     let balanceVal=incomeTotal-totalExpense;
 
@@ -394,20 +386,12 @@ function drawDonut(cat){
     options:{cutout:"70%"}
   });
 }
-function drawLine(labels, values){
-  if(lineChart) lineChart.destroy();
 
-  lineChart = new Chart(lineChartCanvas, {
-    type: "line",
-    data: {
-      labels: labels,
-      datasets: [{
-        label: "Daily Expenses",
-        data: values,
-        fill: true,
-        tension: 0.4
-      }]
-    }
+function drawLine(trend){
+  if(lineChart) lineChart.destroy();
+  lineChart=new Chart(lineChartCanvas,{
+    type:"line",
+    data:{labels:trend.map((_,i)=>i+1),datasets:[{data:trend,fill:true,tension:0.4}]}
   });
 }
 
@@ -425,4 +409,4 @@ const editBtn=document.getElementById("editBtn");
 </script>
 
 </body>
-  </html>
+      </html>
