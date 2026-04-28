@@ -247,35 +247,34 @@ function toggleEdit(){
 }
 
 // CHARTS
-function drawCharts(){
-let daily = {};
+function drawChart(data){
+  const ctx = document.getElementById('chart');
 
-expenses.forEach(e=>{
-  if(!e.date) return; // ✅ skip broken data
+  if(chart) chart.destroy();
 
-  let d = e.created?.toDate ? e.created.toDate() : new Date(e.created);
-
-  if (isNaN(d)) return; // skip bad data
-
-  let day = d.toLocaleDateString(); // FULL DATE (correct)
-
-daily[day] = (daily[day] || 0) + e.amount;
-  
-  let labels=Object.keys(daily);
-  let values=Object.values(daily);
-
-  if(lineChart) lineChart.destroy();
-  lineChart=new Chart(lineChartCanvas,{
-    type:"line",
+  chart = new Chart(ctx,{
+    type:'line',
     data:{
-      labels:labels,
+      labels:Object.keys(data),
       datasets:[{
-        label:"Daily Expenses",
-        data:values,
-        fill:true
+        label:'Daily Expenses',
+        data:Object.values(data),
+        fill:true,
+        tension:0.4
       }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:true}
+      },
+      scales:{
+        x:{ticks:{color:'#ccc'}},
+        y:{ticks:{color:'#ccc'}}
+      }
     }
   });
+  }
 
   // DONUT
   let cat={};
