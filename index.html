@@ -394,22 +394,22 @@ function drawDonut(cat){
     options:{cutout:"70%"}
   });
 }
-function drawLine(trend){
+function drawLine(labels, values){
   if(lineChart) lineChart.destroy();
 
   lineChart = new Chart(lineChartCanvas, {
     type: "line",
     data: {
-      labels: trend.map((_, i) => "Day " + (i + 1)), // better labels
+      labels: labels,
       datasets: [{
-        label: "Daily Spending",   // ✅ THIS FIXES "undefined"
-        data: trend,
+        label: "Daily Expenses",
+        data: values,
         fill: true,
         tension: 0.4
       }]
     }
   });
- }
+}
 
 // ELEMENTS
 const records=document.getElementById("records");
