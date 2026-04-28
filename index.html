@@ -2,77 +2,69 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Finance Tracker</title>
 
-<link rel="manifest" href="manifest.json">
-
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
-<!-- Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{font-family:Arial;margin:0;background:#f1f5f9;}
-.wrapper{max-width:1100px;margin:auto;padding:20px;}
+body { font-family: Arial; margin:0; background:#f1f5f9; }
+.wrapper { max-width:900px; margin:auto; padding:20px; }
 
-.header{
+.header {
   background:linear-gradient(135deg,#22c55e,#16a34a);
-  color:white;padding:20px;border-radius:12px;
+  color:white; padding:20px; border-radius:10px;
 }
 
-.card{
-  background:white;padding:20px;margin-top:15px;
-  border-radius:12px;
+.card {
+  background:white; padding:15px; margin-top:15px;
+  border-radius:10px;
 }
 
-.item{
-  display:flex;justify-content:space-between;
-  padding:10px;border-bottom:1px solid #eee;
+input { width:100%; padding:8px; margin:5px 0; }
+button { padding:8px; border:none; border-radius:5px; margin-top:5px; }
+
+.item {
+  display:flex; justify-content:space-between;
+  border-bottom:1px solid #eee; padding:8px;
 }
 
-.delete-btn{display:none;}
-.item:hover .delete-btn{display:inline-block;}
-
-.minus{color:red;}
-.plus{color:green;}
-
-button{padding:8px;border:none;border-radius:6px;}
-input{width:100%;padding:8px;margin:5px 0;}
-
+.minus { color:red; }
+.plus { color:green; }
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
 <div id="auth" class="wrapper">
   <h2>Login</h2>
-  <input id="email">
-  <input id="password" type="password">
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
   <button onclick="register()">Register</button>
 </div>
 
+<!-- APP -->
 <div id="app" style="display:none">
 <div class="wrapper">
 
 <div class="header">
   <h2>Finance Dashboard</h2>
-  <button onclick="toggleEdit()" id="editBtn">Edit</button>
+  <button onclick="toggleEdit()">Toggle Edit</button>
 </div>
 
 <div class="card">
   <h3>Add Income</h3>
-  <input id="incomeAmount">
-  <button onclick="addIncome()">Add</button>
+  <input id="incomeAmount" placeholder="Amount">
+  <button onclick="addIncome()">Add Income</button>
 
   <h3>Add Expense</h3>
-  <input id="expenseAmount">
-  <input id="expenseCategory">
-  <button onclick="addExpense()">Add</button>
+  <input id="expenseAmount" placeholder="Amount">
+  <input id="expenseCategory" placeholder="Category">
+  <button onclick="addExpense()">Add Expense</button>
 </div>
 
 <div class="card">
@@ -81,17 +73,17 @@ input{width:100%;padding:8px;margin:5px 0;}
 </div>
 
 <div class="card">
-  <h2>Expenses: KES <span id="totalExpense">0</span></h2>
+  <h3>Expenses: KES <span id="totalExpense">0</span></h3>
   <canvas id="donutChart"></canvas>
 </div>
 
 <div class="card">
-  <h3>Expenses</h3>
+  <h3>Expense Records</h3>
   <div id="records"></div>
 </div>
 
 <div class="card">
-  <h3>Income</h3>
+  <h3>Income Records</h3>
   <div id="incomeList"></div>
 </div>
 
@@ -99,11 +91,6 @@ input{width:100%;padding:8px;margin:5px 0;}
 </div>
 
 <script>
-
-// SERVICE WORKER
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
 
 // FIREBASE CONFIG
 const firebaseConfig = {
@@ -116,7 +103,9 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let expenses=[], incomes=[], editMode=false;
+let incomes = [];
+let expenses = [];
+let editMode = false;
 let lineChart, donutChart;
 
 // AUTH
@@ -126,48 +115,55 @@ function login(){
 }
 
 function register(){
-  auth.createUserWithEmailAndPassword(email.value,password.value);
+  auth.createUserWithEmailAndPassword(email.value,password.value)
+  .catch(e=>alert(e.message));
 }
 
 auth.onAuthStateChanged(user=>{
   if(user){
-    authDiv.style.display="none";
-    app.style.display="block";
+    document.getElementById("auth").style.display="none";
+    document.getElementById("app").style.display="block";
     loadData();
   }
 });
 
-// ADD DATA
+// ADD INCOME
 function addIncome(){
-  let val=parseFloat(incomeAmount.value);
+  let val = Number(incomeAmount.value);
+  if(!val) return alert("Enter amount");
+
   db.collection("users").doc(auth.currentUser.uid)
   .collection("income").add({
-    amount:val,
-    date:new Date().toISOString()
+    amount: val,
+    date: new Date().toISOString()
   });
 }
 
+// ADD EXPENSE
 function addExpense(){
-  let val=parseFloat(expenseAmount.value);
-  let cat=expenseCategory.value;
+  let val = Number(expenseAmount.value);
+  let cat = expenseCategory.value;
+
+  if(!val || !cat) return alert("Fill all");
 
   db.collection("users").doc(auth.currentUser.uid)
   .collection("expenses").add({
-    amount:val,
-    category:cat,
-    date:new Date().toISOString()
+    amount: val,
+    category: cat,
+    date: new Date().toISOString()
   });
 }
 
 // LOAD DATA
 function loadData(){
-  let uid=auth.currentUser.uid;
+  let uid = auth.currentUser.uid;
 
   db.collection("users").doc(uid).collection("income")
   .onSnapshot(snap=>{
-    incomes=[];
+    incomes = [];
     snap.forEach(d=>{
-      let i=d.data(); i.id=d.id;
+      let i = d.data();
+      i.id = d.id;
       incomes.push(i);
     });
     updateUI();
@@ -175,9 +171,10 @@ function loadData(){
 
   db.collection("users").doc(uid).collection("expenses")
   .onSnapshot(snap=>{
-    expenses=[];
+    expenses = [];
     snap.forEach(d=>{
-      let e=d.data(); e.id=d.id;
+      let e = d.data();
+      e.id = d.id;
       expenses.push(e);
     });
     updateUI();
@@ -186,40 +183,43 @@ function loadData(){
 
 // UPDATE UI
 function updateUI(){
-  let incomeTotal=incomes.reduce((a,b)=>a+b.amount,0);
-  let expenseTotal=expenses.reduce((a,b)=>a+b.amount,0);
 
-  balance.innerText=incomeTotal-expenseTotal;
-  totalExpense.innerText=expenseTotal;
+  let incomeTotal = incomes.reduce((a,b)=>a + (Number(b.amount)||0),0);
+  let expenseTotal = expenses.reduce((a,b)=>a + (Number(b.amount)||0),0);
+
+  document.getElementById("balance").innerText = incomeTotal - expenseTotal;
+  document.getElementById("totalExpense").innerText = expenseTotal;
 
   renderList();
   drawCharts();
 }
 
-// LIST
+// RENDER LIST
 function renderList(){
+
+  let records = document.getElementById("records");
+  let incomeList = document.getElementById("incomeList");
+
   records.innerHTML="";
   incomeList.innerHTML="";
 
   expenses.forEach(e=>{
-    records.innerHTML+=`
+    records.innerHTML += `
     <div class="item">
-      <div>${e.category}</div>
-      <div>
-        <span class="minus">-KES ${e.amount}</span>
-        ${editMode?`<button onclick="deleteExpense('${e.id}')">❌</button>`:""}
-      </div>
+      <span>${e.category}</span>
+      <span class="minus">-KES ${e.amount}
+        ${editMode ? `<button onclick="deleteExpense('${e.id}')">❌</button>` : ""}
+      </span>
     </div>`;
   });
 
   incomes.forEach(i=>{
-    incomeList.innerHTML+=`
+    incomeList.innerHTML += `
     <div class="item">
-      <div>Income</div>
-      <div>
-        <span class="plus">+KES ${i.amount}</span>
-        ${editMode?`<button onclick="deleteIncome('${i.id}')">❌</button>`:""}
-      </div>
+      <span>Income</span>
+      <span class="plus">+KES ${i.amount}
+        ${editMode ? `<button onclick="deleteIncome('${i.id}')">❌</button>` : ""}
+      </span>
     </div>`;
   });
 }
@@ -235,59 +235,62 @@ function deleteIncome(id){
   .collection("income").doc(id).delete();
 }
 
-// EDIT
+// TOGGLE EDIT
 function toggleEdit(){
-  editMode=!editMode;
+  editMode = !editMode;
   renderList();
 }
 
 // CHARTS
 function drawCharts(){
 
-  // DAILY TREND
-  let daily={};
+  let daily = {};
 
   expenses.forEach(e=>{
-    let d=new Date(e.date).toLocaleDateString();
-    daily[d]=(daily[d]||0)+e.amount;
+    let d = new Date(e.date);
+    if(isNaN(d)) return;
+
+    let day = d.toLocaleDateString();
+    daily[day] = (daily[day] || 0) + e.amount;
   });
 
-  let labels=Object.keys(daily);
-  let values=Object.values(daily);
+  let labels = Object.keys(daily);
+  let values = Object.values(daily);
 
   if(lineChart) lineChart.destroy();
-  lineChart=new Chart(lineChartCanvas,{
+
+  lineChart = new Chart(document.getElementById("lineChart"),{
     type:"line",
     data:{
-      labels:labels,
+      labels: labels.length ? labels : ["No Data"],
       datasets:[{
         label:"Daily Expenses",
-        data:values,
-        fill:true
+        data: values,
+        fill:true,
+        tension:0.4
       }]
     }
   });
 
-  // DONUT
-  let cat={};
+  let cat = {};
   expenses.forEach(e=>{
-    cat[e.category]=(cat[e.category]||0)+e.amount;
+    cat[e.category] = (cat[e.category] || 0) + e.amount;
   });
 
   if(donutChart) donutChart.destroy();
-  donutChart=new Chart(donutChartCanvas,{
+
+  donutChart = new Chart(document.getElementById("donutChart"),{
     type:"doughnut",
     data:{
       labels:Object.keys(cat),
-      datasets:[{data:Object.values(cat)}]
+      datasets:[{
+        data:Object.values(cat)
+      }]
     }
   });
 }
 
-const authDiv=document.getElementById("auth");
-const app=document.getElementById("app");
-
 </script>
 
 </body>
- </html>
+</html>
