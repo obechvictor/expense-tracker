@@ -253,15 +253,14 @@ let daily = {};
 expenses.forEach(e=>{
   if(!e.date) return; // ✅ skip broken data
 
-  let d = new Date(e.date);
+  let d = e.created?.toDate ? e.created.toDate() : new Date(e.created);
 
-  if(isNaN(d)) return; // ✅ skip invalid date
+  if (isNaN(d)) return; // skip bad data
 
-  let day = d.toLocaleDateString();
+  let day = d.toLocaleDateString(); // FULL DATE (correct)
 
-  daily[day] = (daily[day] || 0) + e.amount;
-});
-
+daily[day] = (daily[day] || 0) + e.amount;
+  
   let labels=Object.keys(daily);
   let values=Object.values(daily);
 
