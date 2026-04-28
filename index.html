@@ -280,8 +280,13 @@ function drawCharts(){
     data:{
       labels:Object.keys(cat),
       datasets:[{data:Object.values(cat)}]
-    }
+  if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("SW registered"))
+      .catch(err => console.log("SW error", err));
   });
+  }
 }
 
 const authDiv=document.getElementById("auth");
