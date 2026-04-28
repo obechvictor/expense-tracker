@@ -2,111 +2,190 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance Pro</title>
 
-<title>Finance Tracker</title>
-  
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#22c55e">
-
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
-<!-- Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{font-family:"Times New Roman";margin:0;background:#f1f5f9;}
-.wrapper{max-width:1100px;margin:auto;padding:20px;}
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:#eef2f7;
+}
 
+/* HEADER */
 .header{
   background:linear-gradient(135deg,#22c55e,#16a34a);
-  color:white;padding:20px;border-radius:12px;
+  color:white;
+  padding:25px;
+  border-bottom-left-radius:20px;
+  border-bottom-right-radius:20px;
 }
+
+.header h2{margin:0}
+
+/* CARDS */
+.container{padding:15px}
 
 .card{
-  background:white;padding:20px;margin-top:15px;
+  background:white;
+  border-radius:15px;
+  padding:15px;
+  margin-top:15px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* DASHBOARD GRID */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.card-small{
+  padding:15px;
   border-radius:12px;
+  color:white;
 }
 
+.balance{background:#3b82f6}
+.income{background:#22c55e}
+.expense{background:#ef4444}
+
+/* LIST */
 .item{
-  display:flex;justify-content:space-between;
-  padding:10px;border-bottom:1px solid #eee;
+  display:flex;
+  justify-content:space-between;
+  padding:8px;
+  border-bottom:1px solid #eee;
 }
 
-.delete-btn{display:none;}
-.item:hover .delete-btn{display:inline-block;}
+/* FLOAT BUTTON */
+.fab{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#3b82f6;
+  color:white;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
 
-.minus{color:red;}
-.plus{color:green;}
+/* INPUT MODAL */
+.modal{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background:white;
+  padding:15px;
+  display:none;
+  border-top-left-radius:20px;
+  border-top-right-radius:20px;
+}
 
-button{padding:8px;border:none;border-radius:6px;}
-input{width:100%;padding:8px;margin:5px 0;}
-
+input{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+}
+button{
+  padding:10px;
+  width:100%;
+  border:none;
+  background:#22c55e;
+  color:white;
+  border-radius:5px;
+}
 </style>
 </head>
 
 <body>
 
-<div id="auth" class="wrapper">
-  <h2>Login</h2>
-  <input id="email">
-  <input id="password" type="password">
-  <button onclick="login()">Login</button>
-  <button onclick="register()">Register</button>
+<!-- LOGIN -->
+<div id="auth" style="padding:20px">
+<h2>Login</h2>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<button onclick="register()">Register</button>
 </div>
 
+<!-- APP -->
 <div id="app" style="display:none">
-<div class="wrapper">
 
 <div class="header">
-  <h2>Finance Dashboard</h2>
-  <button onclick="toggleEdit()" id="editBtn">Edit</button>
+<h2>Finance Dashboard</h2>
+<button onclick="toggleEdit()">Edit</button>
 </div>
 
+<div class="container">
+
+<!-- SUMMARY -->
+<div class="grid">
+<div class="card-small balance">
+<h4>Balance</h4>
+<h2>KES <span id="balance">0</span></h2>
+</div>
+
+<div class="card-small income">
+<h4>Income</h4>
+<h2>KES <span id="incomeTotal">0</span></h2>
+</div>
+
+<div class="card-small expense">
+<h4>Expenses</h4>
+<h2>KES <span id="totalExpense">0</span></h2>
+</div>
+</div>
+
+<!-- CHART -->
 <div class="card">
-  <h3>Add Income</h3>
-  <input id="incomeAmount">
-  <button onclick="addIncome()">Add</button>
-
-  <h3>Add Expense</h3>
-  <input id="expenseAmount">
-  <input id="expenseCategory">
-  <button onclick="addExpense()">Add</button>
+<h3>Balance Trend</h3>
+<canvas id="lineChart"></canvas>
 </div>
 
+<!-- DONUT -->
 <div class="card">
-  <h2>Balance: KES <span id="balance">0</span></h2>
-  <canvas id="lineChart"></canvas>
+<h3>Expense Structure</h3>
+<canvas id="donutChart"></canvas>
 </div>
 
+<!-- RECORDS -->
 <div class="card">
-  <h2>Expenses: KES <span id="totalExpense">0</span></h2>
-  <canvas id="donutChart"></canvas>
-</div>
-
-<div class="card">
-  <h3>Expenses</h3>
-  <div id="records"></div>
-</div>
-
-<div class="card">
-  <h3>Income</h3>
-  <div id="incomeList"></div>
+<h3>Recent Records</h3>
+<div id="records"></div>
 </div>
 
 </div>
+
+<!-- FLOAT BUTTON -->
+<div class="fab" onclick="openModal()">+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+<h3>Add Record</h3>
+
+<input id="amount" placeholder="Amount">
+<input id="category" placeholder="Category (leave empty for income)">
+
+<button onclick="saveRecord()">Save</button>
+<button onclick="closeModal()" style="background:#ef4444">Close</button>
+</div>
+
 </div>
 
 <script>
 
-// SERVICE WORKER
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
-
-// FIREBASE CONFIG
+// FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
   authDomain: "expense-tracker-2ee7b.firebaseapp.com",
@@ -117,7 +196,7 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let expenses=[], incomes=[], editMode=false;
+let incomes=[], expenses=[], editMode=false;
 let lineChart, donutChart;
 
 // AUTH
@@ -127,7 +206,8 @@ function login(){
 }
 
 function register(){
-  auth.createUserWithEmailAndPassword(email.value,password.value);
+  auth.createUserWithEmailAndPassword(email.value,password.value)
+  .catch(e=>alert(e.message));
 }
 
 auth.onAuthStateChanged(user=>{
@@ -138,106 +218,83 @@ auth.onAuthStateChanged(user=>{
   }
 });
 
-// ADD DATA
-function addIncome(){
-  let val=parseFloat(incomeAmount.value);
-  db.collection("users").doc(auth.currentUser.uid)
-  .collection("income").add({
-    amount:val,
-    date:new Date().toISOString()
-  });
-}
-
-function addExpense(){
-  let val = parseFloat(expenseAmount.value);
-  let cat = expenseCategory.value;
-
-  if(!val || !cat){
-    alert("Fill all fields");
-    return;
-  }
-
-  db.collection("users").doc(auth.currentUser.uid)
-  .collection("expenses").add({
-    amount: val,
-    category: cat,
-    date: new Date().toISOString() // ✅ REQUIRED
-  });
-}
-// LOAD DATA
+// LOAD
 function loadData(){
   let uid=auth.currentUser.uid;
 
   db.collection("users").doc(uid).collection("income")
   .onSnapshot(snap=>{
     incomes=[];
-    snap.forEach(d=>{
-      let i=d.data(); i.id=d.id;
-      incomes.push(i);
-    });
+    snap.forEach(d=>incomes.push({...d.data(),id:d.id}));
     updateUI();
   });
 
   db.collection("users").doc(uid).collection("expenses")
   .onSnapshot(snap=>{
     expenses=[];
-    snap.forEach(d=>{
-      let e=d.data(); e.id=d.id;
-      expenses.push(e);
-    });
+    snap.forEach(d=>expenses.push({...d.data(),id:d.id}));
     updateUI();
   });
 }
 
-// UPDATE UI
+// UPDATE
 function updateUI(){
+  let incomeTotal=incomes.reduce((a,b)=>a+(+b.amount||0),0);
+  let expenseTotal=expenses.reduce((a,b)=>a+(+b.amount||0),0);
 
-  let incomeTotal = incomes.reduce((a,b)=>a + (Number(b.amount) || 0), 0);
-  let expenseTotal = expenses.reduce((a,b)=>a + (Number(b.amount) || 0), 0);
-
-  document.getElementById("balance").innerText = incomeTotal - expenseTotal;
-  document.getElementById("totalExpense").innerText = expenseTotal;
+  balance.innerText=incomeTotal-expenseTotal;
+  incomeTotalEl.innerText=incomeTotal;
+  totalExpense.innerText=expenseTotal;
 
   renderList();
   drawCharts();
 }
+
 // LIST
 function renderList(){
   records.innerHTML="";
-  incomeList.innerHTML="";
-
-  expenses.forEach(e=>{
+  expenses.slice(-5).reverse().forEach(e=>{
     records.innerHTML+=`
     <div class="item">
-      <div>${e.category}</div>
-      <div>
-        <span class="minus">-KES ${e.amount}</span>
-        ${editMode?`<button onclick="deleteExpense('${e.id}')">❌</button>`:""}
-      </div>
-    </div>`;
-  });
-
-  incomes.forEach(i=>{
-    incomeList.innerHTML+=`
-    <div class="item">
-      <div>Income</div>
-      <div>
-        <span class="plus">+KES ${i.amount}</span>
-        ${editMode?`<button onclick="deleteIncome('${i.id}')">❌</button>`:""}
-      </div>
+      ${e.category} - ${e.amount}
+      ${editMode?`<button onclick="delE('${e.id}')">❌</button>`:""}
     </div>`;
   });
 }
 
 // DELETE
-function deleteExpense(id){
+function delE(id){
   db.collection("users").doc(auth.currentUser.uid)
   .collection("expenses").doc(id).delete();
 }
 
-function deleteIncome(id){
-  db.collection("users").doc(auth.currentUser.uid)
-  .collection("income").doc(id).delete();
+// MODAL
+function openModal(){ modal.style.display="block"; }
+function closeModal(){ modal.style.display="none"; }
+
+// SAVE
+function saveRecord(){
+  let val=+amount.value;
+  let cat=category.value;
+
+  if(!val) return alert("Enter amount");
+
+  if(cat){
+    db.collection("users").doc(auth.currentUser.uid)
+    .collection("expenses").add({
+      amount:val,
+      category:cat,
+      date:new Date().toISOString()
+    });
+  } else {
+    db.collection("users").doc(auth.currentUser.uid)
+    .collection("income").add({
+      amount:val,
+      date:new Date().toISOString()
+    });
+  }
+
+  closeModal();
 }
 
 // EDIT
@@ -247,71 +304,49 @@ function toggleEdit(){
 }
 
 // CHARTS
-function drawChart(data){
-  const ctx = document.getElementById('chart');
+function drawCharts(){
 
-  if(chart) chart.destroy();
+  let daily={};
 
-  chart = new Chart(ctx,{
-    type:'line',
+  expenses.forEach(e=>{
+    let d=new Date(e.date);
+    if(isNaN(d)) return;
+    let day=d.toLocaleDateString();
+    daily[day]=(daily[day]||0)+e.amount;
+  });
+
+  if(lineChart) lineChart.destroy();
+
+  lineChart=new Chart(lineChart,{
+    type:"line",
     data:{
-      labels:Object.keys(data),
+      labels:Object.keys(daily),
       datasets:[{
-        label:'Daily Expenses',
-        data:Object.values(data),
+        label:"Daily Expenses",
+        data:Object.values(daily),
         fill:true,
         tension:0.4
       }]
-    },
-    options:{
-      responsive:true,
-      plugins:{
-        legend:{display:true}
-      },
-      scales:{
-        x:{ticks:{color:'#ccc'}},
-        y:{ticks:{color:'#ccc'}}
-      }
     }
   });
-  }
 
-  // DONUT
   let cat={};
   expenses.forEach(e=>{
     cat[e.category]=(cat[e.category]||0)+e.amount;
   });
 
   if(donutChart) donutChart.destroy();
-  donutChart=new Chart(donutChartCanvas,{
+
+  donutChart=new Chart(donutChart,{
     type:"doughnut",
     data:{
-      labels: Object.keys(daily).length ? Object.keys(daily) : ["No Data"],
+      labels:Object.keys(cat),
       datasets:[{data:Object.values(cat)}]
-  if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(() => console.log("SW registered"))
-      .catch(err => console.log("SW error", err));
+    }
   });
-  }
 }
-
-const authDiv=document.getElementById("auth");
-const app=document.getElementById("app");
-
-// ELEMENTS
-const records=document.getElementById("records");
-const incomeList=document.getElementById("incomeList");
-const balance=document.getElementById("balance");
-const totalExpenseEl=document.getElementById("totalExpense");
-const donutCenter=document.getElementById("donutCenter");
-const insight=document.getElementById("insight");
-const donutChartCanvas=document.getElementById("donutChart");
-const lineChartCanvas=document.getElementById("lineChart");
-const editBtn=document.getElementById("editBtn");
 
 </script>
 
 </body>
-      </html>
+                                  </html>
