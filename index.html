@@ -248,14 +248,19 @@ function toggleEdit(){
 
 // CHARTS
 function drawCharts(){
+let daily = {};
 
-  // DAILY TREND
-  let daily={};
+expenses.forEach(e=>{
+  if(!e.date) return; // ✅ skip broken data
 
-  expenses.forEach(e=>{
-    let d=new Date(e.date).toLocaleDateString();
-    daily[d]=(daily[d]||0)+e.amount;
-  });
+  let d = new Date(e.date);
+
+  if(isNaN(d)) return; // ✅ skip invalid date
+
+  let day = d.toLocaleDateString();
+
+  daily[day] = (daily[day] || 0) + e.amount;
+});
 
   let labels=Object.keys(daily);
   let values=Object.values(daily);
