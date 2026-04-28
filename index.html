@@ -301,8 +301,7 @@ function loadData(){
       dailyTotals[day] = (dailyTotals[day] || 0) + e.amount;
     });
     
-  db.collection("users").doc(uid)
-.collection("expenses").add({
+  db.collection("users").doc(uid).collection("expenses").add({
   amount: val,
   category: cat,
   date: new Date().toISOString()   // ✅ ADD THIS
