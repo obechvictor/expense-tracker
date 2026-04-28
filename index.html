@@ -191,16 +191,16 @@ function loadData(){
 
 // UPDATE UI
 function updateUI(){
-  let incomeTotal=incomes.reduce((a,b)=>a+b.amount,0);
-  let expenseTotal=expenses.reduce((a,b)=>a+b.amount,0);
 
-  balance.innerText=incomeTotal-expenseTotal;
-  totalExpense.innerText=expenseTotal;
+  let incomeTotal = incomes.reduce((a,b)=>a + (Number(b.amount) || 0), 0);
+  let expenseTotal = expenses.reduce((a,b)=>a + (Number(b.amount) || 0), 0);
+
+  document.getElementById("balance").innerText = incomeTotal - expenseTotal;
+  document.getElementById("totalExpense").innerText = expenseTotal;
 
   renderList();
   drawCharts();
 }
-
 // LIST
 function renderList(){
   records.innerHTML="";
