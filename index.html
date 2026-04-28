@@ -3,53 +3,66 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+<!-- Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{font-family:Arial;background:#f5f6fa;margin:0}
 
+/* BASE */
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f1f5f9;
+}
+
+/* WRAPPER */
+.wrapper{
+  max-width:1200px;
+  margin:auto;
+  padding:20px;
+}
+
+/* HEADER */
 .header{
   background:linear-gradient(135deg,#22c55e,#16a34a);
-  color:white;padding:20px;font-size:20px;
+  color:white;
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:20px;
 }
 
-.container{padding:15px}
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:20px;
+}
 
+@media(max-width:768px){
+  .grid{grid-template-columns:1fr;}
+}
+
+/* CARD */
 .card{
   background:white;
+  padding:20px;
   border-radius:16px;
-  padding:15px;
-  margin-bottom:15px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  box-shadow:0 6px 20px rgba(0,0,0,0.08);
 }
 
-.sub{color:#888;font-size:13px}
-.amount{font-size:22px;margin:10px 0}
+/* TEXT */
+h1{margin:10px 0;font-size:28px;}
+h3{margin:0;color:#334155;}
 
-.item{
-  display:flex;
-  justify-content:space-between;
-  padding:10px 0;
-  border-bottom:1px solid #eee;
-}
-
-.minus{color:red}
-
-.fab{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  background:#2563eb;
-  color:white;
-  width:60px;height:60px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:30px;
+/* DONUT */
+.donut-wrap{
+  position:relative;
+  height:220px;
 }
 
 .center-text{
@@ -59,55 +72,129 @@ body{font-family:Arial;background:#f5f6fa;margin:0}
   transform:translate(-50%,-50%);
   font-weight:bold;
 }
+
+/* LIST */
+.item{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 0;
+  border-bottom:1px solid #eee;
+}
+
+.minus{color:#ef4444;}
+.plus{color:#22c55e;}
+
+/* INPUT */
+input,button{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+}
+
+button{
+  background:#22c55e;
+  color:white;
+  border:none;
+  border-radius:8px;
+}
+
+/* FLOAT BUTTON */
+.fab{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#2563eb;
+  color:white;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px;
+}
+
 </style>
 </head>
 
 <body>
 
-<div id="auth" class="container">
-<h2>Login</h2>
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<button onclick="register()">Register</button>
+<!-- LOGIN -->
+<div id="auth" class="wrapper">
+  <h2>Login</h2>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <button onclick="register()">Register</button>
 </div>
 
+<!-- APP -->
 <div id="app" style="display:none">
 
-<div class="header">Finance Dashboard</div>
+<div class="wrapper">
 
-<div class="container">
+<div class="header">
+  <h2>Finance Dashboard</h2>
+</div>
+
+<!-- INPUTS -->
+<div class="card">
+  <h3>Add Income</h3>
+  <input id="incomeAmount" placeholder="Amount">
+  <button onclick="addIncome()">Add Income</button>
+</div>
 
 <div class="card">
-  <h3>Expenses structure</h3>
-  <div class="sub">Last 30 days</div>
-  <div class="amount">KES <span id="totalExpense">0</span></div>
+  <h3>Add Expense</h3>
+  <input id="expenseAmount" placeholder="Amount">
+  <input id="expenseCategory" placeholder="Category">
+  <button onclick="addExpense()">Add Expense</button>
+</div>
 
-  <div style="position:relative">
-    <canvas id="donutChart"></canvas>
-    <div class="center-text" id="donutCenter">0</div>
+<!-- GRID -->
+<div class="grid">
+
+<div>
+  <div class="card">
+    <h3>Balance</h3>
+    <h1>KES <span id="balance">0</span></h1>
+    <canvas id="lineChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>Expenses Structure</h3>
+    <h2>KES <span id="totalExpense">0</span></h2>
+
+    <div class="donut-wrap">
+      <canvas id="donutChart"></canvas>
+      <div class="center-text" id="donutCenter">0</div>
+    </div>
   </div>
 </div>
 
-<div class="card">
-  <h3>Last records</h3>
-  <div id="records"></div>
+<div>
+  <div class="card">
+    <h3>Recent Transactions</h3>
+    <div id="records"></div>
+  </div>
+
+  <div class="card">
+    <h3>Insights</h3>
+    <p id="insight">Loading...</p>
+  </div>
 </div>
 
-<div class="card">
-  <h3>Balance Trend</h3>
-  <div class="amount">KES <span id="balance">0</span></div>
-  <canvas id="lineChart"></canvas>
 </div>
 
 </div>
 
-<div class="fab">+</div>
+<div class="fab" onclick="alert('Add from top')">+</div>
+
 </div>
 
 <script>
 
-// FIREBASE CONFIG
+/* FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
   authDomain: "expense-tracker-2ee7b.firebaseapp.com",
@@ -120,107 +207,120 @@ const db = firebase.firestore();
 
 let donutChart, lineChart;
 
-// AUTH
+/* AUTH */
+function login(){
+  auth.signInWithEmailAndPassword(email.value,password.value)
+  .catch(e=>alert(e.message));
+}
+
 function register(){
   auth.createUserWithEmailAndPassword(email.value,password.value)
   .then(res=>{
-    db.collection("users").doc(res.user.uid).set({budget:0});
+    db.collection("users").doc(res.user.uid).set({});
   });
 }
 
-function login(){
-  auth.signInWithEmailAndPassword(email.value,password.value)
-  .then(()=>{
-    console.log("LOGIN SUCCESS");
-  })
-  .catch(e=>{
-    console.error(e);
-    alert(e.message);
-  });
-}
-  
 auth.onAuthStateChanged(user=>{
   if(user){
-    document.getElementById("auth").style.display="none";
-    document.getElementById("app").style.display="block";
+    authDiv.style.display="none";
+    app.style.display="block";
     loadData();
   }else{
-    document.getElementById("auth").style.display="block";
-    document.getElementById("app").style.display="none";
+    authDiv.style.display="block";
+    app.style.display="none";
   }
-})
+});
 
-// LOAD DATA
+/* ADD DATA */
+function addIncome(){
+  let val = parseFloat(incomeAmount.value);
+  if(!val) return alert("Enter amount");
+
+  db.collection("users").doc(auth.currentUser.uid)
+  .collection("income").add({amount:val});
+
+  incomeAmount.value="";
+}
+
+function addExpense(){
+  let val = parseFloat(expenseAmount.value);
+  let cat = expenseCategory.value;
+
+  if(!val || !cat) return alert("Fill all");
+
+  db.collection("users").doc(auth.currentUser.uid)
+  .collection("expenses").add({amount:val,category:cat,date:new Date()});
+
+  expenseAmount.value="";
+  expenseCategory.value="";
+}
+
+/* LOAD DATA */
 function loadData(){
-  const uid = auth.currentUser.uid;
+  let uid = auth.currentUser.uid;
 
   let incomeTotal = 0;
   let expenses = [];
   let categories = {};
   let trend = [];
 
-  // INCOME
   db.collection("users").doc(uid).collection("income")
   .onSnapshot(snap=>{
     incomeTotal = 0;
-    snap.forEach(d=>{
-      incomeTotal += d.data().amount || 0;
-    });
-    update();
+    snap.forEach(d=>incomeTotal += d.data().amount || 0);
   });
 
-  // EXPENSES
   db.collection("users").doc(uid).collection("expenses")
   .onSnapshot(snap=>{
-    expenses = [];
-    categories = {};
-    trend = [];
-    records.innerHTML = "";
+    expenses=[];
+    categories={};
+    trend=[];
+    records.innerHTML="";
 
     snap.forEach(d=>{
-      let e = d.data();
-      let date = e.date ? new Date(e.date) : new Date();
+      let e=d.data();
 
       expenses.push(e);
-
-      categories[e.category] = (categories[e.category]||0)+e.amount;
-
+      categories[e.category]=(categories[e.category]||0)+e.amount;
       trend.push(e.amount);
 
       records.innerHTML += `
-      <div class="item">
-        <div>${e.category}</div>
-        <div class="minus">-KES ${e.amount}</div>
-      </div>`;
+        <div class="item">
+          <div>${e.category}</div>
+          <div class="minus">-KES ${e.amount}</div>
+        </div>`;
     });
 
-    update();
-  });
-
-  function update(){
     let totalExpense = expenses.reduce((a,b)=>a+b.amount,0);
     let balanceVal = incomeTotal - totalExpense;
 
-    totalExpenseEl.innerText = totalExpense;
-    donutCenter.innerText = totalExpense;
-    balance.innerText = balanceVal;
+    document.getElementById("balance").innerText = balanceVal;
+    document.getElementById("totalExpense").innerText = totalExpense;
+    document.getElementById("donutCenter").innerText = totalExpense;
 
     drawDonut(categories);
     drawLine(trend);
-  }
+
+    /* INSIGHTS */
+    if(balanceVal < 0){
+      insight.innerText="⚠️ Overspending";
+    }else if(balanceVal < 5000){
+      insight.innerText="⚠️ Low balance";
+    }else{
+      insight.innerText="✅ Healthy";
+    }
+  });
 }
 
-// CHARTS
+/* CHARTS */
 function drawDonut(categories){
   if(donutChart) donutChart.destroy();
 
-  donutChart = new Chart(document.getElementById("donutChart"),{
+  donutChart = new Chart(donutChartCanvas,{
     type:"doughnut",
     data:{
       labels:Object.keys(categories),
-      datasets:[{
-        data:Object.values(categories)
-      }]
+      datasets:[{data:Object.values(categories)}]
     },
     options:{cutout:"70%"}
   });
@@ -229,20 +329,24 @@ function drawDonut(categories){
 function drawLine(trend){
   if(lineChart) lineChart.destroy();
 
-  lineChart = new Chart(document.getElementById("lineChart"),{
+  lineChart = new Chart(lineChartCanvas,{
     type:"line",
     data:{
       labels:trend.map((_,i)=>i+1),
-      datasets:[{
-        data:trend,
-        fill:true,
-        tension:0.4
-      }]
+      datasets:[{data:trend,fill:true,tension:0.4}]
     }
   });
 }
 
+/* FIX ELEMENT REFERENCES */
+const authDiv = document.getElementById("auth");
+const app = document.getElementById("app");
+const records = document.getElementById("records");
+const insight = document.getElementById("insight");
+const donutChartCanvas = document.getElementById("donutChart");
+const lineChartCanvas = document.getElementById("lineChart");
+
 </script>
 
 </body>
-  </html>
+    </html>
