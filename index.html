@@ -288,7 +288,7 @@ expenses.forEach(e=>{
   donutChart=new Chart(donutChartCanvas,{
     type:"doughnut",
     data:{
-      labels:Object.keys(cat),
+      labels: Object.keys(daily).length ? Object.keys(daily) : ["No Data"],
       datasets:[{data:Object.values(cat)}]
   if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
