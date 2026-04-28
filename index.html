@@ -149,17 +149,21 @@ function addIncome(){
 }
 
 function addExpense(){
-  let val=parseFloat(expenseAmount.value);
-  let cat=expenseCategory.value;
+  let val = parseFloat(expenseAmount.value);
+  let cat = expenseCategory.value;
+
+  if(!val || !cat){
+    alert("Fill all fields");
+    return;
+  }
 
   db.collection("users").doc(auth.currentUser.uid)
   .collection("expenses").add({
-    amount:val,
-    category:cat,
-    date:new Date().toISOString()
+    amount: val,
+    category: cat,
+    date: new Date().toISOString() // ✅ REQUIRED
   });
 }
-
 // LOAD DATA
 function loadData(){
   let uid=auth.currentUser.uid;
