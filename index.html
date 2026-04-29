@@ -14,88 +14,19 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-margin:0;
-font-family:Arial,sans-serif;
-background:#f5f7fb;
-}
-
-header{
-background:linear-gradient(135deg,#22c55e,#16a34a);
-padding:20px;
-color:white;
-border-radius:0 0 20px 20px;
-}
-
-.container{
-padding:20px;
-}
-
-.card{
-background:white;
-padding:20px;
-border-radius:15px;
-margin-bottom:20px;
-box-shadow:0 4px 10px rgba(0,0,0,.08);
-}
-
-input{
-width:100%;
-padding:12px;
-margin:8px 0;
-border:1px solid #ddd;
-border-radius:8px;
-box-sizing:border-box;
-}
-
-button{
-padding:12px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-font-weight:bold;
-}
-
-.primary{
-background:#22c55e;
-color:white;
-}
-
-.danger{
-background:#ef4444;
-color:white;
-}
-
-#editBtn{
-float:right;
-background:white;
-color:#111;
-}
-
-.record{
-display:flex;
-justify-content:space-between;
-padding:12px;
-border-bottom:1px solid #eee;
-align-items:center;
-}
-
-.metric{
-font-size:28px;
-font-weight:bold;
-}
-
-.hidden{
-display:none;
-}
-
-#insights{
-line-height:1.8;
-}
-
-canvas{
-margin-top:20px;
-}
+body{margin:0;font-family:"Times New Roman";background:#f5f7fb}
+header{background:linear-gradient(135deg,#22c55e,#16a34a);padding:20px;color:#fff}
+.container{padding:20px}
+.card{background:#fff;padding:20px;border-radius:15px;margin-bottom:20px;box-shadow:0 4px 10px rgba(0,0,0,.08)}
+input{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:8px;box-sizing:border-box}
+button{padding:12px;border:none;border-radius:8px;cursor:pointer;font-weight:bold}
+.primary{background:#22c55e;color:white}
+.danger{background:#ef4444;color:white}
+#editBtn{float:right;background:white}
+.record{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee}
+.metric{font-size:28px;font-weight:bold}
+.hidden{display:none}
+canvas{margin-top:20px}
 </style>
 </head>
 <body>
@@ -138,8 +69,13 @@ margin-top:20px;
 </div>
 
 <div class="card">
-<h3>Daily Trend</h3>
+<h3>Daily Spending Trend</h3>
 <canvas id="lineChart"></canvas>
+</div>
+
+<div class="card">
+<h3>Monthly Comparison</h3>
+<canvas id="monthlyChart"></canvas>
 </div>
 
 <div class="card">
@@ -148,8 +84,8 @@ margin-top:20px;
 </div>
 
 <div class="card">
-<h3>Insights</h3>
-<div id="insights">No data yet</div>
+<h3>Financial Insights</h3>
+<div id="insights"></div>
 </div>
 
 <div class="card">
@@ -162,25 +98,18 @@ margin-top:20px;
 
 <script>
 
-const firebaseConfig = {
+const firebaseConfig={
 apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
 authDomain:"expense-tracker-2ee7b.firebaseapp.com",
-projectId:"expense-tracker-2ee7b",
-storageBucket:"expense-tracker-2ee7b.firebasestorage.app",
-messagingSenderId:"306376576940",
-appId:"1:306376576940:web:f7bf235be67524c9c8b409"
+projectId:"expense-tracker-2ee7b"
 };
 
 firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-let incomes=[];
-let expenses=[];
-let editMode=false;
-let lineChart;
-let donutChart;
+let incomes=[],expenses=[],editMode=false;
+let lineChart,donutChart,monthlyChart;
 
 function register(){
 auth.createUserWithEmailAndPassword(email.value,password.value)
@@ -215,7 +144,7 @@ function addExpense(){
 let val=Number(expenseAmount.value);
 let cat=expenseCategory.value;
 
-if(!val||!cat)return alert("Fill all fields");
+if(!val||!cat)return alert("Fill all");
 
 db.collection("users").doc(auth.currentUser.uid)
 .collection("expenses").add({
@@ -226,38 +155,28 @@ date:new Date().toISOString()
 }
 
 function loadData(){
-
 let uid=auth.currentUser.uid;
 
-db.collection("users").doc(uid)
-.collection("income")
-.onSnapshot(snap=>{
+db.collection("users").doc(uid).collection("income")
+.onSnapshot(s=>{
 incomes=[];
-snap.forEach(d=>{
-let i=d.data();
-i.id=d.id;
-i.amount=Number(i.amount||0);
-incomes.push(i);
+s.forEach(d=>{
+let x=d.data();x.id=d.id;x.amount=Number(x.amount||0);incomes.push(x);
 });
 updateUI();
 });
 
-db.collection("users").doc(uid)
-.collection("expenses")
-.onSnapshot(snap=>{
+db.collection("users").doc(uid).collection("expenses")
+.onSnapshot(s=>{
 expenses=[];
-snap.forEach(d=>{
-let e=d.data();
-e.id=d.id;
-e.amount=Number(e.amount||0);
-expenses.push(e);
+s.forEach(d=>{
+let x=d.data();x.id=d.id;x.amount=Number(x.amount||0);expenses.push(x);
 });
 updateUI();
 });
 }
 
 function updateUI(){
-
 let incomeTotal=incomes.reduce((a,b)=>a+b.amount,0);
 let expenseTotal=expenses.reduce((a,b)=>a+b.amount,0);
 
@@ -265,23 +184,13 @@ balance.innerText="KES "+(incomeTotal-expenseTotal);
 
 renderRecords();
 drawCharts();
+drawMonthlyChart();
 generateInsights();
 }
 
 function toggleEdit(){
-
 editMode=!editMode;
-
-if(editMode){
-editBtn.innerText="Done";
-editBtn.style.background="#ef4444";
-editBtn.style.color="white";
-}else{
-editBtn.innerText="Edit";
-editBtn.style.background="white";
-editBtn.style.color="black";
-}
-
+editBtn.innerText=editMode?"Done":"Edit";
 renderRecords();
 }
 
@@ -291,18 +200,13 @@ db.collection("users").doc(auth.currentUser.uid)
 }
 
 function renderRecords(){
-
 records.innerHTML="";
-
 expenses.forEach(e=>{
-
 records.innerHTML+=`
 <div class="record">
 <span>${e.category} - KES ${e.amount}</span>
 ${editMode?`<button class="danger" onclick="deleteExpense('${e.id}')">Remove</button>`:""}
-</div>
-`;
-
+</div>`;
 });
 }
 
@@ -311,11 +215,8 @@ function drawCharts(){
 let daily={};
 
 expenses.forEach(e=>{
-if(!e.date)return;
-
 let d=new Date(e.date);
 if(isNaN(d))return;
-
 let key=d.toISOString().split("T")[0];
 daily[key]=(daily[key]||0)+e.amount;
 });
@@ -325,17 +226,9 @@ let values=labels.map(l=>daily[l]);
 
 if(lineChart)lineChart.destroy();
 
-lineChart=new Chart(document.getElementById("lineChart"),{
+lineChart=new Chart(lineChart=document.getElementById("lineChart"),{
 type:"line",
-data:{
-labels:labels,
-datasets:[{
-label:"Daily Spending",
-data:values,
-fill:true,
-tension:.4
-}]
-}
+data:{labels,datasets:[{label:"Daily",data:values,fill:true,tension:.4}]}
 });
 
 let cat={};
@@ -348,29 +241,84 @@ if(donutChart)donutChart.destroy();
 
 donutChart=new Chart(document.getElementById("donutChart"),{
 type:"doughnut",
+data:{labels:Object.keys(cat),datasets:[{data:Object.values(cat)}]}
+});
+}
+
+function drawMonthlyChart(){
+
+let mi={},me={};
+
+incomes.forEach(i=>{
+let d=new Date(i.date);
+let k=`${d.getFullYear()}-${d.getMonth()+1}`;
+mi[k]=(mi[k]||0)+i.amount;
+});
+
+expenses.forEach(e=>{
+let d=new Date(e.date);
+let k=`${d.getFullYear()}-${d.getMonth()+1}`;
+me[k]=(me[k]||0)+e.amount;
+});
+
+let labels=[...new Set([...Object.keys(mi),...Object.keys(me)])].sort();
+
+if(monthlyChart)monthlyChart.destroy();
+
+monthlyChart=new Chart(document.getElementById("monthlyChart"),{
+type:"bar",
 data:{
-labels:Object.keys(cat),
-datasets:[{
-data:Object.values(cat)
-}]
+labels,
+datasets:[
+{label:"Income",data:labels.map(l=>mi[l]||0)},
+{label:"Expenses",data:labels.map(l=>me[l]||0)}
+]
 }
 });
 }
 
 function generateInsights(){
 
-if(!expenses.length){
-insights.innerHTML="No data yet";
-return;
+const now=new Date();
+let month=now.getMonth();
+let year=now.getFullYear();
+
+let monthlyIncome=0;
+let monthlyExpenses=0;
+
+incomes.forEach(i=>{
+let d=new Date(i.date);
+if(d.getMonth()==month&&d.getFullYear()==year)monthlyIncome+=i.amount;
+});
+
+expenses.forEach(e=>{
+let d=new Date(e.date);
+if(d.getMonth()==month&&d.getFullYear()==year)monthlyExpenses+=e.amount;
+});
+
+let ratio=monthlyIncome?monthlyExpenses/monthlyIncome*100:0;
+
+let status,advice;
+
+if(ratio<=50){
+status="Healthy ✅";
+advice="Excellent control. Increase savings/investments.";
+}
+else if(ratio<=80){
+status="Moderate ⚠️";
+advice="Watch discretionary spending.";
+}
+else{
+status="Risky 🔴";
+advice="Reduce spending urgently and revise budget.";
 }
 
-let total=expenses.reduce((a,b)=>a+b.amount,0);
-let avg=Math.round(total/expenses.length);
-
 insights.innerHTML=`
-<b>Total Expenses:</b> KES ${total}<br>
-<b>Average Transaction:</b> KES ${avg}<br>
-<b>Transactions:</b> ${expenses.length}
+<b>Monthly Income:</b> KES ${monthlyIncome}<br>
+<b>Monthly Expenses:</b> KES ${monthlyExpenses}<br>
+<b>Expense Ratio:</b> ${ratio.toFixed(1)}%<br>
+<b>Status:</b> ${status}<br><br>
+<b>Advice:</b> ${advice}
 `;
 }
 
