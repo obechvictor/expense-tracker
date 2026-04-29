@@ -244,38 +244,67 @@ type:"doughnut",
 data:{labels:Object.keys(cat),datasets:[{data:Object.values(cat)}]}
 });
 }
-
+  
 function drawMonthlyChart(){
 
-let mi={},me={};
+let mi={}, me={};
 
 incomes.forEach(i=>{
-let d=new Date(i.date);
-let k=`${d.getFullYear()}-${d.getMonth()+1}`;
-mi[k]=(mi[k]||0)+i.amount;
+    if(!i.date) return;
+
+    let d = new Date(i.date);
+    if(isNaN(d.getTime())) return;
+
+    let k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+    mi[k]=(mi[k]||0)+Number(i.amount||0);
 });
 
 expenses.forEach(e=>{
-let d=new Date(e.date);
-let k=`${d.getFullYear()}-${d.getMonth()+1}`;
-me[k]=(me[k]||0)+e.amount;
+    if(!e.date) return;
+
+    let d = new Date(e.date);
+    if(isNaN(d.getTime())) return;
+
+    let k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+    me[k]=(me[k]||0)+Number(e.amount||0);
 });
 
-let labels=[...new Set([...Object.keys(mi),...Object.keys(me)])].sort();
+let labels=[...new Set([...Object.keys(mi),...Object.keys(me)])]
+.sort();
 
-if(monthlyChart)monthlyChart.destroy();
+if(monthlyChart) monthlyChart.destroy();
 
-monthlyChart=new Chart(document.getElementById("monthlyChart"),{
+monthlyChart = new Chart(
+document.getElementById("monthlyChart"),
+{
 type:"bar",
 data:{
-labels,
+labels:labels,
 datasets:[
-{label:"Income",data:labels.map(l=>mi[l]||0)},
-{label:"Expenses",data:labels.map(l=>me[l]||0)}
+{
+label:"Income",
+data:labels.map(l=>mi[l]||0)
+},
+{
+label:"Expenses",
+data:labels.map(l=>me[l]||0)
+}
 ]
+},
+options:{
+responsive:true,
+plugins:{
+tooltip:{
+callbacks:{
+label:function(ctx){
+return `${ctx.dataset.label}: KES ${ctx.raw}`;
+}
+}
+}
+}
 }
 });
-}
+  }
 
 function generateInsights(){
 
