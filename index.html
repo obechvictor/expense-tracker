@@ -244,37 +244,73 @@ function toggleEdit(){
 // CHARTS
 function drawCharts(){
 
+  if(!expenses.length){
+    if(lineChart) lineChart.destroy();
+    return;
+  }
+
   let daily = {};
 
   expenses.forEach(e=>{
-    let d = new Date(e.date);
-    if(isNaN(d)) return;
+    if(!e.date) return;
 
-    let day = d.toLocaleDateString();
-    daily[day] = (daily[day] || 0) + e.amount;
+    let d = new Date(e.date);
+
+    if(isNaN(d.getTime())) return;
+
+    let key = d.toISOString().split("T")[0]; // YYYY-MM-DD (stable)
+
+    daily[key] = (daily[key] || 0) + Number(e.amount || 0);
   });
 
-  let labels = Object.keys(daily);
-  let values = Object.values(daily);
+  // SORT DATES
+  let labels = Object.keys(daily).sort();
+  let values = labels.map(l => daily[l]);
 
+  // FORMAT LABELS (mobile friendly)
+  let formattedLabels = labels.map(d=>{
+    let date = new Date(d);
+    return date.toLocaleDateString("en-KE", {day:'numeric', month:'short'});
+  });
+
+  // DESTROY OLD
   if(lineChart) lineChart.destroy();
 
+  // LINE CHART (FIXED)
   lineChart = new Chart(document.getElementById("lineChart"),{
     type:"line",
     data:{
-      labels: labels.length ? labels : ["No Data"],
+      labels: formattedLabels,
       datasets:[{
-        label:"Daily Expenses",
+        label:"Daily Spending",
         data: values,
         fill:true,
-        tension:0.4
+        tension:0.4,
+        borderWidth:2,
+        pointRadius:3
       }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:true}
+      },
+      scales:{
+        y:{
+          beginAtZero:true,
+          ticks:{
+            callback:(v)=>"KES "+v
+          }
+        }
+      }
     }
   });
 
+  // DONUT (CLEAN)
   let cat = {};
   expenses.forEach(e=>{
-    cat[e.category] = (cat[e.category] || 0) + e.amount;
+    if(!e.category) return;
+    cat[e.category]=(cat[e.category]||0)+Number(e.amount||0);
   });
 
   if(donutChart) donutChart.destroy();
@@ -288,8 +324,9 @@ function drawCharts(){
       }]
     }
   });
-}
 
+  generateInsights(values, labels);
+    }
 </script>
 
 </body>
