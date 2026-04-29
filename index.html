@@ -238,11 +238,25 @@ function deleteIncome(id){
 }
 
 // TOGGLE EDIT
-function Edit(){
-  editMode = !editMode;
-  renderList();
-}
-  
+let editMode = false;
+
+function toggleEdit(){
+
+    editMode = !editMode;
+
+    const btn = document.getElementById("editBtn");
+
+    if(editMode){
+        btn.innerText = "Done";
+        btn.style.background = "#ef4444";
+    }else{
+        btn.innerText = "Edit";
+        btn.style.background = "#ffffff";
+    }
+
+    renderList();
+  }
+
 function generateInsights(values, labels){
 
   if(!values.length){
