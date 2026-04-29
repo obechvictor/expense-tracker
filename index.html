@@ -252,7 +252,7 @@ let mi={}, me={};
 incomes.forEach(i=>{
     if(!i.date) return;
 
-    let d = new Date(i.date);
+    let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
     if(isNaN(d.getTime())) return;
 
     let k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
@@ -262,7 +262,7 @@ incomes.forEach(i=>{
 expenses.forEach(e=>{
     if(!e.date) return;
 
-    let d = new Date(e.date);
+    let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
     if(isNaN(d.getTime())) return;
 
     let k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
