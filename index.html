@@ -220,16 +220,21 @@ function renderList(){
     </div>
   `;
 });
-  incomes.forEach(i=>{
-    incomeList.innerHTML += `
-    <div class="item">
+  incomes.forEach(i => {
+
+  incomeList.innerHTML += `
+    <div class="record">
       <span>Income</span>
-      <span class="plus">+KES ${i.amount}
-        ${editMode ? `<button onclick="deleteIncome('${i.id}')">❌</button>` : ""}
-      </span>
-    </div>`;
-  });
-}
+      <span>KES ${i.amount}</span>
+
+      ${
+        editMode
+        ? `<button onclick="deleteIncome('${i.id}')">Remove</button>`
+        : ""
+      }
+    </div>
+  `;
+});
 
 // DELETE
 function deleteExpense(id){
