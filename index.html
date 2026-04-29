@@ -236,11 +236,32 @@ function deleteIncome(id){
 }
 
 // TOGGLE EDIT
-function toggleEdit(){
+function Edit(){
   editMode = !editMode;
   renderList();
 }
+  
+function generateInsights(values, labels){
 
+  if(!values.length){
+    insights.innerHTML = "No data yet";
+    return;
+  }
+
+  let total = values.reduce((a,b)=>a+b,0);
+  let avg = Math.round(total / values.length);
+  let max = Math.max(...values);
+  let maxDay = labels[values.indexOf(max)];
+
+  let trend = values[values.length-1] > values[0] ? "Increasing 📈" : "Decreasing 📉";
+
+  insights.innerHTML = `
+    <b>Total spent:</b> KES ${total}<br>
+    <b>Daily average:</b> KES ${avg}<br>
+    <b>Highest spending:</b> KES ${max} (${maxDay})<br>
+    <b>Trend:</b> ${trend}
+  `;
+ }
 // CHARTS
 function drawCharts(){
 
