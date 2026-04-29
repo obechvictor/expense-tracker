@@ -97,16 +97,20 @@ canvas{margin-top:20px}
 </div>
 
 <script>
-
-const firebaseConfig={
+  
+const firebaseConfig = {
 apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
 authDomain:"expense-tracker-2ee7b.firebaseapp.com",
-projectId:"expense-tracker-2ee7b"
+projectId:"expense-tracker-2ee7b",
+storageBucket:"expense-tracker-2ee7b.firebasestorage.app",
+messagingSenderId:"306376576940",
+appId:"1:306376576940:web:f7bf235be67524c9c8b409"
 };
 
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
+
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 let incomes=[],expenses=[],editMode=false;
 let lineChart,donutChart,monthlyChart;
