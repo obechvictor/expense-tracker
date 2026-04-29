@@ -1,399 +1,384 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Finance Tracker</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Finance Dashboard Pro</title>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#22c55e">
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { font-family:"Times New Roman"; margin:0; background:#f1f5f9; }
-.wrapper { max-width:900px; margin:auto; padding:20px; }
-
-.header {
-  background:linear-gradient(135deg,#22c55e,#16a34a);
-  color:white; padding:20px; border-radius:10px;
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:#f5f7fb;
 }
 
-.card {
-  background:white; padding:15px; margin-top:15px;
-  border-radius:10px;
+header{
+background:linear-gradient(135deg,#22c55e,#16a34a);
+padding:20px;
+color:white;
+border-radius:0 0 20px 20px;
 }
 
-input { width:100%; padding:8px; margin:5px 0; }
-button { padding:8px; border:none; border-radius:5px; margin-top:5px; }
-
-.item {
-  display:flex; justify-content:space-between;
-  border-bottom:1px solid #eee; padding:8px;
+.container{
+padding:20px;
 }
+
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
+box-shadow:0 4px 10px rgba(0,0,0,.08);
+}
+
+input{
+width:100%;
+padding:12px;
+margin:8px 0;
+border:1px solid #ddd;
+border-radius:8px;
+box-sizing:border-box;
+}
+
+button{
+padding:12px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-weight:bold;
+}
+
+.primary{
+background:#22c55e;
+color:white;
+}
+
+.danger{
+background:#ef4444;
+color:white;
+}
+
 #editBtn{
-    padding:12px 20px;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
-    font-weight:600;
-    transition:.3s;
+float:right;
+background:white;
+color:#111;
 }
 
-.record button{
-    background:#ef4444;
-    color:white;
-    border:none;
-    padding:6px 12px;
-    border-radius:8px;
-    cursor:pointer;
+.record{
+display:flex;
+justify-content:space-between;
+padding:12px;
+border-bottom:1px solid #eee;
+align-items:center;
 }
-  
-.minus { color:red; }
-.plus { color:green; }
+
+.metric{
+font-size:28px;
+font-weight:bold;
+}
+
+.hidden{
+display:none;
+}
+
+#insights{
+line-height:1.8;
+}
+
+canvas{
+margin-top:20px;
+}
 </style>
 </head>
-
 <body>
 
-<!-- LOGIN -->
-<div id="auth" class="wrapper">
-  <h2>Login</h2>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="login()">Login</button>
-  <button onclick="register()">Register</button>
+<div id="authSection" class="container">
+<div class="card">
+<h2>Login / Register</h2>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button class="primary" onclick="login()">Login</button>
+<button onclick="register()">Register</button>
+</div>
 </div>
 
-<!-- APP -->
-<div id="app" style="display:none">
-<div class="wrapper">
+<div id="appSection" class="hidden">
 
-<div class="header">
-  <h2>Finance Dashboard</h2>
-  <button id="editBtn" onclick="toggleEdit()">Edit</button>
+<header>
+<h2>Finance Dashboard</h2>
+<button id="editBtn" onclick="toggleEdit()">Edit</button>
+</header>
+
+<div class="container">
+
+<div class="card">
+<h3>Balance</h3>
+<div class="metric" id="balance">KES 0</div>
 </div>
 
 <div class="card">
-  <h3>Add Income</h3>
-  <input id="incomeAmount" placeholder="Amount">
-  <button onclick="addIncome()">Add Income</button>
-
-  <h3>Add Expense</h3>
-  <input id="expenseAmount" placeholder="Amount">
-  <input id="expenseCategory" placeholder="Category">
-  <button onclick="addExpense()">Add Expense</button>
+<h3>Add Income</h3>
+<input id="incomeAmount" placeholder="Amount">
+<button class="primary" onclick="addIncome()">Add Income</button>
 </div>
 
 <div class="card">
-  <h2>Balance: KES <span id="balance">0</span></h2>
-  <canvas id="lineChart"></canvas>
+<h3>Add Expense</h3>
+<input id="expenseAmount" placeholder="Amount">
+<input id="expenseCategory" placeholder="Category">
+<button class="primary" onclick="addExpense()">Add Expense</button>
 </div>
 
 <div class="card">
-  <h3>Expenses: KES <span id="totalExpense">0</span></h3>
-  <canvas id="donutChart"></canvas>
+<h3>Daily Trend</h3>
+<canvas id="lineChart"></canvas>
 </div>
 
 <div class="card">
-  <h3>Expense Records</h3>
-  <div id="records"></div>
+<h3>Expense Categories</h3>
+<canvas id="donutChart"></canvas>
 </div>
 
 <div class="card">
-  <h3>Income Records</h3>
-  <div id="incomeList"></div>
+<h3>Insights</h3>
+<div id="insights">No data yet</div>
 </div>
-  
+
 <div class="card">
-  <h3>Insights</h3>
-  <div id="insights">Loading...</div>
+<h3>Records</h3>
+<div id="records"></div>
+</div>
+
+</div>
 </div>
 
 <script>
 
-// FIREBASE CONFIG
 const firebaseConfig = {
-  apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
-  authDomain: "expense-tracker-2ee7b.firebaseapp.com",
-  projectId: "expense-tracker-2ee7b"
+apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+authDomain:"expense-tracker-2ee7b.firebaseapp.com",
+projectId:"expense-tracker-2ee7b",
+storageBucket:"expense-tracker-2ee7b.firebasestorage.app",
+messagingSenderId:"306376576940",
+appId:"1:306376576940:web:f7bf235be67524c9c8b409"
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let incomes = [];
-let expenses = [];
-let editMode = false;
-let lineChart, donutChart;
-
-// AUTH
-function login(){
-  auth.signInWithEmailAndPassword(email.value,password.value)
-  .catch(e=>alert(e.message));
-}
+let incomes=[];
+let expenses=[];
+let editMode=false;
+let lineChart;
+let donutChart;
 
 function register(){
-  auth.createUserWithEmailAndPassword(email.value,password.value)
-  .catch(e=>alert(e.message));
+auth.createUserWithEmailAndPassword(email.value,password.value)
+.catch(e=>alert(e.message));
+}
+
+function login(){
+auth.signInWithEmailAndPassword(email.value,password.value)
+.catch(e=>alert(e.message));
 }
 
 auth.onAuthStateChanged(user=>{
-  if(user){
-    document.getElementById("auth").style.display="none";
-    document.getElementById("app").style.display="block";
-    loadData();
-  }
+if(user){
+authSection.classList.add("hidden");
+appSection.classList.remove("hidden");
+loadData();
+}
 });
 
-// ADD INCOME
 function addIncome(){
-  let val = Number(incomeAmount.value);
-  if(!val) return alert("Enter amount");
+let val=Number(incomeAmount.value);
+if(!val)return alert("Enter amount");
 
-  db.collection("users").doc(auth.currentUser.uid)
-  .collection("income").add({
-    amount: val,
-    date: new Date().toISOString()
-  });
+db.collection("users").doc(auth.currentUser.uid)
+.collection("income").add({
+amount:val,
+date:new Date().toISOString()
+});
 }
 
-// ADD EXPENSE
 function addExpense(){
-  let val = Number(expenseAmount.value);
-  let cat = expenseCategory.value;
+let val=Number(expenseAmount.value);
+let cat=expenseCategory.value;
 
-  if(!val || !cat) return alert("Fill all");
+if(!val||!cat)return alert("Fill all fields");
 
-  db.collection("users").doc(auth.currentUser.uid)
-  .collection("expenses").add({
-    amount: val,
-    category: cat,
-    date: new Date().toISOString()
-  });
+db.collection("users").doc(auth.currentUser.uid)
+.collection("expenses").add({
+amount:val,
+category:cat,
+date:new Date().toISOString()
+});
 }
 
-// LOAD DATA
 function loadData(){
-  let uid = auth.currentUser.uid;
 
-  db.collection("users").doc(uid).collection("income")
-  .onSnapshot(snap=>{
-    incomes = [];
-    snap.forEach(d=>{
-      let i = d.data();
-      i.id = d.id;
-      incomes.push(i);
-    });
-    updateUI();
-  });
+let uid=auth.currentUser.uid;
 
-  db.collection("users").doc(uid).collection("expenses")
-  .onSnapshot(snap=>{
-    expenses = [];
-    snap.forEach(d=>{
-      let e = d.data();
-      e.id = d.id;
-      expenses.push(e);
-    });
-    updateUI();
-  });
+db.collection("users").doc(uid)
+.collection("income")
+.onSnapshot(snap=>{
+incomes=[];
+snap.forEach(d=>{
+let i=d.data();
+i.id=d.id;
+i.amount=Number(i.amount||0);
+incomes.push(i);
+});
+updateUI();
+});
+
+db.collection("users").doc(uid)
+.collection("expenses")
+.onSnapshot(snap=>{
+expenses=[];
+snap.forEach(d=>{
+let e=d.data();
+e.id=d.id;
+e.amount=Number(e.amount||0);
+expenses.push(e);
+});
+updateUI();
+});
 }
 
-// UPDATE UI
 function updateUI(){
 
-  let incomeTotal = incomes.reduce((a,b)=>a + (Number(b.amount)||0),0);
-  let expenseTotal = expenses.reduce((a,b)=>a + (Number(b.amount)||0),0);
+let incomeTotal=incomes.reduce((a,b)=>a+b.amount,0);
+let expenseTotal=expenses.reduce((a,b)=>a+b.amount,0);
 
-  document.getElementById("balance").innerText = incomeTotal - expenseTotal;
-  document.getElementById("totalExpense").innerText = expenseTotal;
+balance.innerText="KES "+(incomeTotal-expenseTotal);
 
-  renderList();
-  drawCharts();
+renderRecords();
+drawCharts();
+generateInsights();
 }
-
-// RENDER LIST
-function renderList(){
-
-  let records = document.getElementById("records");
-  let incomeList = document.getElementById("incomeList");
-
-  records.innerHTML="";
-  incomeList.innerHTML="";
-  
-  expenses.forEach(e => {
-
-  records.innerHTML += `
-    <div class="record">
-      <span>${e.category}</span>
-      <span>-KES ${e.amount}</span>
-
-      ${
-        editMode
-        ? `<button onclick="deleteExpense('${e.id}')">Remove</button>`
-        : ""
-      }
-    </div>
-  `;
-});
-  
-  incomes.forEach(i => {
-
-  incomeList.innerHTML += `
-    <div class="record">
-      <span>Income</span>
-      <span>KES ${i.amount}</span>
-
-      ${
-        editMode
-        ? `<button onclick="deleteIncome('${i.id}')">Remove</button>`
-        : ""
-      }
-    </div>
-  `;
-});
-
-// DELETE
-function deleteExpense(id){
-  db.collection("users").doc(auth.currentUser.uid)
-  .collection("expenses").doc(id).delete();
-}
-
-function deleteIncome(id){
-  db.collection("users").doc(auth.currentUser.uid)
-  .collection("income").doc(id).delete();
-}
-
-// TOGGLE EDIT
-let editMode = false;
 
 function toggleEdit(){
 
-    editMode = !editMode;
+editMode=!editMode;
 
-    const btn = document.getElementById("editBtn");
+if(editMode){
+editBtn.innerText="Done";
+editBtn.style.background="#ef4444";
+editBtn.style.color="white";
+}else{
+editBtn.innerText="Edit";
+editBtn.style.background="white";
+editBtn.style.color="black";
+}
 
-    if(editMode){
-        btn.innerText = "Done";
-        btn.style.background = "#ef4444";
-    }else{
-        btn.innerText = "Edit";
-        btn.style.background = "#ffffff";
-    }
+renderRecords();
+}
 
-    renderList();
-  }
+function deleteExpense(id){
+db.collection("users").doc(auth.currentUser.uid)
+.collection("expenses").doc(id).delete();
+}
 
-function generateInsights(values, labels){
+function renderRecords(){
 
-  if(!values.length){
-    insights.innerHTML = "No data yet";
-    return;
-  }
+records.innerHTML="";
 
-  let total = values.reduce((a,b)=>a+b,0);
-  let avg = Math.round(total / values.length);
-  let max = Math.max(...values);
-  let maxDay = labels[values.indexOf(max)];
+expenses.forEach(e=>{
 
-  let trend = values[values.length-1] > values[0] ? "Increasing 📈" : "Decreasing 📉";
+records.innerHTML+=`
+<div class="record">
+<span>${e.category} - KES ${e.amount}</span>
+${editMode?`<button class="danger" onclick="deleteExpense('${e.id}')">Remove</button>`:""}
+</div>
+`;
 
-  insights.innerHTML = `
-    <b>Total spent:</b> KES ${total}<br>
-    <b>Daily average:</b> KES ${avg}<br>
-    <b>Highest spending:</b> KES ${max} (${maxDay})<br>
-    <b>Trend:</b> ${trend}
-  `;
- }
-// CHARTS
+});
+}
+
 function drawCharts(){
 
-  if(!expenses.length){
-    if(lineChart) lineChart.destroy();
-    return;
-  }
+let daily={};
 
-  let daily = {};
+expenses.forEach(e=>{
+if(!e.date)return;
 
-  expenses.forEach(e=>{
-    if(!e.date) return;
+let d=new Date(e.date);
+if(isNaN(d))return;
 
-    let d = new Date(e.date);
+let key=d.toISOString().split("T")[0];
+daily[key]=(daily[key]||0)+e.amount;
+});
 
-    if(isNaN(d.getTime())) return;
+let labels=Object.keys(daily).sort();
+let values=labels.map(l=>daily[l]);
 
-    let key = d.toISOString().split("T")[0]; // YYYY-MM-DD (stable)
+if(lineChart)lineChart.destroy();
 
-    daily[key] = (daily[key] || 0) + Number(e.amount || 0);
-  });
-
-  // SORT DATES
-  let labels = Object.keys(daily).sort();
-  let values = labels.map(l => daily[l]);
-
-  // FORMAT LABELS (mobile friendly)
-  let formattedLabels = labels.map(d=>{
-    let date = new Date(d);
-    return date.toLocaleDateString("en-KE", {day:'numeric', month:'short'});
-  });
-
-  // DESTROY OLD
-  if(lineChart) lineChart.destroy();
-
-  // LINE CHART (FIXED)
-  lineChart = new Chart(document.getElementById("lineChart"),{
-    type:"line",
-    data:{
-      labels: formattedLabels,
-      datasets:[{
-        label:"Daily Spending",
-        data: values,
-        fill:true,
-        tension:0.4,
-        borderWidth:2,
-        pointRadius:3
-      }]
-    },
-    options:{
-      responsive:true,
-      plugins:{
-        legend:{display:true}
-      },
-      scales:{
-        y:{
-          beginAtZero:true,
-          ticks:{
-            callback:(v)=>"KES "+v
-          }
-        }
-      }
-    }
-  });
-
-  // DONUT (CLEAN)
-  let cat = {};
-  expenses.forEach(e=>{
-    if(!e.category) return;
-    cat[e.category]=(cat[e.category]||0)+Number(e.amount||0);
-  });
-
-  if(donutChart) donutChart.destroy();
-
-  donutChart = new Chart(document.getElementById("donutChart"),{
-    type:"doughnut",
-    data:{
-      labels:Object.keys(cat),
-      datasets:[{
-        data:Object.values(cat)
-      }]
-    }
-  });
-
-  generateInsights(values, labels);
+lineChart=new Chart(document.getElementById("lineChart"),{
+type:"line",
+data:{
+labels:labels,
+datasets:[{
+label:"Daily Spending",
+data:values,
+fill:true,
+tension:.4
+}]
 }
-  
+});
+
+let cat={};
+
+expenses.forEach(e=>{
+cat[e.category]=(cat[e.category]||0)+e.amount;
+});
+
+if(donutChart)donutChart.destroy();
+
+donutChart=new Chart(document.getElementById("donutChart"),{
+type:"doughnut",
+data:{
+labels:Object.keys(cat),
+datasets:[{
+data:Object.values(cat)
+}]
+}
+});
+}
+
+function generateInsights(){
+
+if(!expenses.length){
+insights.innerHTML="No data yet";
+return;
+}
+
+let total=expenses.reduce((a,b)=>a+b.amount,0);
+let avg=Math.round(total/expenses.length);
+
+insights.innerHTML=`
+<b>Total Expenses:</b> KES ${total}<br>
+<b>Average Transaction:</b> KES ${avg}<br>
+<b>Transactions:</b> ${expenses.length}
+`;
+}
+
+if("serviceWorker" in navigator){
+navigator.serviceWorker.register("service-worker.js");
+}
+
 </script>
-  
+
 </body>
 </html>
