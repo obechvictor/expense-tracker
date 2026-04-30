@@ -454,17 +454,25 @@ else{
 budgetWarning=`✅ Budget healthy (${used.toFixed(1)}% used)`;
 }
 }
-  
-document.getElementById("insights").innerHTML =
-<b>Monthly Income:</b> KES ${monthlyIncome}<br>
-<b>Monthly Expenses:</b> KES ${monthlyExpenses}<br>
-<b>Expense Ratio:</b> ${ratio.toFixed(1)}%<br>
-<b>Status:</b> ${status}<br><br>
-<b>Advice:</b> ${advice}<br><br>
-<b>Budget:</b> ${budgetWarning}
-`;
-}
 
+document.getElementById("insights").innerHTML = `
+<b>Monthly Income:</b> KES ${monthlyIncome}<br>
+This is the total income recorded this month.<br><br>
+
+<b>Monthly Expenses:</b> KES ${monthlyExpenses}<br>
+This is your total spending this month.<br><br>
+
+<b>Expense Ratio:</b> ${ratio.toFixed(1)}%<br>
+Shows how much of your income has been spent.<br><br>
+
+<b>Status:</b> ${status}<br>
+Indicates your financial health.<br><br>
+
+<b>Advice:</b> ${advice}<br><br>
+
+<b>Budget Insight:</b> ${budgetWarning}
+`;
+  
 if("serviceWorker" in navigator){
 navigator.serviceWorker.register("service-worker.js");
 }
