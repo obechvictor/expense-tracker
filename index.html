@@ -73,7 +73,14 @@ canvas{margin-top:20px}
 <input id="expenseCategory" placeholder="Category">
 <button class="primary" onclick="addExpense()">Add Expense</button>
 </div>
-
+  
+<div class="card">
+<h3>Monthly Budget Limit</h3>
+<input id="budgetInput" placeholder="Set monthly budget">
+<button class="primary" onclick="saveBudget()">Save Budget</button>
+<div id="budgetStatus"></div>
+</div>
+  
 <div class="card">
 <h3>Daily Spending Trend</h3>
 <canvas id="lineChart"></canvas>
