@@ -320,12 +320,12 @@ let monthlyIncome=0;
 let monthlyExpenses=0;
 
 incomes.forEach(i=>{
-let d=new Date(i.date);
+let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
 if(d.getMonth()==month&&d.getFullYear()==year)monthlyIncome+=i.amount;
 });
 
 expenses.forEach(e=>{
-let d=new Date(e.date);
+let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
 if(d.getMonth()==month&&d.getFullYear()==year)monthlyExpenses+=e.amount;
 });
 
