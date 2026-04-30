@@ -167,7 +167,42 @@ category:cat,
 date:new Date().toISOString()
 });
 }
+function downloadPDF(){
 
+const { jsPDF } = window.jspdf;
+const doc = new jsPDF();
+
+const now = new Date();
+
+const month = now.toLocaleString("default",{month:"long"});
+const year = now.getFullYear();
+
+let incomeTotal = incomes.reduce((a,b)=>a+Number(b.amount||0),0);
+let expenseTotal = expenses.reduce((a,b)=>a+Number(b.amount||0),0);
+let balance = incomeTotal-expenseTotal;
+
+doc.setFontSize(18);
+doc.text("Finance Dashboard Report",20,20);
+
+doc.setFontSize(12);
+doc.text(`Month: ${month} ${year}`,20,35);
+
+doc.text(`Total Income: KES ${incomeTotal}`,20,50);
+doc.text(`Total Expenses: KES ${expenseTotal}`,20,60);
+doc.text(`Balance: KES ${balance}`,20,70);
+
+doc.text("Expenses Breakdown",20,90);
+
+let y = 105;
+
+expenses.forEach(e=>{
+doc.text(`${e.category}: KES ${e.amount}`,20,y);
+y += 10;
+});
+
+doc.save(`Finance_Report_${month}_${year}.pdf`);
+}
+  
 function loadData(){
 let uid=auth.currentUser.uid;
 
