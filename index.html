@@ -430,7 +430,8 @@ expenses.forEach(e=>{
 let ratio=monthlyIncome?monthlyExpenses/monthlyIncome*100:0;
 
 let status,advice;
-
+let budgetWarning="";
+  
 if(ratio<=50){
 status="Healthy ✅";
 advice="Excellent control. Increase savings/investments.";
