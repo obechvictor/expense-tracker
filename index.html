@@ -261,8 +261,8 @@ incomes.forEach(i=>{
     let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
     if(isNaN(d.getTime())) return;
 
-    let k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
-    mi[k]=(mi[k]||0)+Number(i.amount||0);
+    let key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+    mi[key]=(mi[key]||0)+Number(i.amount||0);
 });
 
 expenses.forEach(e=>{
@@ -271,8 +271,8 @@ expenses.forEach(e=>{
     let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
     if(isNaN(d.getTime())) return;
 
-    let k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
-    me[k]=(me[k]||0)+Number(e.amount||0);
+    let key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+    me[key]=(me[key]||0)+Number(e.amount||0);
 });
 
 let labels=[...new Set([...Object.keys(mi),...Object.keys(me)])]
