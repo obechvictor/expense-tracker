@@ -444,7 +444,22 @@ else{
 status="Risky 🔴";
 advice="Reduce spending urgently and revise budget.";
 }
+  
+if(budget>0){
 
+let used=(monthlyExpenses/budget)*100;
+
+if(used>=100){
+budgetWarning=`🔴 Budget exceeded by KES ${monthlyExpenses-budget}`;
+}
+else if(used>=80){
+budgetWarning=`⚠️ You have used ${used.toFixed(1)}% of your budget`;
+}
+else{
+budgetWarning=`✅ Budget healthy (${used.toFixed(1)}% used)`;
+}
+}
+  
 insights.innerHTML=`
 <b>Monthly Income:</b> KES ${monthlyIncome}<br>
 <b>Monthly Expenses:</b> KES ${monthlyExpenses}<br>
