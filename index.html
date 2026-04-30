@@ -455,7 +455,7 @@ budgetWarning=`✅ Budget healthy (${used.toFixed(1)}% used)`;
 }
 }
   
-insights.innerHTML=`
+document.getElementById("insights").innerHTML =
 <b>Monthly Income:</b> KES ${monthlyIncome}<br>
 <b>Monthly Expenses:</b> KES ${monthlyExpenses}<br>
 <b>Expense Ratio:</b> ${ratio.toFixed(1)}%<br>
