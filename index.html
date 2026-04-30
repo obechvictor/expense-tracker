@@ -175,6 +175,22 @@ category:cat,
 date:new Date().toISOString()
 });
 }
+
+function saveBudget(){
+
+budget = Number(budgetInput.value || 0);
+
+db.collection("users")
+.doc(auth.currentUser.uid)
+.collection("settings")
+.doc("budget")
+.set({
+amount:budget
+});
+
+alert("Budget saved");
+}
+  
 function downloadPDF(){
 
 const { jsPDF } = window.jspdf;
