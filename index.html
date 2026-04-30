@@ -12,8 +12,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  
+
 <style>
 body{margin:0;font-family:"Times New Roman";background:#f5f7fb}
 header{background:linear-gradient(135deg,#22c55e,#16a34a);padding:20px;color:#fff}
@@ -48,12 +47,7 @@ canvas{margin-top:20px}
 <h2>Finance Dashboard</h2>
 <button id="editBtn" onclick="toggleEdit()">Edit</button>
 </header>
-  
-<div class="card">
-<h3>Reports</h3>
-<button class="primary" onclick="downloadPDF()">Download Monthly PDF</button>
-</div>
-  
+
 <div class="container">
 
 <div class="card">
@@ -73,14 +67,7 @@ canvas{margin-top:20px}
 <input id="expenseCategory" placeholder="Category">
 <button class="primary" onclick="addExpense()">Add Expense</button>
 </div>
-  
-<div class="card">
-<h3>Monthly Budget Limit</h3>
-<input type="number" id="budgetInput" placeholder="Monthly Budget">
-<button onclick="saveBudget()">Save Budget</button>
-<div id="budgetStatus"></div>
-</div>
-  
+
 <div class="card">
 <h3>Daily Spending Trend</h3>
 <canvas id="lineChart"></canvas>
@@ -100,7 +87,7 @@ canvas{margin-top:20px}
 <h3>Financial Insights</h3>
 <div id="insights"></div>
 </div>
-  
+
 <div class="card">
 <h3>Records</h3>
 <div id="records"></div>
@@ -110,22 +97,18 @@ canvas{margin-top:20px}
 </div>
 
 <script>
-  
-const firebaseConfig = {
+
+const firebaseConfig={
 apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
 authDomain:"expense-tracker-2ee7b.firebaseapp.com",
-projectId:"expense-tracker-2ee7b",
-storageBucket:"expense-tracker-2ee7b.firebasestorage.app",
-messagingSenderId:"306376576940",
-appId:"1:306376576940:web:f7bf235be67524c9c8b409"
+projectId:"expense-tracker-2ee7b"
 };
 
 firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-  
-let incomes=[],expenses=[],editMode=false,budget=0;
+let incomes=[],expenses=[],editMode=false;
 let lineChart,donutChart,monthlyChart;
 
 function register(){
@@ -171,63 +154,6 @@ date:new Date().toISOString()
 });
 }
 
-function saveBudget(){
-
-const value = Number(document.getElementById("budgetInput").value);
-
-if(!value || value <= 0){
-return alert("Enter a valid budget");
-}
-
-db.collection("users")
-.doc(auth.currentUser.uid)
-.set({
-budget:value
-},{merge:true})
-.then(()=>{
-alert("Budget saved");
-})
-.catch(err=>{
-alert(err.message);
-});
-}
-  
-function downloadPDF(){
-
-const { jsPDF } = window.jspdf;
-const doc = new jsPDF();
-
-const now = new Date();
-
-const month = now.toLocaleString("default",{month:"long"});
-const year = now.getFullYear();
-
-let incomeTotal = incomes.reduce((a,b)=>a+Number(b.amount||0),0);
-let expenseTotal = expenses.reduce((a,b)=>a+Number(b.amount||0),0);
-let balance = incomeTotal-expenseTotal;
-
-doc.setFontSize(18);
-doc.text("Finance Dashboard Report",20,20);
-
-doc.setFontSize(12);
-doc.text(`Month: ${month} ${year}`,20,35);
-
-doc.text(`Total Income: KES ${incomeTotal}`,20,50);
-doc.text(`Total Expenses: KES ${expenseTotal}`,20,60);
-doc.text(`Balance: KES ${balance}`,20,70);
-
-doc.text("Expenses Breakdown",20,90);
-
-let y = 105;
-
-expenses.forEach(e=>{
-doc.text(`${e.category}: KES ${e.amount}`,20,y);
-y += 10;
-});
-
-doc.save(`Finance_Report_${month}_${year}.pdf`);
-}
-  
 function loadData(){
 let uid=auth.currentUser.uid;
 
@@ -235,10 +161,7 @@ db.collection("users").doc(uid).collection("income")
 .onSnapshot(s=>{
 incomes=[];
 s.forEach(d=>{
-let x=d.data();
-x.id=d.id;
-x.amount=Number(x.amount||0);
-incomes.push(x);
+let x=d.data();x.id=d.id;x.amount=Number(x.amount||0);incomes.push(x);
 });
 updateUI();
 });
@@ -247,26 +170,12 @@ db.collection("users").doc(uid).collection("expenses")
 .onSnapshot(s=>{
 expenses=[];
 s.forEach(d=>{
-let x=d.data();
-x.id=d.id;
-x.amount=Number(x.amount||0);
-expenses.push(x);
+let x=d.data();x.id=d.id;x.amount=Number(x.amount||0);expenses.push(x);
 });
 updateUI();
 });
+}
 
-db.collection("users")
-.doc(uid)
-.get()
-.then(doc=>{
-if(doc.exists){
-budget=Number(doc.data().budget||0);
-budgetInput.value=budget;
-}
-updateUI();
-});
-}
-  
 function updateUI(){
 let incomeTotal=incomes.reduce((a,b)=>a+b.amount,0);
 let expenseTotal=expenses.reduce((a,b)=>a+b.amount,0);
@@ -335,67 +244,38 @@ type:"doughnut",
 data:{labels:Object.keys(cat),datasets:[{data:Object.values(cat)}]}
 });
 }
-  
+
 function drawMonthlyChart(){
 
-let mi={}, me={};
+let mi={},me={};
 
 incomes.forEach(i=>{
-    if(!i.date) return;
-
-    let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
-    if(isNaN(d.getTime())) return;
-
-    let key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
-    mi[key]=(mi[key]||0)+Number(i.amount||0);
+let d=new Date(i.date);
+let k=`${d.getFullYear()}-${d.getMonth()+1}`;
+mi[k]=(mi[k]||0)+i.amount;
 });
 
 expenses.forEach(e=>{
-    if(!e.date) return;
-
-    let d = e.date?.toDate ? e.date.toDate() : new Date(e.date);
-    if(isNaN(d.getTime())) return;
-
-    let key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
-    me[key]=(me[key]||0)+Number(e.amount||0);
+let d=new Date(e.date);
+let k=`${d.getFullYear()}-${d.getMonth()+1}`;
+me[k]=(me[k]||0)+e.amount;
 });
 
-let labels=[...new Set([...Object.keys(mi),...Object.keys(me)])]
-.sort();
+let labels=[...new Set([...Object.keys(mi),...Object.keys(me)])].sort();
 
-if(monthlyChart) monthlyChart.destroy();
+if(monthlyChart)monthlyChart.destroy();
 
-monthlyChart = new Chart(
-document.getElementById("monthlyChart"),
-{
+monthlyChart=new Chart(document.getElementById("monthlyChart"),{
 type:"bar",
 data:{
-labels:labels,
+labels,
 datasets:[
-{
-label:"Income",
-data:labels.map(l=>mi[l]||0)
-},
-{
-label:"Expenses",
-data:labels.map(l=>me[l]||0)
-}
+{label:"Income",data:labels.map(l=>mi[l]||0)},
+{label:"Expenses",data:labels.map(l=>me[l]||0)}
 ]
-},
-options:{
-responsive:true,
-plugins:{
-tooltip:{
-callbacks:{
-label:function(ctx){
-return `${ctx.dataset.label}: KES ${ctx.raw}`;
-}
-}
-}
-}
 }
 });
-  }
+}
 
 function generateInsights(){
 
@@ -407,34 +287,19 @@ let monthlyIncome=0;
 let monthlyExpenses=0;
 
 incomes.forEach(i=>{
-    if(!i.date) return;
-
-    let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
-
-    if(isNaN(d.getTime())) return;
-
-    if(d.getMonth()===month && d.getFullYear()===year){
-        monthlyIncome += Number(i.amount || 0);
-    }
+let d=new Date(i.date);
+if(d.getMonth()==month&&d.getFullYear()==year)monthlyIncome+=i.amount;
 });
-  
+
 expenses.forEach(e=>{
-    if(!e.date) return;
-
-    let d = e.date?.toDate ? e.date.toDate() : new Date(e.date);
-
-    if(isNaN(d.getTime())) return;
-
-    if(d.getMonth()===month && d.getFullYear()===year){
-        monthlyExpenses += Number(e.amount || 0);
-    }
+let d=new Date(e.date);
+if(d.getMonth()==month&&d.getFullYear()==year)monthlyExpenses+=e.amount;
 });
-  
+
 let ratio=monthlyIncome?monthlyExpenses/monthlyIncome*100:0;
 
 let status,advice;
-let budgetWarning="No monthly budget set. Add one above to activate budget tracking.";
-  
+
 if(ratio<=50){
 status="Healthy ✅";
 advice="Excellent control. Increase savings/investments.";
@@ -447,53 +312,16 @@ else{
 status="Risky 🔴";
 advice="Reduce spending urgently and revise budget.";
 }
- 
-if(Number(budget) > 0){
 
-let used=(monthlyExpenses/budget)*100;
-
-if(used>=100){
-budgetWarning=`🔴 Budget exceeded by KES ${monthlyExpenses-budget}`;
-}
-else if(used>=80){
-budgetWarning=`⚠️ You have used ${used.toFixed(1)}% of your budget`;
-}
-else{
-budgetWarning=`✅ Budget healthy (${used.toFixed(1)}% used)`;
-}
-}
-let used=(monthlyExpenses/budget)*100;
-
-if(used>=100){
-budgetWarning=`🔴 Budget exceeded by KES ${monthlyExpenses-budget}`;
-}
-else if(used>=80){
-budgetWarning=`⚠️ You have used ${used.toFixed(1)}% of your budget`;
-}
-else{
-budgetWarning=`✅ Budget healthy (${used.toFixed(1)}% used)`;
-}
-}
-
-document.getElementById("insights").innerHTML = `
+insights.innerHTML=`
 <b>Monthly Income:</b> KES ${monthlyIncome}<br>
-This is the total income recorded this month.<br><br>
-
 <b>Monthly Expenses:</b> KES ${monthlyExpenses}<br>
-This is your total spending this month.<br><br>
-
 <b>Expense Ratio:</b> ${ratio.toFixed(1)}%<br>
-Shows how much of your income has been spent.<br><br>
-
-<b>Status:</b> ${status}<br>
-Indicates your financial health.<br><br>
-
-<b>Advice:</b> ${advice}<br><br>
-
-<b>Budget Insight:</b> ${budgetWarning}
+<b>Status:</b> ${status}<br><br>
+<b>Advice:</b> ${advice}
 `;
 }
-  
+
 if("serviceWorker" in navigator){
 navigator.serviceWorker.register("service-worker.js");
 }
