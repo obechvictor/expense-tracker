@@ -296,17 +296,40 @@ function drawMonthlyChart(){
 
 let mi={},me={};
 
+let monthly = {};
+
 incomes.forEach(i=>{
-let d=new Date(i.date);
-let k=`${d.getFullYear()}-${d.getMonth()+1}`;
-mi[k]=(mi[k]||0)+i.amount;
+    if(!i.date) return;
+
+    let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
+
+    if(isNaN(d.getTime())) return;
+
+    let key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+
+    monthly[key] = monthly[key] || {income:0, expense:0};
+
+    monthly[key].income += Number(i.amount || 0);
 });
 
 expenses.forEach(e=>{
-let d=new Date(e.date);
-let k=`${d.getFullYear()}-${d.getMonth()+1}`;
-me[k]=(me[k]||0)+e.amount;
+    if(!e.date) return;
+
+    let d = e.date?.toDate ? e.date.toDate() : new Date(e.date);
+
+    if(isNaN(d.getTime())) return;
+
+    let key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+
+    monthly[key] = monthly[key] || {income:0, expense:0};
+
+    monthly[key].expense += Number(e.amount || 0);
 });
+
+let labels = Object.keys(monthly).sort();
+
+let incomeVals = labels.map(l=>monthly[l].income);
+let expenseVals = labels.map(l=>monthly[l].expense);
 
 let labels=[...new Set([...Object.keys(mi),...Object.keys(me)])].sort();
 
