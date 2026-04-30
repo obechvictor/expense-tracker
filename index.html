@@ -320,15 +320,29 @@ let monthlyIncome=0;
 let monthlyExpenses=0;
 
 incomes.forEach(i=>{
-let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
-if(d.getMonth()==month&&d.getFullYear()==year)monthlyIncome+=i.amount;
+    if(!i.date) return;
+
+    let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
+
+    if(isNaN(d.getTime())) return;
+
+    if(d.getMonth()===month && d.getFullYear()===year){
+        monthlyIncome += Number(i.amount || 0);
+    }
 });
 
 expenses.forEach(e=>{
-let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
-if(d.getMonth()==month&&d.getFullYear()==year)monthlyExpenses+=e.amount;
-});
+    if(!e.date) return;
 
+    let d = e.date?.toDate ? e.date.toDate() : new Date(e.date);
+
+    if(isNaN(d.getTime())) return;
+
+    if(d.getMonth()===month && d.getFullYear()===year){
+        monthlyExpenses += Number(e.amount || 0);
+    }
+});
+  
 let ratio=monthlyIncome?monthlyExpenses/monthlyIncome*100:0;
 
 let status,advice;
