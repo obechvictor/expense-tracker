@@ -268,7 +268,7 @@ incomes.forEach(i=>{
 expenses.forEach(e=>{
     if(!e.date) return;
 
-    let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
+    let d = e.date?.toDate ? e.date.toDate() : new Date(e.date);
     if(isNaN(d.getTime())) return;
 
     let key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
