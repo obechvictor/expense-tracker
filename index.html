@@ -247,23 +247,18 @@ expenses=[];
 s.forEach(d=>{
 let x=d.data();x.id=d.id;x.amount=Number(x.amount||0);expenses.push(x);
 });
-
 db.collection("users")
 .doc(uid)
-.collection("settings")
-.doc("budget")
 .get()
 .then(doc=>{
-if(doc.exists){
-budget = Number(doc.data().amount || 0);
-budgetInput.value = budget;
+   if(doc.exists){
+      budget = Number(doc.data().budget || 0);
+      budgetInput.value = budget;
+     
 }
-});
-  
 updateUI();
 generateInsights();
 });
-}
 
 function updateUI(){
 let incomeTotal=incomes.reduce((a,b)=>a+b.amount,0);
