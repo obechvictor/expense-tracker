@@ -168,6 +168,7 @@ s.forEach(d=>{
 let x=d.data();x.id=d.id;x.amount=Number(x.amount||0);incomes.push(x);
 });
 updateUI();
+generateInsights();
 });
 
 db.collection("users").doc(uid).collection("expenses")
@@ -177,6 +178,7 @@ s.forEach(d=>{
 let x=d.data();x.id=d.id;x.amount=Number(x.amount||0);expenses.push(x);
 });
 updateUI();
+generateInsights();
 });
 }
 
@@ -330,7 +332,7 @@ incomes.forEach(i=>{
         monthlyIncome += Number(i.amount || 0);
     }
 });
-
+  
 expenses.forEach(e=>{
     if(!e.date) return;
 
