@@ -172,17 +172,15 @@ date:new Date().toISOString()
 }
 
 function saveBudget(){
-
-budget = Number(budgetInput.value || 0);
+const value = Number(document.getElementById("budgetInput").value);
 
 db.collection("users")
 .doc(auth.currentUser.uid)
-.collection("settings")
-.doc("budget")
 .set({
-amount:budget
-});
-
+budget:value
+},{merge:true});
+}
+  
 alert("Budget saved");
 }
   
@@ -241,7 +239,7 @@ expenses=[];
 s.forEach(d=>{
 let x=d.data();x.id=d.id;x.amount=Number(x.amount||0);expenses.push(x);
 });
-  
+
 db.collection("users")
 .doc(uid)
 .collection("settings")
