@@ -129,8 +129,8 @@ firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const db = firebase.firestore();
-
-let incomes=[],expenses=[],editMode=false;
+  
+let incomes=[],expenses=[],editMode=false,budget=0;
 let lineChart,donutChart,monthlyChart;
 
 function register(){
