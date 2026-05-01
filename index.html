@@ -211,19 +211,6 @@ function logout(){
 auth.signOut();
 }
   
-function toggleTheme(){
-document.body.classList.toggle("dark");
-
-localStorage.setItem(
-"theme",
-document.body.classList.contains("dark") ? "dark" : "light"
-);
-}
-
-if(localStorage.getItem("theme")==="dark"){
-document.body.classList.add("dark");
-}
-  
 auth.onAuthStateChanged(user=>{
 if(user){
 authCard.style.display="none";
@@ -334,6 +321,19 @@ db.collection("users")
 .delete();
 }
 
+function toggleTheme(){
+document.body.classList.toggle("dark");
+
+localStorage.setItem(
+"theme",
+document.body.classList.contains("dark") ? "dark" : "light"
+);
+}
+
+if(localStorage.getItem("theme")==="dark"){
+document.body.classList.add("dark");
+}
+  
 // UI
 function updateUI(){
 let income=incomes.reduce((a,b)=>a+b.amount,0);
