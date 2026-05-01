@@ -7,6 +7,7 @@
 <link rel="manifest" href="manifest.json">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
 <style>
 body{font-family:Arial;background:#f4f4f4;margin:0;padding:20px} .card{background:white;padding:15px;border-radius:10px;margin:10px 0} input,select,button{padding:10px;margin:5px;width:100%} canvas{max-width:100%}.hidden{display:none}
 </style>
@@ -40,7 +41,6 @@ body{font-family:Arial;background:#f4f4f4;margin:0;padding:20px} .card{backgroun
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
-  
 const firebaseConfig = {
   apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
   authDomain: "expense-tracker-2ee7b.firebaseapp.com",
@@ -50,7 +50,6 @@ const firebaseConfig = {
   appId: "1:306376576940:web:f7bf235be67524c9c8b409",
   measurementId: "G-V7B8WSWCZ8"
 };
-  
 firebase.initializeApp(firebaseConfig);
 const authDB=firebase.auth();
 const db=firebase.firestore();
