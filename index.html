@@ -3,160 +3,121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FinTrack Pro Banking</title>
+<title>FinTrack Enterprise Banking</title>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<!-- Charts + PDF -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-/* ================= BANKING UI ================= */
-body{
-margin:0;
-font-family:system-ui;
-background:#0b1220;
-color:#e5e7eb;
+:root{
+--bg:#0b1220;
+--card:#111827;
+--text:#e5e7eb;
+--accent:#2563eb;
+--ok:#22c55e;
+--bad:#ef4444;
 }
-
+body.light{--bg:#f3f4f6;--card:#fff;--text:#111827}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
 .container{max-width:1200px;margin:auto;padding:20px}
-
-.topbar{
-display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
-
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
-
-.card{
-background:#111827;
-padding:15px;
-border-radius:16px;
-box-shadow:0 10px 30px rgba(0,0,0,0.4);
-}
-
-input,select,button{
-width:100%;padding:10px;border-radius:10px;border:none;margin-top:8px
-}
-
-button{
-background:#2563eb;
-color:white;
-font-weight:600;
-cursor:pointer
-}
-
-button:hover{background:#1d4ed8}
-
-.small{font-size:12px;opacity:0.7}
-
-ul{padding:0}
-li{list-style:none;padding:8px;border-bottom:1px solid #1f2937}
-
+.card{background:var(--card);padding:15px;border-radius:14px}
+input,select,button{width:100%;padding:10px;margin-top:8px;border-radius:10px;border:none}
+button{background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
 .hidden{display:none}
-
-.badge{
-padding:4px 8px;border-radius:10px;font-size:11px
-}
-
-.income{background:#16a34a}
-.expense{background:#dc2626}
-
+.badge{padding:3px 8px;border-radius:8px;font-size:11px}
+.income{background:var(--ok)}
+.expense{background:var(--bad)}
+.topbar{display:flex;justify-content:space-between;align-items:center}
 </style>
 </head>
 
 <body>
 
-<!-- ================= AUTH ================= -->
+<!-- SECURITY PIN GATE -->
+<div id="lock" class="container">
+<div class="card">
+<h2>Enterprise Secure Access</h2>
+<input id="pin" type="password" placeholder="Enter PIN">
+<button onclick="unlock()">Unlock</button>
+<button onclick="setPin()">Set PIN</button>
+</div>
+</div>
+
+<!-- AUTH -->
 <div id="auth" class="container">
 <div class="card">
-<h2>FinTrack Banking</h2>
-<p class="small">Secure Finance Dashboard</p>
-
+<h2>Enterprise Banking Login</h2>
 <input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+<input id="password" type="password">
 <button onclick="register()">Create Account</button>
 <button onclick="login()">Login</button>
 </div>
 </div>
 
-<!-- ================= APP ================= -->
+<!-- APP -->
 <div id="app" class="container hidden">
 
 <div class="topbar">
-<h2>Dashboard</h2>
+<h2>Enterprise Dashboard</h2>
+<div>
+<button onclick="toggleTheme()">Theme</button>
+<button onclick="exportCSV()">Export CSV</button>
 <button onclick="logout()">Logout</button>
 </div>
+</div>
 
-<!-- SUMMARY CARDS -->
 <div class="grid">
-
-<div class="card">
-<h3>Total Balance</h3>
-<h1 id="balance">0</h1>
+<div class="card"><h3>Balance</h3><h1 id="balance">0</h1></div>
+<div class="card"><h3>Income</h3><h2 id="income">0</h2></div>
+<div class="card"><h3>Expense</h3><h2 id="expense">0</h2></div>
 </div>
 
-<div class="card">
-<h3>Income</h3>
-<h2 id="income">0</h2>
-</div>
-
-<div class="card">
-<h3>Expense</h3>
-<h2 id="expense">0</h2>
-</div>
-
-</div>
-
-<!-- INPUT -->
 <div class="grid">
 <div class="card">
 <h3>Add Transaction</h3>
-<input id="amount" type="number" placeholder="Amount">
-<select id="type">
-<option>Income</option>
-<option>Expense</option>
-</select>
-<input id="category" placeholder="Category">
-<button onclick="addRecord()">Submit</button>
+<input id="amount" type="number">
+<select id="type"><option>Income</option><option>Expense</option></select>
+<input id="category">
+<button onclick="addTx()">Add</button>
 </div>
 
 <div class="card">
-<h3>Budget Control</h3>
-<input id="budget" type="number" placeholder="Monthly Budget">
-<button onclick="setBudget()">Save</button>
-<div id="budgetStatus"></div>
+<h3>Wallet</h3>
+<select id="wallet"></select>
+<button onclick="createWallet()">New Wallet</button>
 </div>
 
 <div class="card">
-<h3>Insights</h3>
-<div id="insights"></div>
-<button onclick="downloadPDF()">Export Statement</button>
+<h3>Insight Engine</h3>
+<div id="insight"></div>
 </div>
 </div>
 
-<!-- CHARTS -->
 <div class="grid">
-<div class="card"><h3>Daily Flow</h3><canvas id="dailyChart"></canvas></div>
-<div class="card"><h3>Category Spend</h3><canvas id="categoryChart"></canvas></div>
-<div class="card"><h3>Monthly Trend</h3><canvas id="monthlyChart"></canvas></div>
+<div class="card"><canvas id="daily"></canvas></div>
+<div class="card"><canvas id="cat"></canvas></div>
+<div class="card"><canvas id="month"></canvas></div>
 </div>
 
-<!-- TRANSACTIONS -->
+<div class="card">
+<h3>Audit Log</h3>
+<ul id="audit"></ul>
+</div>
+
 <div class="card">
 <h3>Transactions</h3>
-<input id="filter" placeholder="Search category..." oninput="render()">
-<ul id="records"></ul>
+<ul id="list"></ul>
 </div>
 
 </div>
 
 <script>
-
-/* ================= FIREBASE ================= */
-const firebaseConfig={
+const cfg={
 apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
 authDomain:"expense-tracker-2ee7b.firebaseapp.com",
 projectId:"expense-tracker-2ee7b",
@@ -165,143 +126,116 @@ messagingSenderId:"306376576940",
 appId:"1:306376576940:web:f7bf235be67524c9c8b409"
 };
 
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(cfg);
 const auth=firebase.auth();
 const db=firebase.firestore();
 
-let uid=null;
-let tx=[];
-let offlineQueue=[];
+let uid=null,walletId=null,data=[];
+let pinHash=null;
 
-/* ================= OFFLINE SYNC ================= */
-window.addEventListener('online',syncQueue);
-
-function syncQueue(){
-offlineQueue.forEach(fn=>fn());
-offlineQueue=[];
+/* ===== SECURITY (HASH PIN) ===== */
+async function hash(str){
+const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(str));
+return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('');
 }
 
-function queue(fn){offlineQueue.push(fn)}
-
-/* ================= AUTH ================= */
-function register(){
-auth.createUserWithEmailAndPassword(email.value,password.value)
-.catch(e=>alert(e.message));
+async function setPin(){
+pinHash=await hash(pin.value);
+localStorage.setItem("pin",pinHash);
+alert("PIN set");
 }
 
-function login(){
-auth.signInWithEmailAndPassword(email.value,password.value)
-.catch(e=>alert(e.message));
+async function unlock(){
+let h=await hash(pin.value);
+if(h===localStorage.getItem("pin"))lock.style.display="none";
 }
 
-function logout(){auth.signOut();location.reload();}
+/* ===== AUTH ===== */
+function register(){auth.createUserWithEmailAndPassword(email.value,password.value)}
+function login(){auth.signInWithEmailAndPassword(email.value,password.value)}
+function logout(){auth.signOut();location.reload()}
 
 auth.onAuthStateChanged(u=>{
-if(u){uid=u.uid;authUI(false);listen();}
+if(u){uid=u.uid;authUI(false);loadWallets();listen();log("LOGIN")}
 });
 
-function authUI(show){
-document.getElementById('auth').classList.toggle('hidden',!show);
-document.getElementById('app').classList.toggle('hidden',show);
+function authUI(v){auth.classList.toggle('hidden',!v);app.classList.toggle('hidden',v)}
+
+/* ===== WALLET SYSTEM ===== */
+function createWallet(){
+db.collection("users").doc(uid).collection("wallets").add({name:"Wallet " + Date.now()})
 }
 
-/* ================= FIRESTORE ================= */
+function loadWallets(){
+db.collection("users").doc(uid).collection("wallets").onSnapshot(s=>{
+wallet.innerHTML="";
+s.forEach(w=>{
+let o=document.createElement("option");o.value=w.id;o.text=w.data().name;wallet.appendChild(o);
+});
+walletId=wallet.value;
+});
+}
 
+/* ===== AUDIT ===== */
+function log(action){
+db.collection("users").doc(uid).collection("audit").add({action,time:Date.now()})
+}
+
+/* ===== TX ===== */
+function addTx(){
+let fn=()=>db.collection("users").doc(uid).collection("tx").add({
+amount:+amount.value,type:type.value,category:category.value,date:Date.now(),wallet:wallet.value
+});
+fn();log("ADD_TX");
+}
+
+/* ===== LISTENER ===== */
 function listen(){
 db.collection("users").doc(uid).collection("tx")
-.orderBy("date")
 .onSnapshot(s=>{
-tx=[];
-s.forEach(d=>tx.push({id:d.id,...d.data()}));
-render();
-});
+data=[];s.forEach(d=>data.push({id:d.id,...d.data()}));render();});
 }
 
-function addRecord(){
-const data={
-amount:+amount.value,
-type:type.value,
-category:category.value,
-date:Date.now()
-};
-
-const fn=()=>db.collection("users").doc(uid).collection("tx").add(data);
-
-navigator.onLine?fn():queue(fn);
+/* ===== CSV EXPORT ===== */
+function exportCSV(){
+let csv="type,amount,category\n"+data.map(d=>`${d.type},${d.amount},${d.category}`).join("\n");
+let blob=new Blob([csv]);
+let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="report.csv";a.click();
 }
 
-function del(id){
-const fn=()=>db.collection("users").doc(uid).collection("tx").doc(id).delete();
-navigator.onLine?fn():queue(fn);
-}
-
-/* ================= RENDER ================= */
-
+/* ===== RENDER ENGINE ===== */
+let a,b,c;
 function render(){
+let inc=0,exp=0,d={},cmap={},m={};
 
-let f=filter.value?.toLowerCase()||"";
-let data=tx.filter(t=>t.category.toLowerCase().includes(f));
-
-let inc=0,exp=0;
-let d={},c={},m={};
-
-records.innerHTML=data.map(r=>{
-if(r.type=="Income")inc+=r.amount; else exp+=r.amount;
-
-let day=new Date(r.date).toLocaleDateString();
+list.innerHTML=data.map(r=>{
+if(r.type=="Income")inc+=r.amount;else exp+=r.amount;
+let day=new Date(r.date).toDateString();
 let mon=new Date(r.date).toISOString().slice(0,7);
-
 d[day]=(d[day]||0)+r.amount;
 m[mon]=(m[mon]||0)+r.amount;
-if(r.type=="Expense")c[r.category]=(c[r.category]||0)+r.amount;
-
-return `<li>
-<span class="badge ${r.type=="Income"?"income":"expense"}">${r.type}</span>
-${r.amount} - ${r.category}
-<button onclick="del('${r.id}')">X</button>
-</li>`;
+if(r.type=="Expense")cmap[r.category]=(cmap[r.category]||0)+r.amount;
+return `<li>${r.type} ${r.amount} ${r.category}</li>`;
 }).join('');
 
 balance.innerText=inc-exp;
 income.innerText=inc;
 expense.innerText=exp;
 
-insights.innerHTML=exp>budget.value?"⚠ Over Budget":"OK";
+insight.innerText=exp>inc*0.7?"HIGH RISK SPENDING":"STABLE";
 
-charts(d,c,m);
+chart(d,cmap,m);
 }
 
-/* ================= CHARTS ================= */
-
-let a,b,c;
-
-function charts(d,cats,mon){
-
+function chart(d,cmap,m){
 if(a)a.destroy();if(b)b.destroy();if(c)c.destroy();
-
-a=new Chart(dailyChart,{type:'line',data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]}});
-
-b=new Chart(categoryChart,{type:'doughnut',data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats)}]}});
-
-c=new Chart(monthlyChart,{type:'bar',data:{labels:Object.keys(mon),datasets:[{data:Object.values(mon)}]}});
+a=new Chart(daily,{type:'line',data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]}});
+b=new Chart(cat,{type:'doughnut',data:{labels:Object.keys(cmap),datasets:[{data:Object.values(cmap)}]}});
+c=new Chart(month,{type:'bar',data:{labels:Object.keys(m),datasets:[{data:Object.values(m)}]}});
 }
 
-/* ================= PDF ================= */
-function downloadPDF(){
-const {jsPDF}=window.jspdf;
-const p=new jsPDF();
-p.text("Bank Statement",10,10);
-p.text("Balance: "+balance.innerText,10,20);
-p.save("statement.pdf");
-}
-
-/* ================= BUDGET ================= */
-function setBudget(){
-if(!uid)return;
-db.collection("users").doc(uid).set({budget:+budget.value},{merge:true});
-}
-
+/* ===== THEME ===== */
+function toggleTheme(){document.body.classList.toggle('light')}
 </script>
-
 </body>
-  </html>
+                    </html>
