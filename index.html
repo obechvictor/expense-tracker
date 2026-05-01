@@ -40,14 +40,17 @@ body{font-family:Arial;background:#f4f4f4;margin:0;padding:20px} .card{backgroun
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
-const firebaseConfig={
-apiKey:"YOUR_API_KEY",
-authDomain:"YOUR_PROJECT.firebaseapp.com",
-projectId:"YOUR_PROJECT_ID",
-storageBucket:"YOUR_PROJECT.appspot.com",
-messagingSenderId:"YOUR_SENDER_ID",
-appId:"YOUR_APP_ID"
+  
+const firebaseConfig = {
+  apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+  authDomain: "expense-tracker-2ee7b.firebaseapp.com",
+  projectId: "expense-tracker-2ee7b",
+  storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
+  messagingSenderId: "306376576940",
+  appId: "1:306376576940:web:f7bf235be67524c9c8b409",
+  measurementId: "G-V7B8WSWCZ8"
 };
+  
 firebase.initializeApp(firebaseConfig);
 const authDB=firebase.auth();
 const db=firebase.firestore();
