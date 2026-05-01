@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FinTrack Production Banking</title>
+<title>FinTrack Banking</title>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -13,33 +14,45 @@
 
 <style>
 :root{
---bg:#0b1220;--card:#111827;--text:#e5e7eb;--accent:#2563eb;
+--bg:#0b1220;
+--card:#111827;
+--text:#e5e7eb;
+--accent:#2563eb;
+--good:#22c55e;
+--bad:#ef4444;
 }
+
 body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
-.container{max-width:1200px;margin:auto;padding:20px}
+.container{max-width:1100px;margin:auto;padding:20px}
+.card{background:var(--card);padding:15px;border-radius:14px;margin-bottom:15px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
-.card{background:var(--card);padding:15px;border-radius:14px}
 input,select,button{width:100%;padding:10px;margin-top:8px;border-radius:10px;border:none}
-button{background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
+button{background:var(--accent);color:white;font-weight:600;cursor:pointer}
 .hidden{display:none}
+.badge{padding:3px 8px;border-radius:8px;font-size:11px}
+.income{background:var(--good)}
+.expense{background:var(--bad)}
+.topbar{display:flex;justify-content:space-between;align-items:center}
 </style>
 </head>
-
 <body>
 
+<!-- AUTH -->
 <div id="auth" class="container">
 <div class="card">
-<h2>Production Banking Login</h2>
+<h2>Bank Login</h2>
 <input id="email" placeholder="Email">
-<input id="password" type="password">
+<input id="password" type="password" placeholder="Password">
+<button onclick="register()">Register</button>
 <button onclick="login()">Login</button>
 </div>
 </div>
 
+<!-- APP -->
 <div id="app" class="container hidden">
 
-<div class="card">
-<h2>Bank Dashboard</h2>
+<div class="topbar">
+<h2>Dashboard</h2>
 <button onclick="logout()">Logout</button>
 </div>
 
@@ -50,21 +63,24 @@ button{background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
 </div>
 
 <div class="card">
-<h3>Transaction Engine</h3>
+<h3>Add Transaction</h3>
 <input id="amount" type="number" placeholder="Amount">
-<select id="type"><option>Income</option><option>Expense</option></select>
+<select id="type">
+<option>Income</option>
+<option>Expense</option>
+</select>
 <input id="category" placeholder="Category">
-<button onclick="createTx()">Submit Transaction</button>
+<button onclick="addTx()">Add</button>
 </div>
 
 <div class="grid">
-<div class="card"><canvas id="daily"></canvas></div>
-<div class="card"><canvas id="cat"></canvas></div>
-<div class="card"><canvas id="month"></canvas></div>
+<div class="card"><h3>Daily</h3><canvas id="daily"></canvas></div>
+<div class="card"><h3>Category</h3><canvas id="cat"></canvas></div>
+<div class="card"><h3>Monthly</h3><canvas id="month"></canvas></div>
 </div>
 
 <div class="card">
-<h3>Ledger</h3>
+<h3>Transactions</h3>
 <ul id="list"></ul>
 </div>
 
@@ -73,7 +89,7 @@ button{background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
 <script>
 
 /* ================= FIREBASE ================= */
-const firebaseConfig={
+const firebaseConfig = {
 apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
 authDomain:"expense-tracker-2ee7b.firebaseapp.com",
 projectId:"expense-tracker-2ee7b",
@@ -83,124 +99,113 @@ appId:"1:306376576940:web:f7bf235be67524c9c8b409"
 };
 
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-let uid=null;
-let tx=[];
+let uid = null;
+let tx = [];
 
-/* ================= SECURITY SESSION CONTROL ================= */
-let sessionToken=null;
-
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-/* ================= AUTH ================= */
+/* ================= AUTH FIX ================= */
 function showApp(){
-document.getElementById("auth").style.display="none";
-document.getElementById("app").style.display="block";
-document.getElementById("lock").style.display="none";
+document.getElementById('auth').classList.add('hidden');
+document.getElementById('app').classList.remove('hidden');
 }
 
 function showAuth(){
-document.getElementById("auth").style.display="block";
-document.getElementById("app").style.display="none";
+document.getElementById('auth').classList.remove('hidden');
+document.getElementById('app').classList.add('hidden');
 }
 
-/* LOGIN */
-function login(){
-auth.signInWithEmailAndPassword(email.value,password.value)
-.then(()=>console.log("login success"))
-.catch(e=>{
-alert("Login failed: " + e.message);
-console.log(e);
-});
-}
-
-/* REGISTER */
 function register(){
-auth.createUserWithEmailAndPassword(email.value,password.value)
-.then(()=>alert("Account created"))
-.catch(e=>alert(e.message));
+const emailVal = document.getElementById('email').value;
+const passVal = document.getElementById('password').value;
+
+auth.createUserWithEmailAndPassword(emailVal, passVal)
+.catch(e => alert(e.message));
 }
 
-/* AUTH STATE */
-auth.onAuthStateChanged(u=>{
-if(u){
-uid=u.uid;
+function login(){
+const emailVal = document.getElementById('email').value;
+const passVal = document.getElementById('password').value;
+
+auth.signInWithEmailAndPassword(emailVal, passVal)
+.catch(e => alert(e.message));
+}
+
+function logout(){auth.signOut();}
+
+auth.onAuthStateChanged(user => {
+if(user){
+uid = user.uid;
 showApp();
 listen();
 }else{
+uid = null;
 showAuth();
 }
 });
-  
-/* ================= FIRESTORE TRANSACTION ENGINE ================= */
 
-function validateTx(t){
-return t.amount>0 && t.category.length>1;
-}
+/* ================= FIRESTORE ================= */
+function addTx(){
+const amount = +document.getElementById('amount').value;
+const type = document.getElementById('type').value;
+const category = document.getElementById('category').value;
 
-function createTx(){
-let txData={
-amount:+amount.value,
-type:type.value,
-category:category.value,
-uid,
-time:Date.now(),
-session:sessionToken
-};
+if(!amount || !category) return alert("Invalid input");
 
-if(!validateTx(txData))return alert("Invalid transaction");
-
-return db.collection("ledger").add(txData);
+db.collection('users').doc(uid).collection('tx').add({
+amount,type,category,date:Date.now()
+});
 }
 
 function listen(){
-db.collection("ledger")
-.where("uid","==",uid)
-.onSnapshot(s=>{
-tx=[];
-s.forEach(d=>tx.push({id:d.id,...d.data()}));
+db.collection('users').doc(uid).collection('tx')
+.onSnapshot(snap => {
+tx = [];
+snap.forEach(doc => tx.push({id:doc.id,...doc.data()}));
 render();
 });
 }
 
-/* ================= AGGREGATION ENGINE ================= */
+/* ================= RENDER ================= */
+let a,b,c;
 
 function render(){
-let inc=0,exp=0,d={},c={},m={};
+let inc=0,exp=0;
+let d={},cat={},mon={};
 
-list.innerHTML=tx.map(r=>{
-if(r.type=="Income")inc+=r.amount;else exp+=r.amount;
+const list = document.getElementById('list');
 
-let day=new Date(r.time).toDateString();
-let mon=new Date(r.time).toISOString().slice(0,7);
+list.innerHTML = tx.map(t => {
+if(t.type==='Income') inc+=t.amount;
+else exp+=t.amount;
 
-d[day]=(d[day]||0)+r.amount;
-m[mon]=(m[mon]||0)+r.amount;
+let day = new Date(t.date).toDateString();
+let month = new Date(t.date).toISOString().slice(0,7);
 
-if(r.type=="Expense")c[r.category]=(c[r.category]||0)+r.amount;
+d[day]=(d[day]||0)+t.amount;
+mon[month]=(mon[month]||0)+t.amount;
+if(t.type==='Expense') cat[t.category]=(cat[t.category]||0)+t.amount;
 
-return `<li>${r.type} ${r.amount} ${r.category}</li>`;
+return `<li><span class='badge ${t.type==='Income'?'income':'expense'}'>${t.type}</span> ${t.amount} ${t.category}</li>`;
 }).join('');
 
-balance.innerText=inc-exp;
-income.innerText=inc;
-expense.innerText=exp;
+document.getElementById('balance').innerText = inc-exp;
+document.getElementById('income').innerText = inc;
+document.getElementById('expense').innerText = exp;
 
-charts(d,c,m);
+charts(d,cat,mon);
 }
 
-/* ================= CHART ENGINE ================= */
-let a,b,c;
-function charts(d,cmap,m){
+/* ================= CHARTS FIX ================= */
+function charts(d,cat,mon){
 if(a)a.destroy();if(b)b.destroy();if(c)c.destroy();
 
 a=new Chart(daily,{type:'line',data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]}});
 
-b=new Chart(cat,{type:'doughnut',data:{labels:Object.keys(cmap),datasets:[{data:Object.values(cmap)}]}});
+b=new Chart(cat,{type:'doughnut',data:{labels:Object.keys(cat),datasets:[{data:Object.values(cat)}]}});
 
-c=new Chart(month,{type:'bar',data:{labels:Object.keys(m),datasets:[{data:Object.values(m)}]}});
+c=new Chart(month,{type:'bar',data:{labels:Object.keys(mon),datasets:[{data:Object.values(mon)}]}});
 }
 
 </script>
