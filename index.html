@@ -297,7 +297,20 @@ editMode=!editMode;
 editBtn.innerText=editMode?"Done":"Edit";
 renderRecords();
 }
+  
+function toggleTheme(){
+document.body.classList.toggle("dark");
 
+localStorage.setItem(
+"theme",
+document.body.classList.contains("dark") ? "dark" : "light"
+);
+}
+
+if(localStorage.getItem("theme")==="dark"){
+document.body.classList.add("dark");
+}
+  
 function deleteExpense(id){
 db.collection("users")
 .doc(auth.currentUser.uid)
