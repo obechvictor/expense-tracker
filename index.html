@@ -4,43 +4,80 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Expense Tracker PWA</title>
-<link rel="manifest" href="manifest.json">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
-<style>
-body{font-family:Arial;background:#f4f4f4;margin:0;padding:20px} .card{background:white;padding:15px;border-radius:10px;margin:10px 0} input,select,button{padding:10px;margin:5px;width:100%} canvas{max-width:100%}.hidden{display:none}
-</style>
-</head>
-<body>
-<div id='auth' class='card'>
-<h2>Login/Register</h2>
-<input id='user' placeholder='Username'>
-<input id='pass' type='password' placeholder='Password'>
-<button onclick='register()'>Register</button>
-<button onclick='login()'>Login</button>
-</div>
-<div id='app' class='hidden'>
-<div class='card'><h2>Expense Tracker</h2><button onclick='logout()'>Logout</button></div>
-<div class='card'>
-<input id='amount' type='number' placeholder='Amount'>
-<select id='type'><option>Income</option><option>Expense</option></select>
-<input id='category' placeholder='Category'>
-<button onclick='addRecord()'>Add Record</button>
-<input id='budget' type='number' placeholder='Budget Limit'>
-<button onclick='setBudget()'>Set Budget</button>
-<button onclick='downloadPDF()'>Download PDF</button>
-</div>
-<div class='card'><ul id='records'></ul></div>
-<div class='card'><canvas id='dailyChart'></canvas></div>
-<div class='card'><canvas id='monthlyChart'></canvas></div>
-<div class='card'><canvas id='categoryChart'></canvas></div>
-<div class='card' id='insights'></div>
-</div>
+
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<!-- Charts + PDF -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+/* ================= UI STYLES ================= */
+body{font-family:Arial;background:#f5f5f5;margin:0;padding:15px}
+.card{background:#fff;padding:15px;border-radius:10px;margin-bottom:10px}
+input,select,button{width:100%;padding:10px;margin-top:5px}
+button{cursor:pointer}
+.hidden{display:none}
+ul{padding:0}
+li{list-style:none;padding:5px;border-bottom:1px solid #eee}
+</style>
+</head>
+
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="auth" class="card">
+<h2>Login / Register</h2>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="register()">Register</button>
+<button onclick="login()">Login</button>
+</div>
+
+<!-- ================= MAIN APP ================= -->
+<div id="app" class="hidden">
+
+<div class="card">
+<h2>Expense Tracker</h2>
+<button onclick="logout()">Logout</button>
+</div>
+
+<!-- INPUT SECTION -->
+<div class="card">
+<input id="amount" type="number" placeholder="Amount">
+<select id="type">
+<option>Income</option>
+<option>Expense</option>
+</select>
+<input id="category" placeholder="Category">
+<button onclick="addRecord()">Add Record</button>
+
+<input id="budget" type="number" placeholder="Budget Limit">
+<button onclick="setBudget()">Set Budget</button>
+
+<button onclick="downloadPDF()">Download Report</button>
+</div>
+
+<!-- RECORD LIST -->
+<div class="card">
+<ul id="records"></ul>
+</div>
+
+<!-- CHARTS -->
+<div class="card"><canvas id="dailyChart"></canvas></div>
+<div class="card"><canvas id="monthlyChart"></canvas></div>
+<div class="card"><canvas id="categoryChart"></canvas></div>
+
+<!-- INSIGHTS -->
+<div class="card" id="insights"></div>
+
+</div>
+
 <script>
+/* ================= FIREBASE CONFIG ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
   authDomain: "expense-tracker-2ee7b.firebaseapp.com",
@@ -50,27 +87,193 @@ const firebaseConfig = {
   appId: "1:306376576940:web:f7bf235be67524c9c8b409",
   measurementId: "G-V7B8WSWCZ8"
 };
+
 firebase.initializeApp(firebaseConfig);
-const authDB=firebase.auth();
-const db=firebase.firestore();
-let currentUser;
-function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function load(k){return JSON.parse(localStorage.getItem(k)||'[]')}
-function register(){authDB.createUserWithEmailAndPassword(user.value,pass.value).then(()=>alert('Registered')).catch(e=>alert(e.message))});save('users',users);alert('Registered');}
-function login(){authDB.signInWithEmailAndPassword(user.value,pass.value).then(res=>{currentUser=res.user.uid;auth.classList.add('hidden');app.classList.remove('hidden');render()}).catch(e=>alert(e.message))}else alert('Invalid login')}
-function logout(){location.reload()}
-function recordsData(){return load('rec_'+currentUser)}
-function addRecord(){let r=recordsData();r.push({a:+amount.value,t:type.value,c:category.value,d:new Date().toISOString(),done:false});save('rec_'+currentUser,r);render()}
-function del(i){let r=recordsData();r.splice(i,1);save('rec_'+currentUser,r);render()}
-function toggle(i){let r=recordsData();r[i].done=!r[i].done;save('rec_'+currentUser,r);render()}
-function edit(i){let r=recordsData();let n=prompt('New amount',r[i].a);if(n){r[i].a=+n;save('rec_'+currentUser,r);render()}}
-function setBudget(){localStorage.setItem('budget_'+currentUser,budget.value);render()}
-function render(){let r=recordsData();records.innerHTML=r.map((x,i)=>`<li>${x.t}: ${x.a} (${x.c}) ${x.done?'✓':''}<button onclick='toggle(${i})'>Done</button><button onclick='edit(${i})'>Edit</button><button onclick='del(${i})'>Delete</button></li>`).join('');drawCharts(r);insightsView(r)}
-function drawCharts(r){let days={},months={},cats={};r.forEach(x=>{let d=x.d.slice(0,10),m=x.d.slice(0,7);days[d]=(days[d]||0)+x.a;months[m]=(months[m]||0)+x.a;if(x.t==='Expense')cats[x.c]=(cats[x.c]||0)+x.a});makeChart('dailyChart','line',days);makeChart('monthlyChart','bar',months);makeChart('categoryChart','doughnut',cats)}
-function makeChart(id,type,data){new Chart(document.getElementById(id),{type,data:{labels:Object.keys(data),datasets:[{data:Object.values(data)}]}})}
-function insightsView(r){let inc=r.filter(x=>x.t==='Income').reduce((a,b)=>a+b.a,0);let exp=r.filter(x=>x.t==='Expense').reduce((a,b)=>a+b.a,0);let b=+localStorage.getItem('budget_'+currentUser)||0;insights.innerHTML=`Income: ${inc}<br>Expense: ${exp}<br>Balance: ${inc-exp}<br>${exp>b?'Over Budget':'Within Budget'}`}
-function downloadPDF(){const {jsPDF}=window.jspdf;let pdf=new jsPDF();pdf.text(insights.innerText,10,10);pdf.save('report.pdf')}
-if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js')}
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;
+
+/* ================= AUTH ================= */
+function register(){
+console.log("Register clicked");
+const email = document.getElementById('email').value.trim();
+const password = document.getElementById('password').value;
+
+auth.createUserWithEmailAndPassword(email,password)
+.then(() => alert("Registered"))
+.catch(err => alert(err.message));
+}
+
+function login(){
+console.log("Login clicked");
+const email = document.getElementById('email').value.trim();
+const password = document.getElementById('password').value;
+
+auth.signInWithEmailAndPassword(email,password)
+.then(res => {
+currentUser = res.user.uid;
+showApp();
+})
+.catch(err => alert(err.message));
+}
+
+auth.onAuthStateChanged(user => {
+if(user){
+currentUser = user.uid;
+showApp();
+}
+});
+
+function logout(){
+auth.signOut();
+location.reload();
+}
+
+function showApp(){
+document.getElementById('auth').classList.add('hidden');
+document.getElementById('app').classList.remove('hidden');
+render();
+}
+
+/* ================= STORAGE ================= */
+function getKey(){return "rec_"+currentUser;}
+
+function loadData(){
+return JSON.parse(localStorage.getItem(getKey())||"[]");
+}
+
+function saveData(data){
+localStorage.setItem(getKey(),JSON.stringify(data));
+}
+
+/* ================= RECORDS ================= */
+function addRecord(){
+const data = loadData();
+
+data.push({
+amount:+amount.value,
+type:type.value,
+category:category.value,
+date:new Date().toISOString(),
+done:false
+});
+
+saveData(data);
+render();
+}
+
+function deleteRecord(i){
+const data = loadData();
+data.splice(i,1);
+saveData(data);
+render();
+}
+
+function toggleDone(i){
+const data = loadData();
+data[i].done = !data[i].done;
+saveData(data);
+render();
+}
+
+function editRecord(i){
+const data = loadData();
+const val = prompt("Edit amount",data[i].amount);
+if(val){data[i].amount = +val;}
+saveData(data);
+render();
+}
+
+function setBudget(){
+localStorage.setItem("budget_"+currentUser,budget.value);
+render();
+}
+
+/* ================= RENDER ================= */
+function render(){
+const data = loadData();
+
+records.innerHTML = data.map((r,i)=>`
+<li>
+${r.type} - ${r.amount} (${r.category})
+<button onclick="toggleDone(${i})">✔</button>
+<button onclick="editRecord(${i})">Edit</button>
+<button onclick="deleteRecord(${i})">X</button>
+</li>`).join('');
+
+updateCharts(data);
+updateInsights(data);
+}
+
+/* ================= CHARTS ================= */
+let dailyChart,monthlyChart,categoryChart;
+
+function updateCharts(data){
+
+let daily={},monthly={},cat={};
+
+data.forEach(r=>{
+let d=r.date.slice(0,10);
+let m=r.date.slice(0,7);
+
+daily[d]=(daily[d]||0)+r.amount;
+monthly[m]=(monthly[m]||0)+r.amount;
+
+if(r.type==="Expense"){
+cat[r.category]=(cat[r.category]||0)+r.amount;
+}
+});
+
+if(dailyChart)dailyChart.destroy();
+if(monthlyChart)monthlyChart.destroy();
+if(categoryChart)categoryChart.destroy();
+
+function make(id,type,dataObj){
+return new Chart(document.getElementById(id),{
+type,
+data:{labels:Object.keys(dataObj),datasets:[{data:Object.values(dataObj)}]}}
+);
+}
+
+dailyChart = make("dailyChart","line",daily);
+monthlyChart = make("monthlyChart","bar",monthly);
+categoryChart = make("categoryChart","doughnut",cat);
+}
+
+/* ================= INSIGHTS ================= */
+function updateInsights(data){
+let inc=0,exp=0;
+
+data.forEach(r=>{
+if(r.type==="Income")inc+=r.amount;
+else exp+=r.amount;
+});
+
+let budget = +localStorage.getItem("budget_"+currentUser)||0;
+
+insights.innerHTML=`
+Income: ${inc}<br>
+Expense: ${exp}<br>
+Balance: ${inc-exp}<br>
+${exp>budget?"OVER BUDGET":"OK"}
+`;
+}
+
+/* ================= PDF ================= */
+function downloadPDF(){
+const {jsPDF}=window.jspdf;
+const pdf=new jsPDF();
+pdf.text(insights.innerText,10,10);
+pdf.save("report.pdf");
+}
+
+/* ================= SERVICE WORKER ================= */
+if('serviceWorker' in navigator){
+navigator.serviceWorker.register('service-worker.js');
+}
+
 </script>
+
 </body>
 </html>
