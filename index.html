@@ -3,25 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FinTrack Enterprise Banking</title>
+<title>FinTrack Production Banking</title>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 :root{
---bg:#0b1220;
---card:#111827;
---text:#e5e7eb;
---accent:#2563eb;
---ok:#22c55e;
---bad:#ef4444;
+--bg:#0b1220;--card:#111827;--text:#e5e7eb;--accent:#2563eb;
 }
-body.light{--bg:#f3f4f6;--card:#fff;--text:#111827}
 body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
 .container{max-width:1200px;margin:auto;padding:20px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
@@ -29,46 +22,25 @@ body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
 input,select,button{width:100%;padding:10px;margin-top:8px;border-radius:10px;border:none}
 button{background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
 .hidden{display:none}
-.badge{padding:3px 8px;border-radius:8px;font-size:11px}
-.income{background:var(--ok)}
-.expense{background:var(--bad)}
-.topbar{display:flex;justify-content:space-between;align-items:center}
 </style>
 </head>
 
 <body>
 
-<!-- SECURITY PIN GATE -->
-<div id="lock" class="container">
-<div class="card">
-<h2>Enterprise Secure Access</h2>
-<input id="pin" type="password" placeholder="Enter PIN">
-<button onclick="unlock()">Unlock</button>
-<button onclick="setPin()">Set PIN</button>
-</div>
-</div>
-
-<!-- AUTH -->
 <div id="auth" class="container">
 <div class="card">
-<h2>Enterprise Banking Login</h2>
+<h2>Production Banking Login</h2>
 <input id="email" placeholder="Email">
 <input id="password" type="password">
-<button onclick="register()">Create Account</button>
 <button onclick="login()">Login</button>
 </div>
 </div>
 
-<!-- APP -->
 <div id="app" class="container hidden">
 
-<div class="topbar">
-<h2>Enterprise Dashboard</h2>
-<div>
-<button onclick="toggleTheme()">Theme</button>
-<button onclick="exportCSV()">Export CSV</button>
+<div class="card">
+<h2>Bank Dashboard</h2>
 <button onclick="logout()">Logout</button>
-</div>
 </div>
 
 <div class="grid">
@@ -77,25 +49,12 @@ button{background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
 <div class="card"><h3>Expense</h3><h2 id="expense">0</h2></div>
 </div>
 
-<div class="grid">
 <div class="card">
-<h3>Add Transaction</h3>
-<input id="amount" type="number">
+<h3>Transaction Engine</h3>
+<input id="amount" type="number" placeholder="Amount">
 <select id="type"><option>Income</option><option>Expense</option></select>
-<input id="category">
-<button onclick="addTx()">Add</button>
-</div>
-
-<div class="card">
-<h3>Wallet</h3>
-<select id="wallet"></select>
-<button onclick="createWallet()">New Wallet</button>
-</div>
-
-<div class="card">
-<h3>Insight Engine</h3>
-<div id="insight"></div>
-</div>
+<input id="category" placeholder="Category">
+<button onclick="createTx()">Submit Transaction</button>
 </div>
 
 <div class="grid">
@@ -105,19 +64,16 @@ button{background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
 </div>
 
 <div class="card">
-<h3>Audit Log</h3>
-<ul id="audit"></ul>
-</div>
-
-<div class="card">
-<h3>Transactions</h3>
+<h3>Ledger</h3>
 <ul id="list"></ul>
 </div>
 
 </div>
 
 <script>
-const cfg={
+
+/* ================= FIREBASE ================= */
+const firebaseConfig={
 apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
 authDomain:"expense-tracker-2ee7b.firebaseapp.com",
 projectId:"expense-tracker-2ee7b",
@@ -126,95 +82,83 @@ messagingSenderId:"306376576940",
 appId:"1:306376576940:web:f7bf235be67524c9c8b409"
 };
 
-firebase.initializeApp(cfg);
+firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
 
-let uid=null,walletId=null,data=[];
-let pinHash=null;
+let uid=null;
+let tx=[];
 
-/* ===== SECURITY (HASH PIN) ===== */
-async function hash(str){
-const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(str));
-return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('');
+/* ================= SECURITY SESSION CONTROL ================= */
+let sessionToken=null;
+
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+/* ================= AUTH ================= */
+function login(){
+auth.signInWithEmailAndPassword(email.value,password.value)
+.catch(e=>alert(e.message));
 }
 
-async function setPin(){
-pinHash=await hash(pin.value);
-localStorage.setItem("pin",pinHash);
-alert("PIN set");
-}
-
-async function unlock(){
-let h=await hash(pin.value);
-if(h===localStorage.getItem("pin"))lock.style.display="none";
-}
-
-/* ===== AUTH ===== */
-function register(){auth.createUserWithEmailAndPassword(email.value,password.value)}
-function login(){auth.signInWithEmailAndPassword(email.value,password.value)}
-function logout(){auth.signOut();location.reload()}
+function logout(){auth.signOut();location.reload();}
 
 auth.onAuthStateChanged(u=>{
-if(u){uid=u.uid;authUI(false);loadWallets();listen();log("LOGIN")}
+if(u){uid=u.uid;authUI(false);listen();createSession();}
 });
 
 function authUI(v){auth.classList.toggle('hidden',!v);app.classList.toggle('hidden',v)}
 
-/* ===== WALLET SYSTEM ===== */
-function createWallet(){
-db.collection("users").doc(uid).collection("wallets").add({name:"Wallet " + Date.now()})
+function createSession(){
+sessionToken=crypto.randomUUID();sessionStorage.setItem("session",sessionToken);
 }
 
-function loadWallets(){
-db.collection("users").doc(uid).collection("wallets").onSnapshot(s=>{
-wallet.innerHTML="";
-s.forEach(w=>{
-let o=document.createElement("option");o.value=w.id;o.text=w.data().name;wallet.appendChild(o);
-});
-walletId=wallet.value;
-});
+/* ================= FIRESTORE TRANSACTION ENGINE ================= */
+
+function validateTx(t){
+return t.amount>0 && t.category.length>1;
 }
 
-/* ===== AUDIT ===== */
-function log(action){
-db.collection("users").doc(uid).collection("audit").add({action,time:Date.now()})
+function createTx(){
+let txData={
+amount:+amount.value,
+type:type.value,
+category:category.value,
+uid,
+time:Date.now(),
+session:sessionToken
+};
+
+if(!validateTx(txData))return alert("Invalid transaction");
+
+return db.collection("ledger").add(txData);
 }
 
-/* ===== TX ===== */
-function addTx(){
-let fn=()=>db.collection("users").doc(uid).collection("tx").add({
-amount:+amount.value,type:type.value,category:category.value,date:Date.now(),wallet:wallet.value
-});
-fn();log("ADD_TX");
-}
-
-/* ===== LISTENER ===== */
 function listen(){
-db.collection("users").doc(uid).collection("tx")
+db.collection("ledger")
+.where("uid","==",uid)
 .onSnapshot(s=>{
-data=[];s.forEach(d=>data.push({id:d.id,...d.data()}));render();});
+tx=[];
+s.forEach(d=>tx.push({id:d.id,...d.data()}));
+render();
+});
 }
 
-/* ===== CSV EXPORT ===== */
-function exportCSV(){
-let csv="type,amount,category\n"+data.map(d=>`${d.type},${d.amount},${d.category}`).join("\n");
-let blob=new Blob([csv]);
-let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="report.csv";a.click();
-}
+/* ================= AGGREGATION ENGINE ================= */
 
-/* ===== RENDER ENGINE ===== */
-let a,b,c;
 function render(){
-let inc=0,exp=0,d={},cmap={},m={};
+let inc=0,exp=0,d={},c={},m={};
 
-list.innerHTML=data.map(r=>{
+list.innerHTML=tx.map(r=>{
 if(r.type=="Income")inc+=r.amount;else exp+=r.amount;
-let day=new Date(r.date).toDateString();
-let mon=new Date(r.date).toISOString().slice(0,7);
+
+let day=new Date(r.time).toDateString();
+let mon=new Date(r.time).toISOString().slice(0,7);
+
 d[day]=(d[day]||0)+r.amount;
 m[mon]=(m[mon]||0)+r.amount;
-if(r.type=="Expense")cmap[r.category]=(cmap[r.category]||0)+r.amount;
+
+if(r.type=="Expense")c[r.category]=(c[r.category]||0)+r.amount;
+
 return `<li>${r.type} ${r.amount} ${r.category}</li>`;
 }).join('');
 
@@ -222,20 +166,22 @@ balance.innerText=inc-exp;
 income.innerText=inc;
 expense.innerText=exp;
 
-insight.innerText=exp>inc*0.7?"HIGH RISK SPENDING":"STABLE";
-
-chart(d,cmap,m);
+charts(d,c,m);
 }
 
-function chart(d,cmap,m){
+/* ================= CHART ENGINE ================= */
+let a,b,c;
+function charts(d,cmap,m){
 if(a)a.destroy();if(b)b.destroy();if(c)c.destroy();
+
 a=new Chart(daily,{type:'line',data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]}});
+
 b=new Chart(cat,{type:'doughnut',data:{labels:Object.keys(cmap),datasets:[{data:Object.values(cmap)}]}});
+
 c=new Chart(month,{type:'bar',data:{labels:Object.keys(m),datasets:[{data:Object.values(m)}]}});
 }
 
-/* ===== THEME ===== */
-function toggleTheme(){document.body.classList.toggle('light')}
 </script>
+
 </body>
-  </html>
+</html>
