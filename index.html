@@ -390,7 +390,7 @@ ratio<=80?"Moderate ⚠️":
 
 let budgetInsight="No budget set";
 
-if(budget>0){
+if(Number(budget) > 0)
 let used=expense/budget*100;
 
 budgetInsight=
