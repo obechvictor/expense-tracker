@@ -2,400 +2,73 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Finance Dashboard Pro</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expense Tracker PWA</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#22c55e">
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  
 <style>
-body{margin:0;font-family:"Times New Roman";background:#f5f7fb}
-header{background:linear-gradient(135deg,#22c55e,#16a34a);padding:20px;color:#fff}
-.container{padding:20px}
-.card{background:#fff;padding:20px;border-radius:15px;margin-bottom:20px;box-shadow:0 4px 10px rgba(0,0,0,.08)}
-input{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:8px;box-sizing:border-box}
-button{padding:12px;border:none;border-radius:8px;cursor:pointer;font-weight:bold}
-.primary{background:#22c55e;color:white}
-.danger{background:#ef4444;color:white}
-#editBtn{float:right;background:white}
-.record{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee}
-.metric{font-size:28px;font-weight:bold}
-.hidden{display:none}
-canvas{margin-top:20px}
+body{font-family:Arial;background:#f4f4f4;margin:0;padding:20px} .card{background:white;padding:15px;border-radius:10px;margin:10px 0} input,select,button{padding:10px;margin:5px;width:100%} canvas{max-width:100%}.hidden{display:none}
 </style>
 </head>
 <body>
-
-<div id="authSection" class="container">
-<div class="card">
-<h2>Login / Register</h2>
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<button class="primary" onclick="login()">Login</button>
-<button onclick="register()">Register</button>
+<div id='auth' class='card'>
+<h2>Login/Register</h2>
+<input id='user' placeholder='Username'>
+<input id='pass' type='password' placeholder='Password'>
+<button onclick='register()'>Register</button>
+<button onclick='login()'>Login</button>
 </div>
+<div id='app' class='hidden'>
+<div class='card'><h2>Expense Tracker</h2><button onclick='logout()'>Logout</button></div>
+<div class='card'>
+<input id='amount' type='number' placeholder='Amount'>
+<select id='type'><option>Income</option><option>Expense</option></select>
+<input id='category' placeholder='Category'>
+<button onclick='addRecord()'>Add Record</button>
+<input id='budget' type='number' placeholder='Budget Limit'>
+<button onclick='setBudget()'>Set Budget</button>
+<button onclick='downloadPDF()'>Download PDF</button>
 </div>
-
-<div id="appSection" class="hidden">
-
-<header>
-<h2>Finance Dashboard</h2>
-<button id="editBtn" onclick="toggleEdit()">Edit</button>
-</header>
-
-<div class="container">
-
-<div class="card">
-<h3>Balance</h3>
-<div class="metric" id="balance">KES 0</div>
+<div class='card'><ul id='records'></ul></div>
+<div class='card'><canvas id='dailyChart'></canvas></div>
+<div class='card'><canvas id='monthlyChart'></canvas></div>
+<div class='card'><canvas id='categoryChart'></canvas></div>
+<div class='card' id='insights'></div>
 </div>
-
-<div class="card">
-<h3>Add Income</h3>
-<input id="incomeAmount" placeholder="Amount">
-<button class="primary" onclick="addIncome()">Add Income</button>
-</div>
-
-<div class="card">
-<h3>Add Expense</h3>
-<input id="expenseAmount" placeholder="Amount">
-<input id="expenseCategory" placeholder="Category">
-<button class="primary" onclick="addExpense()">Add Expense</button>
-</div>
-
-<div class="card">
-<h3>Daily Spending Trend</h3>
-<canvas id="lineChart"></canvas>
-</div>
-
-<div class="card">
-<h3>Monthly Comparison</h3>
-<canvas id="monthlyChart"></canvas>
-</div>
-
-<div class="card">
-<h3>Expense Categories</h3>
-<canvas id="donutChart"></canvas>
-</div>
-
-<div class="card">
-<h3>Financial Insights</h3>
-<div id="insights"></div>
-</div>
-  
-<div class="card">
-<h3>Reports</h3>
-<button class="primary" onclick="downloadPDF()">Download Monthly PDF</button>
-</div>
-  
-<div class="card">
-<h3>Records</h3>
-<div id="records"></div>
-</div>
-
-</div>
-</div>
-
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
-  
-const firebaseConfig = {
-  apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
-  authDomain: "expense-tracker-2ee7b.firebaseapp.com",
-  projectId: "expense-tracker-2ee7b",
-  storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
-  messagingSenderId: "306376576940",
-  appId: "1:306376576940:web:f7bf235be67524c9c8b409",
-  measurementId: "G-V7B8WSWCZ8"
+const firebaseConfig={
+apiKey:"YOUR_API_KEY",
+authDomain:"YOUR_PROJECT.firebaseapp.com",
+projectId:"YOUR_PROJECT_ID",
+storageBucket:"YOUR_PROJECT.appspot.com",
+messagingSenderId:"YOUR_SENDER_ID",
+appId:"YOUR_APP_ID"
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
+const authDB=firebase.auth();
 const db=firebase.firestore();
-
-let incomes=[],expenses=[],editMode=false;
-let lineChart,donutChart,monthlyChart;
-
-function register(){
-auth.createUserWithEmailAndPassword(email.value,password.value)
-.catch(e=>alert(e.message));
-}
-
-function login(){
-auth.signInWithEmailAndPassword(email.value,password.value)
-.catch(e=>alert(e.message));
-}
-
-auth.onAuthStateChanged(user=>{
-if(user){
-authSection.classList.add("hidden");
-appSection.classList.remove("hidden");
-loadData();
-}
-});
-
-function addIncome(){
-let val=Number(incomeAmount.value);
-if(!val)return alert("Enter amount");
-
-db.collection("users").doc(auth.currentUser.uid)
-.collection("income").add({
-amount:val,
-date:new Date().toISOString()
-});
-}
-
-function addExpense(){
-let val=Number(expenseAmount.value);
-let cat=expenseCategory.value;
-
-if(!val||!cat)return alert("Fill all");
-
-db.collection("users").doc(auth.currentUser.uid)
-.collection("expenses").add({
-amount:val,
-category:cat,
-date:new Date().toISOString()
-});
-}
-
-function downloadPDF(){
-
-const { jsPDF } = window.jspdf;
-const doc = new jsPDF();
-
-const now = new Date();
-
-const month = now.toLocaleString("default",{month:"long"});
-const year = now.getFullYear();
-
-let incomeTotal = incomes.reduce((a,b)=>a+Number(b.amount||0),0);
-let expenseTotal = expenses.reduce((a,b)=>a+Number(b.amount||0),0);
-let balance = incomeTotal-expenseTotal;
-
-doc.setFontSize(18);
-doc.text("Finance Dashboard Report",20,20);
-
-doc.setFontSize(12);
-doc.text(`Month: ${month} ${year}`,20,35);
-
-doc.text(`Total Income: KES ${incomeTotal}`,20,50);
-doc.text(`Total Expenses: KES ${expenseTotal}`,20,60);
-doc.text(`Balance: KES ${balance}`,20,70);
-
-doc.text("Expenses Breakdown",20,90);
-
-let y = 105;
-
-expenses.forEach(e=>{
-doc.text(`${e.category}: KES ${e.amount}`,20,y);
-y += 10;
-});
-
-doc.save(`Finance_Report_${month}_${year}.pdf`);
-}
-  
-function loadData(){
-let uid=auth.currentUser.uid;
-
-db.collection("users").doc(uid).collection("income")
-.onSnapshot(s=>{
-incomes=[];
-s.forEach(d=>{
-let x=d.data();x.id=d.id;x.amount=Number(x.amount||0);incomes.push(x);
-});
-updateUI();
-});
-
-db.collection("users").doc(uid).collection("expenses")
-.onSnapshot(s=>{
-expenses=[];
-s.forEach(d=>{
-let x=d.data();x.id=d.id;x.amount=Number(x.amount||0);expenses.push(x);
-});
-updateUI();
-});
-}
-
-function updateUI(){
-let incomeTotal=incomes.reduce((a,b)=>a+b.amount,0);
-let expenseTotal=expenses.reduce((a,b)=>a+b.amount,0);
-
-balance.innerText="KES "+(incomeTotal-expenseTotal);
-
-renderRecords();
-drawCharts();
-drawMonthlyChart();
-generateInsights();
-}
-
-function toggleEdit(){
-editMode=!editMode;
-editBtn.innerText=editMode?"Done":"Edit";
-renderRecords();
-}
-
-function deleteExpense(id){
-db.collection("users").doc(auth.currentUser.uid)
-.collection("expenses").doc(id).delete();
-}
-
-function renderRecords(){
-records.innerHTML="";
-expenses.forEach(e=>{
-records.innerHTML+=`
-<div class="record">
-<span>${e.category} - KES ${e.amount}</span>
-${editMode?`<button class="danger" onclick="deleteExpense('${e.id}')">Remove</button>`:""}
-</div>`;
-});
-}
-
-function drawCharts(){
-
-let daily={};
-
-expenses.forEach(e=>{
-let d=new Date(e.date);
-if(isNaN(d))return;
-let key=d.toISOString().split("T")[0];
-daily[key]=(daily[key]||0)+e.amount;
-});
-
-let labels=Object.keys(daily).sort();
-let values=labels.map(l=>daily[l]);
-
-if(lineChart)lineChart.destroy();
-
-lineChart=new Chart(lineChart=document.getElementById("lineChart"),{
-type:"line",
-data:{labels,datasets:[{label:"Daily",data:values,fill:true,tension:.4}]}
-});
-
-let cat={};
-
-expenses.forEach(e=>{
-cat[e.category]=(cat[e.category]||0)+e.amount;
-});
-
-if(donutChart)donutChart.destroy();
-
-donutChart=new Chart(document.getElementById("donutChart"),{
-type:"doughnut",
-data:{labels:Object.keys(cat),datasets:[{data:Object.values(cat)}]}
-});
-}
-
-function drawMonthlyChart(){
-
-let mi={},me={};
-
-let monthly = {};
-
-incomes.forEach(i=>{
-    if(!i.date) return;
-
-    let d = i.date?.toDate ? i.date.toDate() : new Date(i.date);
-
-    if(isNaN(d.getTime())) return;
-
-    let key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-
-    monthly[key] = monthly[key] || {income:0, expense:0};
-
-    monthly[key].income += Number(i.amount || 0);
-});
-
-expenses.forEach(e=>{
-    if(!e.date) return;
-
-    let d = e.date?.toDate ? e.date.toDate() : new Date(e.date);
-
-    if(isNaN(d.getTime())) return;
-
-    let key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-
-    monthly[key] = monthly[key] || {income:0, expense:0};
-
-    monthly[key].expense += Number(e.amount || 0);
-});
-
-let labels = Object.keys(monthly).sort();
-
-let incomeVals = labels.map(l=>monthly[l].income);
-let expenseVals = labels.map(l=>monthly[l].expense);
-
-let labels=[...new Set([...Object.keys(mi),...Object.keys(me)])].sort();
-
-if(monthlyChart)monthlyChart.destroy();
-
-monthlyChart=new Chart(document.getElementById("monthlyChart"),{
-type:"bar",
-data:{
-labels,
-datasets:[
-{label:"Income",data:incomeVals
-{label:"Expenses",data:expenseVals
-]
-}
-});
-}
-  
-function generateInsights(){
-
-const now=new Date();
-let month=now.getMonth();
-let year=now.getFullYear();
-
-let monthlyIncome=0;
-let monthlyExpenses=0;
-
-incomes.forEach(i=>{
-let d=new Date(i.date);
-if(d.getMonth()==month&&d.getFullYear()==year)monthlyIncome+=i.amount;
-});
-
-expenses.forEach(e=>{
-let d=new Date(e.date);
-if(d.getMonth()==month&&d.getFullYear()==year)monthlyExpenses+=e.amount;
-});
-
-let ratio=monthlyIncome?monthlyExpenses/monthlyIncome*100:0;
-
-let status,advice;
-
-if(ratio<=50){
-status="Healthy ✅";
-advice="Excellent control. Increase savings/investments.";
-}
-else if(ratio<=80){
-status="Moderate ⚠️";
-advice="Watch discretionary spending.";
-}
-else{
-status="Risky 🔴";
-advice="Reduce spending urgently and revise budget.";
-}
-
-insights.innerHTML=`
-<b>Monthly Income:</b> KES ${monthlyIncome}<br>
-<b>Monthly Expenses:</b> KES ${monthlyExpenses}<br>
-<b>Expense Ratio:</b> ${ratio.toFixed(1)}%<br>
-<b>Status:</b> ${status}<br><br>
-<b>Advice:</b> ${advice}
-`;
-}
-
-if("serviceWorker" in navigator){
-navigator.serviceWorker.register("service-worker.js");
-}
-
+let currentUser;
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function load(k){return JSON.parse(localStorage.getItem(k)||'[]')}
+function register(){authDB.createUserWithEmailAndPassword(user.value,pass.value).then(()=>alert('Registered')).catch(e=>alert(e.message))});save('users',users);alert('Registered');}
+function login(){authDB.signInWithEmailAndPassword(user.value,pass.value).then(res=>{currentUser=res.user.uid;auth.classList.add('hidden');app.classList.remove('hidden');render()}).catch(e=>alert(e.message))}else alert('Invalid login')}
+function logout(){location.reload()}
+function recordsData(){return load('rec_'+currentUser)}
+function addRecord(){let r=recordsData();r.push({a:+amount.value,t:type.value,c:category.value,d:new Date().toISOString(),done:false});save('rec_'+currentUser,r);render()}
+function del(i){let r=recordsData();r.splice(i,1);save('rec_'+currentUser,r);render()}
+function toggle(i){let r=recordsData();r[i].done=!r[i].done;save('rec_'+currentUser,r);render()}
+function edit(i){let r=recordsData();let n=prompt('New amount',r[i].a);if(n){r[i].a=+n;save('rec_'+currentUser,r);render()}}
+function setBudget(){localStorage.setItem('budget_'+currentUser,budget.value);render()}
+function render(){let r=recordsData();records.innerHTML=r.map((x,i)=>`<li>${x.t}: ${x.a} (${x.c}) ${x.done?'✓':''}<button onclick='toggle(${i})'>Done</button><button onclick='edit(${i})'>Edit</button><button onclick='del(${i})'>Delete</button></li>`).join('');drawCharts(r);insightsView(r)}
+function drawCharts(r){let days={},months={},cats={};r.forEach(x=>{let d=x.d.slice(0,10),m=x.d.slice(0,7);days[d]=(days[d]||0)+x.a;months[m]=(months[m]||0)+x.a;if(x.t==='Expense')cats[x.c]=(cats[x.c]||0)+x.a});makeChart('dailyChart','line',days);makeChart('monthlyChart','bar',months);makeChart('categoryChart','doughnut',cats)}
+function makeChart(id,type,data){new Chart(document.getElementById(id),{type,data:{labels:Object.keys(data),datasets:[{data:Object.values(data)}]}})}
+function insightsView(r){let inc=r.filter(x=>x.t==='Income').reduce((a,b)=>a+b.a,0);let exp=r.filter(x=>x.t==='Expense').reduce((a,b)=>a+b.a,0);let b=+localStorage.getItem('budget_'+currentUser)||0;insights.innerHTML=`Income: ${inc}<br>Expense: ${exp}<br>Balance: ${inc-exp}<br>${exp>b?'Over Budget':'Within Budget'}`}
+function downloadPDF(){const {jsPDF}=window.jspdf;let pdf=new jsPDF();pdf.text(insights.innerText,10,10);pdf.save('report.pdf')}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js')}
 </script>
-
 </body>
 </html>
