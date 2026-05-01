@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Expense Tracker PWA</title>
+<title>FinTrack Pro</title>
 
-<!-- Firebase SDK -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -15,262 +15,245 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-/* ================= UI STYLES ================= */
-body{font-family:Arial;background:#f5f5f5;margin:0;padding:15px}
-.card{background:#fff;padding:15px;border-radius:10px;margin-bottom:10px}
-input,select,button{width:100%;padding:10px;margin-top:5px}
-button{cursor:pointer}
-.hidden{display:none}
-ul{padding:0}
-li{list-style:none;padding:5px;border-bottom:1px solid #eee}
+/* ================= FINTECH UI ================= */
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(135deg,#0f172a,#1e293b);
+color:white;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:15px;
+}
+
+.card{
+background:#111827;
+padding:15px;
+border-radius:15px;
+box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+
+input,select,button{
+width:100%;
+padding:10px;
+border-radius:10px;
+border:none;
+margin-top:8px;
+}
+
+button{
+background:#3b82f6;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{background:#2563eb;}
+
+.topbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+}
+
+.hidden{display:none;}
+
+.small{font-size:13px;opacity:0.8;}
+
+ul{padding:0;}
+li{list-style:none;padding:8px;border-bottom:1px solid #374151;}
+
+canvas{background:#0b1220;border-radius:10px;padding:10px;}
 </style>
 </head>
 
 <body>
 
 <!-- ================= LOGIN ================= -->
-<div id="auth" class="card">
-<h2>Login / Register</h2>
+<div id="auth" class="container">
+<div class="card">
+<h2>FinTrack Pro</h2>
+<p class="small">Smart Finance Dashboard</p>
+
 <input id="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
-<button onclick="register()">Register</button>
+<button onclick="register()">Create Account</button>
 <button onclick="login()">Login</button>
 </div>
+</div>
 
-<!-- ================= MAIN APP ================= -->
-<div id="app" class="hidden">
+<!-- ================= APP ================= -->
+<div id="app" class="container hidden">
 
-<div class="card">
-<h2>Expense Tracker</h2>
+<div class="topbar">
+<h2>Dashboard</h2>
 <button onclick="logout()">Logout</button>
 </div>
 
-<!-- INPUT SECTION -->
+<!-- INPUT -->
+<div class="grid">
+
 <div class="card">
+<h3>Add Transaction</h3>
 <input id="amount" type="number" placeholder="Amount">
 <select id="type">
 <option>Income</option>
 <option>Expense</option>
 </select>
 <input id="category" placeholder="Category">
-<button onclick="addRecord()">Add Record</button>
-
-<input id="budget" type="number" placeholder="Budget Limit">
-<button onclick="setBudget()">Set Budget</button>
-
-<button onclick="downloadPDF()">Download Report</button>
+<button onclick="addRecord()">Add</button>
 </div>
 
-<!-- RECORD LIST -->
 <div class="card">
+<h3>Budget</h3>
+<input id="budget" type="number" placeholder="Monthly Budget">
+<button onclick="setBudget()">Save</button>
+<div id="budgetStatus"></div>
+</div>
+
+<div class="card">
+<h3>Insights</h3>
+<div id="insights"></div>
+<button onclick="downloadPDF()">Export PDF</button>
+</div>
+
+</div>
+
+<!-- LIST + CHARTS -->
+<div class="grid">
+
+<div class="card">
+<h3>Transactions</h3>
 <ul id="records"></ul>
 </div>
 
-<!-- CHARTS -->
-<div class="card"><canvas id="dailyChart"></canvas></div>
-<div class="card"><canvas id="monthlyChart"></canvas></div>
-<div class="card"><canvas id="categoryChart"></canvas></div>
+<div class="card">
+<h3>Daily Trend</h3>
+<canvas id="dailyChart"></canvas>
+</div>
 
-<!-- INSIGHTS -->
-<div class="card" id="insights"></div>
+<div class="card">
+<h3>Category Split</h3>
+<canvas id="categoryChart"></canvas>
+</div>
+
+</div>
 
 </div>
 
 <script>
-/* ================= FIREBASE CONFIG ================= */
-const firebaseConfig = {
-  apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
-  authDomain: "expense-tracker-2ee7b.firebaseapp.com",
-  projectId: "expense-tracker-2ee7b",
-  storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
-  messagingSenderId: "306376576940",
-  appId: "1:306376576940:web:f7bf235be67524c9c8b409",
-  measurementId: "G-V7B8WSWCZ8"
+
+/* ================= FIREBASE ================= */
+const firebaseConfig={
+apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+authDomain:"expense-tracker-2ee7b.firebaseapp.com",
+projectId:"expense-tracker-2ee7b",
+storageBucket:"expense-tracker-2ee7b.firebasestorage.app",
+messagingSenderId:"306376576940",
+appId:"1:306376576940:web:f7bf235be67524c9c8b409"
 };
 
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const auth=firebase.auth();
+const db=firebase.firestore();
 
-let currentUser = null;
+let uid=null;
+let data=[];
 
 /* ================= AUTH ================= */
 function register(){
-console.log("Register clicked");
-const email = document.getElementById('email').value.trim();
-const password = document.getElementById('password').value;
-
-auth.createUserWithEmailAndPassword(email,password)
-.then(() => alert("Registered"))
-.catch(err => alert(err.message));
+auth.createUserWithEmailAndPassword(email.value,password.value)
+.catch(e=>alert(e.message));
 }
 
 function login(){
-console.log("Login clicked");
-const email = document.getElementById('email').value.trim();
-const password = document.getElementById('password').value;
-
-auth.signInWithEmailAndPassword(email,password)
-.then(res => {
-currentUser = res.user.uid;
-showApp();
-})
-.catch(err => alert(err.message));
+auth.signInWithEmailAndPassword(email.value,password.value)
+.catch(e=>alert(e.message));
 }
 
-auth.onAuthStateChanged(user => {
-if(user){
-currentUser = user.uid;
-showApp();
+function logout(){auth.signOut();location.reload();}
+
+auth.onAuthStateChanged(u=>{
+if(u){
+uid=u.uid;
+document.getElementById('auth').classList.add('hidden');
+document.getElementById('app').classList.remove('hidden');
+listen();
 }
 });
 
-function logout(){
-auth.signOut();
-location.reload();
-}
-
-function showApp(){
-document.getElementById('auth').classList.add('hidden');
-document.getElementById('app').classList.remove('hidden');
+/* ================= FIRESTORE ================= */
+function listen(){
+db.collection("users").doc(uid).collection("tx")
+.orderBy("date")
+.onSnapshot(s=>{
+data=[];
+s.forEach(d=>data.push({id:d.id,...d.data()}));
 render();
+});
 }
 
-/* ================= STORAGE ================= */
-function getKey(){return "rec_"+currentUser;}
-
-function loadData(){
-return JSON.parse(localStorage.getItem(getKey())||"[]");
-}
-
-function saveData(data){
-localStorage.setItem(getKey(),JSON.stringify(data));
-}
-
-/* ================= RECORDS ================= */
 function addRecord(){
-const data = loadData();
-
-data.push({
+db.collection("users").doc(uid).collection("tx").add({
 amount:+amount.value,
 type:type.value,
 category:category.value,
-date:new Date().toISOString(),
-done:false
+date:Date.now()
 });
-
-saveData(data);
-render();
 }
 
-function deleteRecord(i){
-const data = loadData();
-data.splice(i,1);
-saveData(data);
-render();
-}
-
-function toggleDone(i){
-const data = loadData();
-data[i].done = !data[i].done;
-saveData(data);
-render();
-}
-
-function editRecord(i){
-const data = loadData();
-const val = prompt("Edit amount",data[i].amount);
-if(val){data[i].amount = +val;}
-saveData(data);
-render();
-}
-
-function setBudget(){
-localStorage.setItem("budget_"+currentUser,budget.value);
-render();
+function del(id){
+db.collection("users").doc(uid).collection("tx").doc(id).delete();
 }
 
 /* ================= RENDER ================= */
+let chart;
+
 function render(){
-const data = loadData();
 
-records.innerHTML = data.map((r,i)=>`
-<li>
-${r.type} - ${r.amount} (${r.category})
-<button onclick="toggleDone(${i})">✔</button>
-<button onclick="editRecord(${i})">Edit</button>
-<button onclick="deleteRecord(${i})">X</button>
-</li>`).join('');
+records.innerHTML=data.map(r=>`
+<li>${r.type} ${r.amount} ${r.category}
+<button onclick="del('${r.id}')">X</button></li>
+`).join('');
 
-updateCharts(data);
-updateInsights(data);
-}
-
-/* ================= CHARTS ================= */
-let dailyChart,monthlyChart,categoryChart;
-
-function updateCharts(data){
-
-let daily={},monthly={},cat={};
-
-data.forEach(r=>{
-let d=r.date.slice(0,10);
-let m=r.date.slice(0,7);
-
-daily[d]=(daily[d]||0)+r.amount;
-monthly[m]=(monthly[m]||0)+r.amount;
-
-if(r.type==="Expense"){
-cat[r.category]=(cat[r.category]||0)+r.amount;
-}
-});
-
-if(dailyChart)dailyChart.destroy();
-if(monthlyChart)monthlyChart.destroy();
-if(categoryChart)categoryChart.destroy();
-
-function make(id,type,dataObj){
-return new Chart(document.getElementById(id),{
-type,
-data:{labels:Object.keys(dataObj),datasets:[{data:Object.values(dataObj)}]}}
-);
-}
-
-dailyChart = make("dailyChart","line",daily);
-monthlyChart = make("monthlyChart","bar",monthly);
-categoryChart = make("categoryChart","doughnut",cat);
-}
-
-/* ================= INSIGHTS ================= */
-function updateInsights(data){
+let d={},c={};
 let inc=0,exp=0;
 
 data.forEach(r=>{
-if(r.type==="Income")inc+=r.amount;
+let day=new Date(r.date).toLocaleDateString();
+
+if(r.type=="Income")inc+=r.amount;
 else exp+=r.amount;
+
+d[day]=(d[day]||0)+r.amount;
+if(r.type=="Expense")c[r.category]=(c[r.category]||0)+r.amount;
 });
 
-let budget = +localStorage.getItem("budget_"+currentUser)||0;
+insights.innerHTML=`<h3>${inc-exp} Balance</h3>`;
 
-insights.innerHTML=`
-Income: ${inc}<br>
-Expense: ${exp}<br>
-Balance: ${inc-exp}<br>
-${exp>budget?"OVER BUDGET":"OK"}
-`;
+budgetStatus.innerHTML=`Budget: ${budget.value||0}`;
+
+if(chart)chart.destroy();
+chart=new Chart(dailyChart,{type:'line',data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]}});
+new Chart(categoryChart,{type:'doughnut',data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}});
 }
 
 /* ================= PDF ================= */
 function downloadPDF(){
 const {jsPDF}=window.jspdf;
-const pdf=new jsPDF();
-pdf.text(insights.innerText,10,10);
+let pdf=new jsPDF();
+pdf.text("FinTrack Report",10,10);
 pdf.save("report.pdf");
-}
-
-/* ================= SERVICE WORKER ================= */
-if('serviceWorker' in navigator){
-navigator.serviceWorker.register('service-worker.js');
 }
 
 </script>
