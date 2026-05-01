@@ -249,13 +249,27 @@ category:cat,
 date:new Date().toISOString()
 });
 }
-
+  
 function saveBudget(){
-budget=Number(budgetInput.value);
+
+let value = Number(document.getElementById("budgetInput").value);
+
+if(!value || value <= 0){
+alert("Enter valid budget");
+return;
+}
 
 db.collection("users")
 .doc(auth.currentUser.uid)
-.set({budget},{merge:true});
+.set({
+budget:value
+},{merge:true})
+.then(()=>{
+budget = value;
+generateInsights();
+alert("Budget saved");
+})
+.catch(err=>alert(err.message));
 }
 
 // EDIT
