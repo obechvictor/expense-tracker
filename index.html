@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FinTrack Pro</title>
+<title>FinTrack Pro Banking</title>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -15,75 +15,65 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-/* ================= FINTECH UI ================= */
+/* ================= BANKING UI ================= */
 body{
 margin:0;
-font-family:Arial;
-background:linear-gradient(135deg,#0f172a,#1e293b);
-color:white;
+font-family:system-ui;
+background:#0b1220;
+color:#e5e7eb;
 }
 
-.container{
-max-width:1100px;
-margin:auto;
-padding:20px;
-}
+.container{max-width:1200px;margin:auto;padding:20px}
 
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr 1fr;
-gap:15px;
-}
+.topbar{
+display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
 
 .card{
 background:#111827;
 padding:15px;
-border-radius:15px;
-box-shadow:0 10px 25px rgba(0,0,0,0.3);
+border-radius:16px;
+box-shadow:0 10px 30px rgba(0,0,0,0.4);
 }
 
 input,select,button{
-width:100%;
-padding:10px;
-border-radius:10px;
-border:none;
-margin-top:8px;
+width:100%;padding:10px;border-radius:10px;border:none;margin-top:8px
 }
 
 button{
-background:#3b82f6;
+background:#2563eb;
 color:white;
-font-weight:bold;
-cursor:pointer;
+font-weight:600;
+cursor:pointer
 }
 
-button:hover{background:#2563eb;}
+button:hover{background:#1d4ed8}
 
-.topbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:20px;
+.small{font-size:12px;opacity:0.7}
+
+ul{padding:0}
+li{list-style:none;padding:8px;border-bottom:1px solid #1f2937}
+
+.hidden{display:none}
+
+.badge{
+padding:4px 8px;border-radius:10px;font-size:11px
 }
 
-.hidden{display:none;}
+.income{background:#16a34a}
+.expense{background:#dc2626}
 
-.small{font-size:13px;opacity:0.8;}
-
-ul{padding:0;}
-li{list-style:none;padding:8px;border-bottom:1px solid #374151;}
-
-canvas{background:#0b1220;border-radius:10px;padding:10px;}
 </style>
 </head>
 
 <body>
 
-<!-- ================= LOGIN ================= -->
+<!-- ================= AUTH ================= -->
 <div id="auth" class="container">
 <div class="card">
-<h2>FinTrack Pro</h2>
-<p class="small">Smart Finance Dashboard</p>
+<h2>FinTrack Banking</h2>
+<p class="small">Secure Finance Dashboard</p>
 
 <input id="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
@@ -100,9 +90,28 @@ canvas{background:#0b1220;border-radius:10px;padding:10px;}
 <button onclick="logout()">Logout</button>
 </div>
 
-<!-- INPUT -->
+<!-- SUMMARY CARDS -->
 <div class="grid">
 
+<div class="card">
+<h3>Total Balance</h3>
+<h1 id="balance">0</h1>
+</div>
+
+<div class="card">
+<h3>Income</h3>
+<h2 id="income">0</h2>
+</div>
+
+<div class="card">
+<h3>Expense</h3>
+<h2 id="expense">0</h2>
+</div>
+
+</div>
+
+<!-- INPUT -->
+<div class="grid">
 <div class="card">
 <h3>Add Transaction</h3>
 <input id="amount" type="number" placeholder="Amount">
@@ -111,11 +120,11 @@ canvas{background:#0b1220;border-radius:10px;padding:10px;}
 <option>Expense</option>
 </select>
 <input id="category" placeholder="Category">
-<button onclick="addRecord()">Add</button>
+<button onclick="addRecord()">Submit</button>
 </div>
 
 <div class="card">
-<h3>Budget</h3>
+<h3>Budget Control</h3>
 <input id="budget" type="number" placeholder="Monthly Budget">
 <button onclick="setBudget()">Save</button>
 <div id="budgetStatus"></div>
@@ -124,29 +133,22 @@ canvas{background:#0b1220;border-radius:10px;padding:10px;}
 <div class="card">
 <h3>Insights</h3>
 <div id="insights"></div>
-<button onclick="downloadPDF()">Export PDF</button>
+<button onclick="downloadPDF()">Export Statement</button>
+</div>
 </div>
 
-</div>
-
-<!-- LIST + CHARTS -->
+<!-- CHARTS -->
 <div class="grid">
+<div class="card"><h3>Daily Flow</h3><canvas id="dailyChart"></canvas></div>
+<div class="card"><h3>Category Spend</h3><canvas id="categoryChart"></canvas></div>
+<div class="card"><h3>Monthly Trend</h3><canvas id="monthlyChart"></canvas></div>
+</div>
 
+<!-- TRANSACTIONS -->
 <div class="card">
 <h3>Transactions</h3>
+<input id="filter" placeholder="Search category..." oninput="render()">
 <ul id="records"></ul>
-</div>
-
-<div class="card">
-<h3>Daily Trend</h3>
-<canvas id="dailyChart"></canvas>
-</div>
-
-<div class="card">
-<h3>Category Split</h3>
-<canvas id="categoryChart"></canvas>
-</div>
-
 </div>
 
 </div>
@@ -168,7 +170,18 @@ const auth=firebase.auth();
 const db=firebase.firestore();
 
 let uid=null;
-let data=[];
+let tx=[];
+let offlineQueue=[];
+
+/* ================= OFFLINE SYNC ================= */
+window.addEventListener('online',syncQueue);
+
+function syncQueue(){
+offlineQueue.forEach(fn=>fn());
+offlineQueue=[];
+}
+
+function queue(fn){offlineQueue.push(fn)}
 
 /* ================= AUTH ================= */
 function register(){
@@ -184,79 +197,111 @@ auth.signInWithEmailAndPassword(email.value,password.value)
 function logout(){auth.signOut();location.reload();}
 
 auth.onAuthStateChanged(u=>{
-if(u){
-uid=u.uid;
-document.getElementById('auth').classList.add('hidden');
-document.getElementById('app').classList.remove('hidden');
-listen();
-}
+if(u){uid=u.uid;authUI(false);listen();}
 });
 
+function authUI(show){
+document.getElementById('auth').classList.toggle('hidden',!show);
+document.getElementById('app').classList.toggle('hidden',show);
+}
+
 /* ================= FIRESTORE ================= */
+
 function listen(){
 db.collection("users").doc(uid).collection("tx")
 .orderBy("date")
 .onSnapshot(s=>{
-data=[];
-s.forEach(d=>data.push({id:d.id,...d.data()}));
+tx=[];
+s.forEach(d=>tx.push({id:d.id,...d.data()}));
 render();
 });
 }
 
 function addRecord(){
-db.collection("users").doc(uid).collection("tx").add({
+const data={
 amount:+amount.value,
 type:type.value,
 category:category.value,
 date:Date.now()
-});
+};
+
+const fn=()=>db.collection("users").doc(uid).collection("tx").add(data);
+
+navigator.onLine?fn():queue(fn);
 }
 
 function del(id){
-db.collection("users").doc(uid).collection("tx").doc(id).delete();
+const fn=()=>db.collection("users").doc(uid).collection("tx").doc(id).delete();
+navigator.onLine?fn():queue(fn);
 }
 
 /* ================= RENDER ================= */
-let chart;
 
 function render(){
 
-records.innerHTML=data.map(r=>`
-<li>${r.type} ${r.amount} ${r.category}
-<button onclick="del('${r.id}')">X</button></li>
-`).join('');
+let f=filter.value?.toLowerCase()||"";
+let data=tx.filter(t=>t.category.toLowerCase().includes(f));
 
-let d={},c={};
 let inc=0,exp=0;
+let d={},c={},m={};
 
-data.forEach(r=>{
+records.innerHTML=data.map(r=>{
+if(r.type=="Income")inc+=r.amount; else exp+=r.amount;
+
 let day=new Date(r.date).toLocaleDateString();
-
-if(r.type=="Income")inc+=r.amount;
-else exp+=r.amount;
+let mon=new Date(r.date).toISOString().slice(0,7);
 
 d[day]=(d[day]||0)+r.amount;
+m[mon]=(m[mon]||0)+r.amount;
 if(r.type=="Expense")c[r.category]=(c[r.category]||0)+r.amount;
-});
 
-insights.innerHTML=`<h3>${inc-exp} Balance</h3>`;
+return `<li>
+<span class="badge ${r.type=="Income"?"income":"expense"}">${r.type}</span>
+${r.amount} - ${r.category}
+<button onclick="del('${r.id}')">X</button>
+</li>`;
+}).join('');
 
-budgetStatus.innerHTML=`Budget: ${budget.value||0}`;
+balance.innerText=inc-exp;
+income.innerText=inc;
+expense.innerText=exp;
 
-if(chart)chart.destroy();
-chart=new Chart(dailyChart,{type:'line',data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]}});
-new Chart(categoryChart,{type:'doughnut',data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}});
+insights.innerHTML=exp>budget.value?"⚠ Over Budget":"OK";
+
+charts(d,c,m);
+}
+
+/* ================= CHARTS ================= */
+
+let a,b,c;
+
+function charts(d,cats,mon){
+
+if(a)a.destroy();if(b)b.destroy();if(c)c.destroy();
+
+a=new Chart(dailyChart,{type:'line',data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]}});
+
+b=new Chart(categoryChart,{type:'doughnut',data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats)}]}});
+
+c=new Chart(monthlyChart,{type:'bar',data:{labels:Object.keys(mon),datasets:[{data:Object.values(mon)}]}});
 }
 
 /* ================= PDF ================= */
 function downloadPDF(){
 const {jsPDF}=window.jspdf;
-let pdf=new jsPDF();
-pdf.text("FinTrack Report",10,10);
-pdf.save("report.pdf");
+const p=new jsPDF();
+p.text("Bank Statement",10,10);
+p.text("Balance: "+balance.innerText,10,20);
+p.save("statement.pdf");
+}
+
+/* ================= BUDGET ================= */
+function setBudget(){
+if(!uid)return;
+db.collection("users").doc(uid).set({budget:+budget.value},{merge:true});
 }
 
 </script>
 
 </body>
-</html>
+  </html>
