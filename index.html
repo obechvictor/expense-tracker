@@ -196,14 +196,19 @@ dashboard.style.display="none";
 // LOAD
 function loadData(){
 const uid=auth.currentUser.uid;
-
-db.collection("users").doc(uid).get()
+  
+db.collection("users")
+.doc(uid)
+.get()
 .then(doc=>{
-if(doc.exists){
-budget=Number(doc.data().budget||0);
-budgetInput.value=budget;
+if(doc.exists && doc.data().budget){
+budget = Number(doc.data().budget);
+budgetInput.value = budget;
+}else{
+budget = 0;
 }
 updateUI();
+generateInsights();
 });
 
 db.collection("users").doc(uid)
