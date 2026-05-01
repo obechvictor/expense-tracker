@@ -95,23 +95,45 @@ let sessionToken=null;
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 /* ================= AUTH ================= */
+function showApp(){
+document.getElementById("auth").style.display="none";
+document.getElementById("app").style.display="block";
+document.getElementById("lock").style.display="none";
+}
+
+function showAuth(){
+document.getElementById("auth").style.display="block";
+document.getElementById("app").style.display="none";
+}
+
+/* LOGIN */
 function login(){
 auth.signInWithEmailAndPassword(email.value,password.value)
+.then(()=>console.log("login success"))
+.catch(e=>{
+alert("Login failed: " + e.message);
+console.log(e);
+});
+}
+
+/* REGISTER */
+function register(){
+auth.createUserWithEmailAndPassword(email.value,password.value)
+.then(()=>alert("Account created"))
 .catch(e=>alert(e.message));
 }
 
-function logout(){auth.signOut();location.reload();}
-
+/* AUTH STATE */
 auth.onAuthStateChanged(u=>{
-if(u){uid=u.uid;authUI(false);listen();createSession();}
-});
-
-function authUI(v){auth.classList.toggle('hidden',!v);app.classList.toggle('hidden',v)}
-
-function createSession(){
-sessionToken=crypto.randomUUID();sessionStorage.setItem("session",sessionToken);
+if(u){
+uid=u.uid;
+showApp();
+listen();
+}else{
+showAuth();
 }
-
+});
+  
 /* ================= FIRESTORE TRANSACTION ENGINE ================= */
 
 function validateTx(t){
