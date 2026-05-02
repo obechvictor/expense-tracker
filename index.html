@@ -15,46 +15,46 @@
 
 <style>
 body{
-font-family:"Times New Roman";
+font-family:Arial;
 margin:0;
 background:#f4f7fb;
-} 
+}
 header{
 background:#00c853;
 color:white;
 padding:18px;
 font-size:26px;
 font-weight:bold;
-} 
+}
 .container{
 padding:20px;
-}  
+}
 .card{
 background:white;
 padding:20px;
 margin-bottom:20px;
 border-radius:14px;
 box-shadow:0 4px 12px rgba(0,0,0,.08);
-}  
+}
 input,button{
 width:100%;
 padding:12px;
 margin:8px 0;
 border-radius:8px;
 border:1px solid #ddd;
-} 
+}
 button{
 background:#00c853;
 color:white;
 border:none;
 cursor:pointer;
-} 
+}
 button:hover{
 opacity:.9;
-} 
+}
 .danger{
 background:red;
-}  
+}
 .record{
 display:flex;
 justify-content:space-between;
@@ -69,7 +69,7 @@ display:none;
 }
 #installBtn{
 display:none;
-} 
+}
 </style>
 </head>
 <body>
@@ -144,11 +144,6 @@ display:none;
 </div>
 
 <script>
-  
-window.onerror = function(msg, url, line) {
-  alert("ERROR: " + msg + " at line " + line);
-};
-  
 const firebaseConfig = {
   apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
   authDomain: "expense-tracker-2ee7b.firebaseapp.com",
@@ -163,22 +158,7 @@ firebase.initializeApp(firebaseConfig);
 
 const auth=firebase.auth();
 const db=firebase.firestore();
-const email = document.getElementById("email");
-const password = document.getElementById("password");
-const authCard = document.getElementById("authCard");
-const dashboard = document.getElementById("dashboard");
 
-const incomeAmount = document.getElementById("incomeAmount");
-const expenseAmount = document.getElementById("expenseAmount");
-const expenseCategory = document.getElementById("expenseCategory");
-const budgetInput = document.getElementById("budgetInput");
-
-const balance = document.getElementById("balance");
-const insights = document.getElementById("insights");
-const records = document.getElementById("records");
-const installBtn = document.getElementById("installBtn");
-const editBtn = document.getElementById("editBtn");
-  
 let incomes=[];
 let expenses=[];
 let budget=0;
@@ -200,7 +180,7 @@ auth.signInWithEmailAndPassword(email.value,password.value)
 function logout(){
 auth.signOut();
 }
-  
+
 auth.onAuthStateChanged(user=>{
 if(user){
 authCard.style.display="none";
@@ -215,19 +195,14 @@ dashboard.style.display="none";
 // LOAD
 function loadData(){
 const uid=auth.currentUser.uid;
-  
-db.collection("users")
-.doc(uid)
-.get()
+
+db.collection("users").doc(uid).get()
 .then(doc=>{
-if(doc.exists && doc.data().budget){
-budget = Number(doc.data().budget);
-budgetInput.value = budget;
-}else{
-budget = 0;
+if(doc.exists){
+budget=Number(doc.data().budget||0);
+budgetInput.value=budget;
 }
 updateUI();
-generateInsights();
 });
 
 db.collection("users").doc(uid)
@@ -273,27 +248,13 @@ category:cat,
 date:new Date().toISOString()
 });
 }
-  
+
 function saveBudget(){
-
-let value = Number(document.getElementById("budgetInput").value);
-
-if(!value || value <= 0){
-alert("Enter valid budget");
-return;
-}
+budget=Number(budgetInput.value);
 
 db.collection("users")
 .doc(auth.currentUser.uid)
-.set({
-budget:value
-},{merge:true})
-.then(()=>{
-budget = value;
-generateInsights();
-alert("Budget saved");
-})
-.catch(err=>alert(err.message));
+.set({budget},{merge:true});
 }
 
 // EDIT
@@ -409,7 +370,7 @@ ratio<=80?"Moderate ⚠️":
 
 let budgetInsight="No budget set";
 
-if(Number(budget) > 0)
+if(budget>0){
 let used=expense/budget*100;
 
 budgetInsight=
