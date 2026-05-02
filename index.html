@@ -248,15 +248,34 @@ category:cat,
 date:new Date().toISOString()
 });
 }
-
+  
 function saveBudget(){
-budget=Number(budgetInput.value);
+
+let value=Number(budgetInput.value);
+
+if(!value || value<=0){
+alert("Enter valid budget");
+return;
+}
 
 db.collection("users")
 .doc(auth.currentUser.uid)
-.set({budget},{merge:true});
+.set({
+budget:value,
+budgetMonth:getCurrentMonthKey()
+},{merge:true})
+.then(()=>{
+budget=value;
+generateInsights();
+alert("Budget saved");
+});
 }
-
+  
+function getCurrentMonthKey(){
+let now=new Date();
+return `${now.getFullYear()}-${now.getMonth()+1}`;
+}
+  
 // EDIT
 function toggleEdit(){
 editMode=!editMode;
