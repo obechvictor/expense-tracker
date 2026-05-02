@@ -159,7 +159,22 @@ firebase.initializeApp(firebaseConfig);
 
 const auth=firebase.auth();
 const db=firebase.firestore();
+const email = document.getElementById("email");
+const password = document.getElementById("password");
+const authCard = document.getElementById("authCard");
+const dashboard = document.getElementById("dashboard");
 
+const incomeAmount = document.getElementById("incomeAmount");
+const expenseAmount = document.getElementById("expenseAmount");
+const expenseCategory = document.getElementById("expenseCategory");
+const budgetInput = document.getElementById("budgetInput");
+
+const balance = document.getElementById("balance");
+const insights = document.getElementById("insights");
+const records = document.getElementById("records");
+const installBtn = document.getElementById("installBtn");
+const editBtn = document.getElementById("editBtn");
+  
 let incomes=[];
 let expenses=[];
 let budget=0;
