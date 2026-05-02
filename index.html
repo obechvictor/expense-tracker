@@ -389,8 +389,22 @@ datasets:[{data:Object.values(cats)}]
 
 // INSIGHTS
 function generateInsights(){
-let income=incomes.reduce((a,b)=>a+b.amount,0);
-let expense=expenses.reduce((a,b)=>a+b.amount,0);
+let now=new Date();
+
+let income=incomes
+.filter(i=>{
+let d=new Date(i.date);
+return d.getMonth()===now.getMonth() &&
+d.getFullYear()===now.getFullYear();
+})
+.reduce((a,b)=>a+b.amount,0);
+let expense=expenses
+.filter(e=>{
+let d=new Date(e.date);
+return d.getMonth()===now.getMonth() &&
+d.getFullYear()===now.getFullYear();
+})
+.reduce((a,b)=>a+b.amount,0);
 
 let ratio=income?expense/income*100:0;
 
