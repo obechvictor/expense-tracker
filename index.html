@@ -145,6 +145,10 @@ display:none;
 
 <script>
   
+window.onerror = function(msg, url, line) {
+  alert("ERROR: " + msg + " at line " + line);
+};
+  
 const firebaseConfig = {
   apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
   authDomain: "expense-tracker-2ee7b.firebaseapp.com",
