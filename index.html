@@ -330,15 +330,33 @@ renderRecords();
 drawCharts();
 generateInsights();
 }
-
+  
 function renderRecords(){
+
 records.innerHTML="";
-expenses.forEach(e=>{
-records.innerHTML+=`
+
+const now = new Date();
+
+const currentExpenses = expenses.filter(e=>{
+let d=new Date(e.date);
+
+return d.getMonth()===now.getMonth() &&
+d.getFullYear()===now.getFullYear();
+});
+
+currentExpenses.forEach(e=>{
+
+records.innerHTML += `
 <div class="record">
 <span>${e.category} - KES ${e.amount}</span>
-${editMode?`<button class="danger" onclick="deleteExpense('${e.id}')">Delete</button>`:""}
-</div>`;
+
+${editMode
+? `<button class="danger"
+onclick="deleteExpense('${e.id}')">Delete</button>`
+: ""}
+</div>
+`;
+
 });
 }
 
