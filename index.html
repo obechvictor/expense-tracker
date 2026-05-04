@@ -367,13 +367,15 @@ if(dailyChart)dailyChart.destroy();
 if(monthlyChart)monthlyChart.destroy();
 if(expenseChart)expenseChart.destroy();
 
-dailyChart=new Chart(dailyChart=document.getElementById("dailyChart"),{
+dailyChart=new Chart(document.getElementById("dailyChart"),{
 type:"line",
 data:{
-labels:expenses.map(e=>new Date(e.date).toLocaleDateString()),
+labels:labels,
 datasets:[{
 label:"Daily Spending",
-data:expenses.map(e=>e.amount)
+data:data,
+fill:false,
+tension:0.3
 }]
 }
 });
