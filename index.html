@@ -305,10 +305,26 @@ db.collection("users")
 
 // UI
 function updateUI(){
-let income=incomes.reduce((a,b)=>a+b.amount,0);
-let expense=expenses.reduce((a,b)=>a+b.amount,0);
 
-balance.innerText=income-expense;
+const now = new Date();
+
+let income = incomes
+.filter(i=>{
+let d=new Date(i.date);
+return d.getMonth()===now.getMonth() &&
+d.getFullYear()===now.getFullYear();
+})
+.reduce((a,b)=>a+b.amount,0);
+
+let expense = expenses
+.filter(e=>{
+let d=new Date(e.date);
+return d.getMonth()===now.getMonth() &&
+d.getFullYear()===now.getFullYear();
+})
+.reduce((a,b)=>a+b.amount,0);
+
+balance.innerText = "KES " + (income - expense);
 
 renderRecords();
 drawCharts();
