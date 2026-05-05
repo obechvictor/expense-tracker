@@ -217,22 +217,65 @@ budgetInput.value="";
 updateUI();
 });
 
-db.collection("users").doc(uid)
+db.collection("users")
+.doc(uid)
 .collection("income")
 .onSnapshot(s=>{
-incomes=[];
-s.forEach(d=>incomes.push({...d.data(),id:d.id}));
-updateUI();
+
+    incomes=[];
+
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    s.forEach(d=>{
+
+        let x = d.data();
+        x.id = d.id;
+        x.amount = Number(x.amount || 0);
+
+        const incomeDate = new Date(x.date);
+
+        if(
+            incomeDate.getMonth() === currentMonth &&
+            incomeDate.getFullYear() === currentYear
+        ){
+            incomes.push(x);
+        }
+    });
+
+    updateUI();
 });
 
-db.collection("users").doc(uid)
+db.collection("users")
+.doc(uid)
 .collection("expenses")
 .onSnapshot(s=>{
-expenses=[];
-s.forEach(d=>expenses.push({...d.data(),id:d.id}));
-updateUI();
+
+    expenses=[];
+
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    s.forEach(d=>{
+
+        let x = d.data();
+        x.id = d.id;
+        x.amount = Number(x.amount || 0);
+
+        const expenseDate = new Date(x.date);
+
+        if(
+            expenseDate.getMonth() === currentMonth &&
+            expenseDate.getFullYear() === currentYear
+        ){
+            expenses.push(x);
+        }
+    });
+
+    updateUI();
 });
-}
 
 // ADD
 function addIncome(){
