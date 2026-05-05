@@ -153,7 +153,7 @@ canvas{
 <button onclick="addExpense()">Add Expense</button>
 
 <h2>Monthly Budget</h2>
-<input id="budgetInput" type="number" placeholder="Budget">
+<input id="budgetInput" type="number" disabled>
 <button onclick="saveBudget()">Save Budget</button>
 
 <button onclick="downloadPDF()">Download PDF</button>
@@ -411,40 +411,50 @@ function addExpense(){
         showToast("Expense added");
     });
  }
-  
 function saveBudget(){
 
-let value=Number(budgetInput.value);
+    budget = Number(budgetInput.value || 0);
 
-if(!value || value<=0){
-alert("Enter valid budget");
-return;
-}
+    const uid = auth.currentUser.uid;
 
-db.collection("users")
-.doc(auth.currentUser.uid)
-.set({
-budget:value,
-budgetMonth:getCurrentMonthKey()
-},{merge:true})
-.then(()=>{
-budget=value;
-generateInsights();
-alert("Budget saved");
-});
-}
+    db.collection("users")
+    .doc(uid)
+    .collection("settings")
+    .doc("budget")
+    .set({
+        amount: budget
+    })
+    .then(()=>{
+
+        editMode = false;
+
+        budgetInput.disabled = true;
+
+        document.getElementById("editBtn").innerText = "Edit";
+
+        updateUI();
+    });
+    }
   
 function getCurrentMonthKey(){
 let now=new Date();
 return `${now.getFullYear()}-${now.getMonth()+1}`;
 }
   
-// EDIT
+// EDI
+let editMode = false;
+
 function toggleEdit(){
-editMode=!editMode;
-editBtn.innerText=editMode?"Done":"Edit";
-renderRecords();
-}
+
+    editMode = !editMode;
+
+    document.getElementById("editBtn").innerText =
+        editMode ? "Done" : "Edit";
+
+    budgetInput.disabled = !editMode;
+
+    renderRecords();
+ }
 
 function deleteExpense(id){
 db.collection("users")
