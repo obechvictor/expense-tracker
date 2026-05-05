@@ -295,18 +295,74 @@ date:new Date().toISOString()
 }
 
 function addExpense(){
-let val=Number(expenseAmount.value);
-let cat=expenseCategory.value;
-if(!val||!cat)return;
 
-db.collection("users").doc(auth.currentUser.uid)
-.collection("expenses")
-.add({
-amount:val,
-category:cat,
-date:new Date().toISOString()
-});
-}
+    const amount = Number(expenseAmount.value);
+    const category = expenseCategory.value.trim();
+
+    if(!amount || !category){
+        showToast("Enter amount and category");
+        return;
+    }
+
+    const uid = auth.currentUser.uid;
+
+    db.collection("users")
+    .doc(uid)
+    .collection("expenses")
+    .get()
+    .then(snapshot=>{
+
+        let existingDoc = null;
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        snapshot.forEach(doc=>{
+
+            const data = doc.data();
+            const d = new Date(data.date);
+
+            if(
+                data.category.toLowerCase() === category.toLowerCase() &&
+                d.getMonth() === currentMonth &&
+                d.getFullYear() === currentYear
+            ){
+                existingDoc = {
+                    id: doc.id,
+                    amount: Number(data.amount || 0)
+                };
+            }
+        });
+
+        if(existingDoc){
+
+            db.collection("users")
+            .doc(uid)
+            .collection("expenses")
+            .doc(existingDoc.id)
+            .update({
+                amount: existingDoc.amount + amount
+            });
+
+        }else{
+
+            db.collection("users")
+            .doc(uid)
+            .collection("expenses")
+            .add({
+                amount: amount,
+                category: category,
+                date: new Date().toISOString()
+            });
+        }
+
+        expenseAmount.value = "";
+        expenseCategory.value = "";
+
+        showToast("Expense added");
+    });
+ }
   
 function saveBudget(){
 
