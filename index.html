@@ -443,16 +443,15 @@ return `${now.getFullYear()}-${now.getMonth()+1}`;
 let editMode = false;
 
 function toggleEdit(){
-
     editMode = !editMode;
 
-    document.getElementById("editBtn").innerText =
-        editMode ? "Done" : "Edit";
-
+    incomeAmount.disabled = !editMode;
+    expenseAmount.disabled = !editMode;
+    expenseCategory.disabled = !editMode;
     budgetInput.disabled = !editMode;
 
-    renderRecords();
- }
+    editBtn.innerText = editMode ? "Done" : "Edit";
+}
 
 function deleteExpense(id){
 db.collection("users")
