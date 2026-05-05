@@ -451,15 +451,37 @@ function drawCharts() {
         }
     );
 
- // MONTHLY COMPARISON (Previous vs Current)
+// MONTHLY COMPARISON (Income + Expenses)
 
 const now = new Date();
 const currentMonth = now.getMonth();
 const currentYear = now.getFullYear();
 
+let currentIncome = 0;
+let previousIncome = 0;
 let currentExpense = 0;
 let previousExpense = 0;
 
+// Income calculation
+incomes.forEach(i=>{
+    const d = new Date(i.date);
+
+    if(
+        d.getMonth() === currentMonth &&
+        d.getFullYear() === currentYear
+    ){
+        currentIncome += i.amount;
+    }
+
+    if(
+        d.getMonth() === currentMonth-1 &&
+        d.getFullYear() === currentYear
+    ){
+        previousIncome += i.amount;
+    }
+});
+
+// Expense calculation
 expenses.forEach(e=>{
     const d = new Date(e.date);
 
@@ -484,11 +506,18 @@ monthlyChart = new Chart(
         type:"bar",
         data:{
             labels:["Previous Month","Current Month"],
-            datasets:[{
-                label:"Expenses Comparison",
-                data:[previousExpense,currentExpense],
-                backgroundColor:["orange","green"]
-            }]
+            datasets:[
+                {
+                    label:"Income",
+                    data:[previousIncome,currentIncome],
+                    backgroundColor:"green"
+                },
+                {
+                    label:"Expenses",
+                    data:[previousExpense,currentExpense],
+                    backgroundColor:"red"
+                }
+            ]
         },
         options:{
             responsive:true
