@@ -266,7 +266,9 @@ let expense=expenses.reduce((a,b)=>a+b.amount,0);
 balance.innerText=(income-expense).toLocaleString();
 
 records.innerHTML="";
-
+drawCharts();
+generateInsights();
+renderRecords();
 let grouped={};
 
 expenses.forEach(e=>{
