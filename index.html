@@ -344,44 +344,92 @@ insights.innerHTML = `
 `;
     }
 
-function drawCharts(){
+function drawCharts() {
 
-new Chart(document.getElementById("dailyChart"),{
-type:"line",
-data:{
-labels:expenses.map(e=>new Date(e.date).toLocaleDateString()),
-datasets:[{
-label:"Daily Spending",
-data:expenses.map(e=>e.amount)
-}]
-}
-});
+    if (dailyChart) dailyChart.destroy();
+    if (monthlyChart) monthlyChart.destroy();
+    if (expenseChart) expenseChart.destroy();
 
-new Chart(document.getElementById("monthlyChart"),{
-type:"bar",
-data:{
-labels:["Income","Expenses"],
-datasets:[{
-data:[
-incomes.reduce((a,b)=>a+b.amount,0),
-expenses.reduce((a,b)=>a+b.amount,0)
-]
-}]
-}
-});
+    const sortedExpenses = [...expenses].sort(
+        (a,b)=>new Date(a.date)-new Date(b.date)
+    );
 
-let cats={};
-expenses.forEach(e=>cats[e.category]=(cats[e.category]||0)+e.amount);
+    const incomeTotal = incomes.reduce((a,b)=>a+b.amount,0);
+    const expenseTotal = expenses.reduce((a,b)=>a+b.amount,0);
 
-new Chart(document.getElementById("expenseChart"),{
-type:"doughnut",
-data:{
-labels:Object.keys(cats),
-datasets:[{data:Object.values(cats)}]
-}
-});
-}
+    // DAILY TREND
+    dailyChart = new Chart(
+        document.getElementById("dailyChart"),
+        {
+            type:"line",
+            data:{
+                labels: sortedExpenses.map(e =>
+                    new Date(e.date).toLocaleDateString("en-GB",{
+                        day:"numeric",
+                        month:"short"
+                    })
+                ),
+                datasets:[{
+                    label:"Daily Spending",
+                    data: sortedExpenses.map(e=>e.amount),
+                    borderColor:"blue",
+                    backgroundColor:"rgba(0,0,255,0.1)",
+                    fill:true,
+                    tension:0.3
+                }]
+            },
+            options:{
+                responsive:true,
+                plugins:{
+                    legend:{display:true}
+                }
+            }
+        }
+    );
 
+    // MONTHLY COMPARISON
+    monthlyChart = new Chart(
+        document.getElementById("monthlyChart"),
+        {
+            type:"bar",
+            data:{
+                labels:["Income","Expenses"],
+                datasets:[{
+                    label:"Current Month",
+                    data:[incomeTotal,expenseTotal],
+                    backgroundColor:["green","red"]
+                }]
+            },
+            options:{
+                responsive:true
+            }
+        }
+    );
+
+    // EXPENSE CATEGORY CHART
+    let categories = {};
+
+    expenses.forEach(e=>{
+        categories[e.category] =
+            (categories[e.category] || 0) + e.amount;
+    });
+
+    expenseChart = new Chart(
+        document.getElementById("expenseChart"),
+        {
+            type:"doughnut",
+            data:{
+                labels:Object.keys(categories),
+                datasets:[{
+                    data:Object.values(categories)
+                }]
+            },
+            options:{
+                responsive:true
+            }
+        }
+    );
+    }
 function downloadPDF(){
 const {jsPDF}=window.jspdf;
 const doc=new jsPDF();
