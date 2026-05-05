@@ -2,10 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Finance Dashboard</title>
-
-<link rel="manifest" href="manifest.json">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -15,111 +13,77 @@
 
 <style>
 body{
-    font-family: "Times New Roman";
-    background:#f4f6f9;
-    margin:0;
-    padding:0;
+font-family:"Times New Roman";
+background:#f4f6f9;
+margin:0;
+padding:0;
 }
 
-/* MAIN CONTAINER */
 .container{
-    max-width:900px;
-    margin:auto;
-    padding:20px;
+max-width:900px;
+margin:auto;
+padding:20px;
 }
 
-/* HEADER */
-.dashboard-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    background:#16c44f;
-    color:white;
-    padding:18px 20px;
-    border-radius:12px;
-    margin-bottom:20px;
-    width:auto !important;
-    
-}
-
-.dashboard-header h1{
-    margin:0;
-    font-size:32px;
-}
-
-/* SMALL EDIT BUTTON */
-#editBtn{
-    width:auto;
-    padding:8px 18px;
-    font-size:14px;
-    font-weight:bold;
-    background:white;
-    color:#16c44f;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    min-width:70px;
-}
-
-/* CARDS */
 .card{
-    background:white;
-    padding:20px;
-    margin-bottom:25px;
-    border-radius:14px;
-    box-shadow:0 3px 10px rgba(0,0,0,0.08);
+background:white;
+padding:20px;
+margin-bottom:20px;
+border-radius:12px;
+box-shadow:0 3px 10px rgba(0,0,0,.08);
 }
 
-/* INPUTS */
+.dashboard-header{
+background:#00c853;
+color:white;
+padding:18px 20px;
+border-radius:12px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+}
+
+#editBtn{
+width:auto !important;
+padding:8px 16px;
+background:white;
+color:#00c853;
+font-weight:bold;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
 input{
-    width:100%;
-    padding:14px;
-    margin-top:10px;
-    margin-bottom:15px;
-    border:1px solid #ddd;
-    border-radius:8px;
-    box-sizing:border-box;
+width:100%;
+padding:14px;
+margin:10px 0;
+border:1px solid #ddd;
+border-radius:8px;
+box-sizing:border-box;
 }
 
-/* BUTTONS */
 button{
-    width:100%;
-    padding:14px;
-    margin-top:10px;
-    margin-bottom:12px;
-    border:none;
-    border-radius:8px;
-    background:#00c853;
-    color:white;
-    font-weight:bold;
-    cursor:pointer;
+width:100%;
+padding:14px;
+margin:10px 0;
+background:#00c853;
+color:white;
+border:none;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
 }
 
-/* LOGOUT BUTTON */
-.logout-btn{
-    margin-bottom:25px;
-}
-
-/* CHARTS */
-canvas{
-    margin-top:20px;
-}
-
-/* RECORDS */
 .record{
-    padding:12px;
-    border-bottom:1px solid #eee;
-}
-
-/* BALANCE */
-#balance{
-    font-size:42px;
-    font-weight:bold;
+padding:10px;
+border-bottom:1px solid #eee;
 }
 </style>
 </head>
-<body
-    
+<body>
+
 <div class="container">
 
 <div id="authCard" class="card">
@@ -133,10 +97,10 @@ canvas{
 <div id="dashboard">
 
 <div class="dashboard-header">
-   <h1>Finance Dashboard</h1>
-   <button id="editBtn" onclick="toggleEdit()">Edit</button>
+<h1>Finance Dashboard</h1>
+<button id="editBtn" onclick="toggleEdit()">Edit</button>
 </div>
-    
+
 <div class="card">
 <button onclick="logout()">Logout</button>
 <button id="installBtn">Install App</button>
@@ -155,7 +119,6 @@ canvas{
 <h2>Monthly Budget</h2>
 <input id="budgetInput" type="number" placeholder="Budget" disabled>
 <button onclick="saveBudget()">Save Budget</button>
-
 <button onclick="downloadPDF()">Download PDF</button>
 </div>
 
@@ -192,14 +155,13 @@ canvas{
 </div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
-  authDomain: "expense-tracker-2ee7b.firebaseapp.com",
-  projectId: "expense-tracker-2ee7b",
-  storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
-  messagingSenderId: "306376576940",
-  appId: "1:306376576940:web:f7bf235be67524c9c8b409",
-  measurementId: "G-V7B8WSWCZ8"
+const firebaseConfig={
+apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+authDomain:"expense-tracker-2ee7b.firebaseapp.com",
+projectId:"expense-tracker-2ee7b",
+storageBucket:"expense-tracker-2ee7b.firebasestorage.app",
+messagingSenderId:"306376576940",
+appId:"1:306376576940:web:f7bf235be67524c9c8b409"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -207,14 +169,26 @@ firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
 
+const email=document.getElementById("email");
+const password=document.getElementById("password");
+const authCard=document.getElementById("authCard");
+const dashboard=document.getElementById("dashboard");
+const incomeAmount=document.getElementById("incomeAmount");
+const expenseAmount=document.getElementById("expenseAmount");
+const expenseCategory=document.getElementById("expenseCategory");
+const budgetInput=document.getElementById("budgetInput");
+const balance=document.getElementById("balance");
+const insights=document.getElementById("insights");
+const records=document.getElementById("records");
+const editBtn=document.getElementById("editBtn");
+
+dashboard.style.display="none";
+
 let incomes=[];
 let expenses=[];
 let budget=0;
 let editMode=false;
 
-let dailyChart,monthlyChart,expenseChart;
-
-// AUTH
 function register(){
 auth.createUserWithEmailAndPassword(email.value,password.value)
 .catch(e=>alert(e.message));
@@ -240,634 +214,182 @@ dashboard.style.display="none";
 }
 });
 
-// LOAD
-function loadData(){
-
-    const uid = auth.currentUser.uid;
-
-    incomes = [];
-    expenses = [];
-
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-
-    // LOAD INCOME
-    db.collection("users")
-    .doc(uid)
-    .collection("income")
-    .onSnapshot(snapshot=>{
-
-        incomes = [];
-
-        snapshot.forEach(doc=>{
-
-            let data = doc.data();
-            data.id = doc.id;
-            data.amount = Number(data.amount || 0);
-
-            const date = new Date(data.date);
-
-            if(
-                date.getMonth() === currentMonth &&
-                date.getFullYear() === currentYear
-            ){
-                incomes.push(data);
-            }
-        });
-
-        updateUI();
-        generateInsights();
-    });
-
-    // LOAD EXPENSES
-    db.collection("users")
-    .doc(uid)
-    .collection("expenses")
-    .onSnapshot(snapshot=>{
-
-        expenses = [];
-
-        snapshot.forEach(doc=>{
-
-            let data = doc.data();
-            data.id = doc.id;
-            data.amount = Number(data.amount || 0);
-
-            const date = new Date(data.date);
-
-            if(
-                date.getMonth() === currentMonth &&
-                date.getFullYear() === currentYear
-            ){
-                expenses.push(data);
-            }
-        });
-
-        updateUI();
-        generateInsights();
-    });
-
-    // LOAD BUDGET
-    db.collection("users")
-    .doc(uid)
-    .collection("settings")
-    .doc("budget")
-    .get()
-    .then(doc=>{
-
-        if(doc.exists){
-            budget = Number(doc.data().amount || 0);
-            budgetInput.value = budget;
-        }else{
-            budget = 0;
-            budgetInput.value = "";
-        }
-
-        updateUI();
-        generateInsights();
-    });
-  }
-
-// ADD
-function addIncome(){
-let val=Number(incomeAmount.value);
-if(!val)return;
-
-db.collection("users").doc(auth.currentUser.uid)
-.collection("income")
-.add({
-amount:val,
-date:new Date().toISOString()
-});
-}
-
-function addExpense(){
-
-    const amount = Number(expenseAmount.value);
-    const category = expenseCategory.value.trim();
-
-    if(!amount || !category){
-        showToast("Enter amount and category");
-        return;
-    }
-
-    const uid = auth.currentUser.uid;
-
-    db.collection("users")
-    .doc(uid)
-    .collection("expenses")
-    .get()
-    .then(snapshot=>{
-
-        let existingDoc = null;
-
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-
-        snapshot.forEach(doc=>{
-
-            const data = doc.data();
-            const d = new Date(data.date);
-
-            if(
-                data.category.toLowerCase() === category.toLowerCase() &&
-                d.getMonth() === currentMonth &&
-                d.getFullYear() === currentYear
-            ){
-                existingDoc = {
-                    id: doc.id,
-                    amount: Number(data.amount || 0)
-                };
-            }
-        });
-
-        if(existingDoc){
-
-            db.collection("users")
-            .doc(uid)
-            .collection("expenses")
-            .doc(existingDoc.id)
-            .update({
-                amount: existingDoc.amount + amount
-            });
-
-        }else{
-
-            db.collection("users")
-            .doc(uid)
-            .collection("expenses")
-            .add({
-                amount: amount,
-                category: category,
-                date: new Date().toISOString()
-            });
-        }
-
-        expenseAmount.value = "";
-        expenseCategory.value = "";
-
-        showToast("Expense added");
-    });
- }
-    
-function saveBudget(){
-
-let value=Number(budgetInput.value);
-
-if(!value || value<=0){
-alert("Enter valid budget");
-return;
-}
-
-db.collection("users")
-.doc(auth.currentUser.uid)
-.set({
-budget:value,
-budgetMonth:getCurrentMonthKey()
-},{merge:true})
-.then(()=>{
-budget=value;
-generateInsights();
-alert("Budget saved");
-});
-}
-    
-function getCurrentMonthKey(){
-let now=new Date();
-return `${now.getFullYear()}-${now.getMonth()+1}`;
-}
-  
-// EDI
-let editMode = false;
-
 function toggleEdit(){
-    editMode = !editMode;
-
-    incomeAmount.disabled = !editMode;
-    expenseAmount.disabled = !editMode;
-    expenseCategory.disabled = !editMode;
-    budgetInput.disabled = !editMode;
-
-    editBtn.innerText = editMode ? "Done" : "Edit";
+editMode=!editMode;
+budgetInput.disabled=!editMode;
+editBtn.innerText=editMode?"Done":"Edit";
 }
 
-function deleteExpense(id){
-db.collection("users")
-.doc(auth.currentUser.uid)
-.collection("expenses")
-.doc(id)
-.delete();
+async function loadData(){
+const uid=auth.currentUser.uid;
+
+const doc=await db.collection("users").doc(uid).get();
+if(doc.exists) budget=doc.data().budget||0;
+budgetInput.value=budget;
+
+const incomeSnap=await db.collection("users").doc(uid).collection("income").get();
+incomes=incomeSnap.docs.map(d=>d.data());
+
+const expenseSnap=await db.collection("users").doc(uid).collection("expenses").get();
+expenses=expenseSnap.docs.map(d=>d.data());
+
+updateUI();
 }
 
-// UI
+async function saveBudget(){
+budget=Number(budgetInput.value);
+await db.collection("users").doc(auth.currentUser.uid).set({budget});
+}
+
+async function addIncome(){
+const amount=Number(incomeAmount.value);
+await db.collection("users").doc(auth.currentUser.uid).collection("income").add({
+amount,date:new Date().toISOString()
+});
+loadData();
+}
+
+async function addExpense(){
+const amount=Number(expenseAmount.value);
+const category=expenseCategory.value;
+
+await db.collection("users").doc(auth.currentUser.uid).collection("expenses").add({
+amount,category,date:new Date().toISOString()
+});
+loadData();
+}
+
 function updateUI(){
+let income=incomes.reduce((a,b)=>a+b.amount,0);
+let expense=expenses.reduce((a,b)=>a+b.amount,0);
 
-const now = new Date();
-
-let income = incomes
-.filter(i=>{
-let d=new Date(i.date);
-return d.getMonth()===now.getMonth() &&
-d.getFullYear()===now.getFullYear();
-})
-.reduce((a,b)=>a+b.amount,0);
-
-let expense = expenses
-.filter(e=>{
-let d=new Date(e.date);
-return d.getMonth()===now.getMonth() &&
-d.getFullYear()===now.getFullYear();
-})
-.reduce((a,b)=>a+b.amount,0);
-
-balance.innerText = (income - expense).toLocaleString();
-
-renderRecords();
-drawCharts();
-generateInsights();
-}
-  
-function renderRecords(){
+balance.innerText=(income-expense).toLocaleString();
 
 records.innerHTML="";
 
-const now = new Date();
+let grouped={};
 
-const currentExpenses = expenses.filter(e=>{
-let d=new Date(e.date);
-
-return d.getMonth()===now.getMonth() &&
-d.getFullYear()===now.getFullYear();
-});
-
-currentExpenses.forEach(e=>{
-
-records.innerHTML += `
-<div class="record">
-<span>${e.category} - KES ${e.amount}</span>
-
-${editMode
-? `<button class="danger"
-onclick="deleteExpense('${e.id}')">Delete</button>`
-: ""}
-</div>
-`;
-
-});
-}
-
-// CHARTS
-function drawCharts() {
-
-    if (dailyChart) dailyChart.destroy();
-    if (monthlyChart) monthlyChart.destroy();
-    if (expenseChart) expenseChart.destroy();
-
-    const sortedExpenses = [...expenses].sort(
-        (a,b)=>new Date(a.date)-new Date(b.date)
-    );
-
-    const incomeTotal = incomes.reduce((a,b)=>a+b.amount,0);
-    const expenseTotal = expenses.reduce((a,b)=>a+b.amount,0);
-
-    // DAILY TREND
-    dailyChart = new Chart(
-        document.getElementById("dailyChart"),
-        {
-            type:"line",
-            data:{
-                labels: sortedExpenses.map(e =>
-                    new Date(e.date).toLocaleDateString("en-GB",{
-                        day:"numeric",
-                        month:"short"
-                    })
-                ),
-                datasets:[{
-                    label:"Daily Spending",
-                    data: sortedExpenses.map(e=>e.amount),
-                    borderColor:"blue",
-                    backgroundColor:"rgba(0,0,255,0.1)",
-                    fill:true,
-                    tension:0.3
-                }]
-            },
-            options:{
-                responsive:true,
-                plugins:{
-                    legend:{display:true}
-                }
-            }
-        }
-    );
-
-// MONTHLY COMPARISON (Income + Expenses)
-
-const now = new Date();
-const currentMonth = now.getMonth();
-const currentYear = now.getFullYear();
-
-let currentIncome = 0;
-let previousIncome = 0;
-let currentExpense = 0;
-let previousExpense = 0;
-
-// Income calculation
-incomes.forEach(i=>{
-    const d = new Date(i.date);
-
-    if(
-        d.getMonth() === currentMonth &&
-        d.getFullYear() === currentYear
-    ){
-        currentIncome += i.amount;
-    }
-
-    if(
-        d.getMonth() === currentMonth-1 &&
-        d.getFullYear() === currentYear
-    ){
-        previousIncome += i.amount;
-    }
-});
-
-// Expense calculation
 expenses.forEach(e=>{
-    const d = new Date(e.date);
-
-    if(
-        d.getMonth() === currentMonth &&
-        d.getFullYear() === currentYear
-    ){
-        currentExpense += e.amount;
-    }
-
-    if(
-        d.getMonth() === currentMonth-1 &&
-        d.getFullYear() === currentYear
-    ){
-        previousExpense += e.amount;
-    }
+grouped[e.category]=(grouped[e.category]||0)+e.amount;
 });
 
-monthlyChart = new Chart(
-    document.getElementById("monthlyChart"),
-    {
-        type:"bar",
-        data:{
-            labels:["Previous Month","Current Month"],
-            datasets:[
-                {
-                    label:"Income",
-                    data:[previousIncome,currentIncome],
-                    backgroundColor:"green"
-                },
-                {
-                    label:"Expenses",
-                    data:[previousExpense,currentExpense],
-                    backgroundColor:"red"
-                }
-            ]
-        },
-        options:{
-            responsive:true
-        }
-    }
-);
-
-    // EXPENSE CATEGORY CHART
-    let categories = {};
-
-    expenses.forEach(e=>{
-        categories[e.category] =
-            (categories[e.category] || 0) + e.amount;
-    });
-
-    expenseChart = new Chart(
-        document.getElementById("expenseChart"),
-        {
-            type:"doughnut",
-            data:{
-                labels:Object.keys(categories),
-                datasets:[{
-                    data:Object.values(categories)
-                }]
-            },
-            options:{
-                responsive:true
-            }
-        }
-    );
-  }
-
-
-// INSIGHTS
-function generateInsights(){
-
-    let income = incomes.reduce((a,b)=>a+b.amount,0);
-    let expense = expenses.reduce((a,b)=>a+b.amount,0);
-
-    let ratio = income > 0 ? (expense/income)*100 : 0;
-
-    let status =
-        ratio <= 50 ? "Healthy ✅" :
-        ratio <= 80 ? "Moderate ⚠️" :
-        "Risky 🔴";
-
-    let budgetInsight = "No budget set";
-
-    if(Number(budget) > 0){
-        let used = (expense/budget)*100;
-
-        budgetInsight =
-            used < 80 ? `Healthy (${used.toFixed(1)}%)` :
-            used <= 100 ? `Warning (${used.toFixed(1)}%)` :
-            `Exceeded (${used.toFixed(1)}%)`;
-    }
-
-    // Monthly comparison
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-
-    let currentExpense = 0;
-    let previousExpense = 0;
-
-    expenses.forEach(e=>{
-        const d = new Date(e.date);
-
-        if(
-            d.getMonth() === currentMonth &&
-            d.getFullYear() === currentYear
-        ){
-            currentExpense += e.amount;
-        }
-
-        if(
-            d.getMonth() === currentMonth-1 &&
-            d.getFullYear() === currentYear
-        ){
-            previousExpense += e.amount;
-        }
-    });
-
-    let comparison = "";
-
-    if(currentExpense > previousExpense){
-        comparison = `Expenses increased by KES ${currentExpense-previousExpense}`;
-    }
-    else if(currentExpense < previousExpense){
-        comparison = `Expenses reduced by KES ${previousExpense-currentExpense}`;
-    }
-    else{
-        comparison = "Expenses unchanged from last month";
-    }
-
-    insights.innerHTML = `
-        Income: KES ${income}<br><br>
-        Expenses: KES ${expense}<br><br>
-        Ratio: ${ratio.toFixed(1)}%<br><br>
-        Status: ${status}<br><br>
-        Budget: ${budgetInsight}<br><br>
-        Monthly Comparison: ${comparison}
-    `;
+for(let cat in grouped){
+records.innerHTML+=`<div class="record">${cat} - KES ${grouped[cat]}</div>`;
 }
 
-// PDF
-function downloadPDF(){
-
-const { jsPDF } = window.jspdf;
-const doc = new jsPDF();
-
-const now = new Date();
-const month = now.toLocaleString("default",{month:"long"});
-const year = now.getFullYear();
-
-/* Current month totals */
-let income = incomes.reduce((a,b)=>a+b.amount,0);
-let expense = expenses.reduce((a,b)=>a+b.amount,0);
-
-let bal = income - expense;
-
-let ratio = income>0 ? (expense/income)*100 : 0;
-
-/* Budget analysis */
-let budgetStatus = "Not Set";
-
-if(budget>0){
-let used=(expense/budget)*100;
-
-budgetStatus =
-used<80
-? `Healthy (${used.toFixed(1)}%)`
-: used<100
-? `Warning (${used.toFixed(1)}%)`
-: `Exceeded (${used.toFixed(1)}%)`;
+generateInsights(income,expense);
+drawCharts();
 }
 
-/* Financial status */
-let health =
-ratio<=50
-? "Healthy"
-: ratio<=80
-? "Moderate"
-: "Risky";
+function generateInsights(income,expense){
 
-/* Top category */
-let cats={};
+let ratio = income ? (expense/income)*100 : 0;
+
+let status =
+ratio <= 50 ? "Healthy ✅" :
+ratio <= 80 ? "Moderate ⚠️" :
+"Risky 🔴";
+
+let budgetInsight = "No budget set";
+
+if(budget > 0){
+let used = (expense/budget)*100;
+
+budgetInsight =
+used <= 80 ? `Healthy (${used.toFixed(1)}%)` :
+used <= 100 ? `Warning (${used.toFixed(1)}%)` :
+`Exceeded by KES ${(expense-budget).toLocaleString()}`;
+}
+
+let savings = income - expense;
+
+let savingsRate = income ? ((savings/income)*100).toFixed(1) : 0;
+
+let recommendation =
+ratio <= 50 ? "Your spending is under control. Keep saving." :
+ratio <= 80 ? "Watch your spending closely this month." :
+"Urgent review needed. Expenses are too high.";
+
+let topCategory = "None";
+
+if(expenses.length){
+let cats = {};
 
 expenses.forEach(e=>{
 cats[e.category]=(cats[e.category]||0)+e.amount;
 });
 
-let topCategory = Object.keys(cats).length
-? Object.entries(cats).sort((a,b)=>b[1]-a[1])[0]
-: ["None",0];
-
-/* Header */
-doc.setFontSize(20);
-doc.text("Finance Dashboard Report",20,20);
-
-doc.setFontSize(12);
-doc.text(`${month} ${year}`,20,30);
-
-/* Summary */
-doc.text(`Income: KES ${income}`,20,50);
-doc.text(`Expenses: KES ${expense}`,20,60);
-doc.text(`Balance: KES ${bal}`,20,70);
-
-doc.text(`Expense Ratio: ${ratio.toFixed(1)}%`,20,85);
-doc.text(`Financial Health: ${health}`,20,95);
-
-doc.text(`Budget Status: ${budgetStatus}`,20,110);
-
-doc.text(
-`Top Expense: ${topCategory[0]} (KES ${topCategory[1]})`,
-20,
-125
-);
-
-/* Insights */
-doc.setFontSize(14);
-doc.text("Insights",20,145);
-
-doc.setFontSize(11);
-
-let advice =
-health==="Healthy"
-? "Excellent spending control."
-: health==="Moderate"
-? "Watch discretionary spending."
-: "Urgent budget revision needed.";
-
-doc.text(advice,20,155);
-
-/* Records */
-doc.setFontSize(14);
-doc.text("Expense Records",20,175);
-
-doc.setFontSize(10);
-
-let y=185;
-
-expenses.forEach(e=>{
-if(y>270){
-doc.addPage();
-y=20;
+topCategory = Object.entries(cats)
+.sort((a,b)=>b[1]-a[1])[0][0];
 }
 
-doc.text(
-`${e.category} - KES ${e.amount}`,
-20,
-y
-);
+insights.innerHTML = `
+<b>Total Income:</b> KES ${income.toLocaleString()}<br><br>
 
-y+=10;
+<b>Total Expenses:</b> KES ${expense.toLocaleString()}<br><br>
+
+<b>Balance:</b> KES ${(income-expense).toLocaleString()}<br><br>
+
+<b>Expense Ratio:</b> ${ratio.toFixed(1)}%<br><br>
+
+<b>Status:</b> ${status}<br><br>
+
+<b>Savings Rate:</b> ${savingsRate}%<br><br>
+
+<b>Budget Analysis:</b> ${budgetInsight}<br><br>
+
+<b>Highest Spending Category:</b> ${topCategory}<br><br>
+
+<b>Recommendation:</b> ${recommendation}
+`;
+    }
+
+function drawCharts(){
+
+new Chart(document.getElementById("dailyChart"),{
+type:"line",
+data:{
+labels:expenses.map(e=>new Date(e.date).toLocaleDateString()),
+datasets:[{
+label:"Daily Spending",
+data:expenses.map(e=>e.amount)
+}]
+}
 });
 
-/* Footer */
-doc.setFontSize(9);
-doc.text("Generated by Finance Dashboard",20,290);
+new Chart(document.getElementById("monthlyChart"),{
+type:"bar",
+data:{
+labels:["Income","Expenses"],
+datasets:[{
+data:[
+incomes.reduce((a,b)=>a+b.amount,0),
+expenses.reduce((a,b)=>a+b.amount,0)
+]
+}]
+}
+});
 
-doc.save(`Finance_Report_${month}_${year}.pdf`);
+let cats={};
+expenses.forEach(e=>cats[e.category]=(cats[e.category]||0)+e.amount);
+
+new Chart(document.getElementById("expenseChart"),{
+type:"doughnut",
+data:{
+labels:Object.keys(cats),
+datasets:[{data:Object.values(cats)}]
+}
+});
 }
 
-// PWA
-let deferredPrompt;
+function downloadPDF(){
+const {jsPDF}=window.jspdf;
+const doc=new jsPDF();
 
-window.addEventListener("beforeinstallprompt",e=>{
-e.preventDefault();
-deferredPrompt=e;
-installBtn.style.display="block";
-});
+doc.text("Finance Report",20,20);
+doc.text(insights.innerText,20,40);
 
-installBtn.addEventListener("click",()=>{
-deferredPrompt.prompt();
-});
-
-if("serviceWorker" in navigator){
-navigator.serviceWorker.register("sw.js");
+doc.save("report.pdf");
 }
 </script>
 
