@@ -324,7 +324,7 @@ d.getFullYear()===now.getFullYear();
 })
 .reduce((a,b)=>a+b.amount,0);
 
-balance.innerText = "KES " + (income - expense);
+balance.innerText = (income - expense).toLocaleString();
 
 renderRecords();
 drawCharts();
