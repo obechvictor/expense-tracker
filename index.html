@@ -411,31 +411,29 @@ function addExpense(){
         showToast("Expense added");
     });
  }
+    
 function saveBudget(){
 
-    budget = Number(budgetInput.value || 0);
+let value=Number(budgetInput.value);
 
-    const uid = auth.currentUser.uid;
+if(!value || value<=0){
+alert("Enter valid budget");
+return;
+}
 
-    db.collection("users")
-    .doc(uid)
-    .collection("settings")
-    .doc("budget")
-    .set({
-        amount: budget
-    })
-    .then(()=>{
-
-        editMode = false;
-
-        budgetInput.disabled = true;
-
-        document.getElementById("editBtn").innerText = "Edit";
-
-        updateUI();
-    });
-    }
-  
+db.collection("users")
+.doc(auth.currentUser.uid)
+.set({
+budget:value,
+budgetMonth:getCurrentMonthKey()
+},{merge:true})
+.then(()=>{
+budget=value;
+generateInsights();
+alert("Budget saved");
+});
+}
+    
 function getCurrentMonthKey(){
 let now=new Date();
 return `${now.getFullYear()}-${now.getMonth()+1}`;
