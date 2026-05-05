@@ -477,59 +477,74 @@ monthlyChart = new Chart(
 
 // INSIGHTS
 function generateInsights(){
-let now=new Date();
 
-let income=incomes
-.filter(i=>{
-let d=new Date(i.date);
-return d.getMonth()===now.getMonth() &&
-d.getFullYear()===now.getFullYear();
-})
-.reduce((a,b)=>a+b.amount,0);
-let expense=expenses
-.filter(e=>{
-let d=new Date(e.date);
-return d.getMonth()===now.getMonth() &&
-d.getFullYear()===now.getFullYear();
-})
-.reduce((a,b)=>a+b.amount,0);
+    let income = incomes.reduce((a,b)=>a+b.amount,0);
+    let expense = expenses.reduce((a,b)=>a+b.amount,0);
 
-let ratio=income?expense/income*100:0;
+    let ratio = income > 0 ? (expense/income)*100 : 0;
 
-let status=
-ratio<=50?"Healthy ✅":
-ratio<=80?"Moderate ⚠️":
-"Risky 🔴";
+    let status =
+        ratio <= 50 ? "Healthy ✅" :
+        ratio <= 80 ? "Moderate ⚠️" :
+        "Risky 🔴";
 
-let budgetInsight="No budget set";
+    let budgetInsight = "No budget set";
 
-if(budget>0){
-let used=expense/budget*100;
+    if(Number(budget) > 0){
+        let used = (expense/budget)*100;
 
-budgetInsight=
-used<80?`Healthy (${used.toFixed(1)}%)`:
-used<=100?`Warning (${used.toFixed(1)}%)`:
-`Exceeded by KES ${expense-budget}`;
-}
-let comparison = "";
+        budgetInsight =
+            used < 80 ? `Healthy (${used.toFixed(1)}%)` :
+            used <= 100 ? `Warning (${used.toFixed(1)}%)` :
+            `Exceeded (${used.toFixed(1)}%)`;
+    }
 
-if(currentExpense > previousExpense){
-    comparison = `Expenses increased by KES ${currentExpense - previousExpense}`;
-}
-else if(currentExpense < previousExpense){
-    comparison = `Expenses reduced by KES ${previousExpense - currentExpense}`;
-}
-else{
-    comparison = "Expenses unchanged from last month";
-}
-insights.innerHTML=`
-Income: KES ${income}<br><br>
-Expenses: KES ${expense}<br><br>
-Ratio: ${ratio.toFixed(1)}%<br><br>
-Status: ${status}<br><br>
-Monthly Comparison: ${comparison}<br><br>
-Budget: ${budgetInsight}
-`;
+    // Monthly comparison
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    let currentExpense = 0;
+    let previousExpense = 0;
+
+    expenses.forEach(e=>{
+        const d = new Date(e.date);
+
+        if(
+            d.getMonth() === currentMonth &&
+            d.getFullYear() === currentYear
+        ){
+            currentExpense += e.amount;
+        }
+
+        if(
+            d.getMonth() === currentMonth-1 &&
+            d.getFullYear() === currentYear
+        ){
+            previousExpense += e.amount;
+        }
+    });
+
+    let comparison = "";
+
+    if(currentExpense > previousExpense){
+        comparison = `Expenses increased by KES ${currentExpense-previousExpense}`;
+    }
+    else if(currentExpense < previousExpense){
+        comparison = `Expenses reduced by KES ${previousExpense-currentExpense}`;
+    }
+    else{
+        comparison = "Expenses unchanged from last month";
+    }
+
+    insights.innerHTML = `
+        Income: KES ${income}<br><br>
+        Expenses: KES ${expense}<br><br>
+        Ratio: ${ratio.toFixed(1)}%<br><br>
+        Status: ${status}<br><br>
+        Budget: ${budgetInsight}<br><br>
+        Monthly Comparison: ${comparison}
+    `;
 }
 
 // PDF
