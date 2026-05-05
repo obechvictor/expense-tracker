@@ -73,8 +73,11 @@ display:none;
 </style>
 </head>
 <body>
-
-<header>Finance Dashboard</header>
+  
+<div class="dashboard-header">
+   <h1>Finance Dashboard</h1>
+   <button id="editBtn" onclick="toggleEdit()">Edit</button>
+</div>
 
 <div class="container">
 
@@ -107,7 +110,6 @@ display:none;
 <input id="budgetInput" type="number" placeholder="Budget">
 <button onclick="saveBudget()">Save Budget</button>
 
-<button id="editBtn" onclick="toggleEdit()">Edit</button>
 <button onclick="downloadPDF()">Download PDF</button>
 </div>
 
