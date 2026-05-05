@@ -370,30 +370,35 @@ function drawCharts() {
     dailyChart = new Chart(document.getElementById("dailyChart"), {
         type: "line",
         data: {
-            labels: expenses.map(e => new Date(e.date).toLocaleDateString()),
-            datasets: [{
-                label: "Daily Spending",
-                data: expenses.map(e => e.amount),
-                borderColor: "blue",
-                fill: false
-            }]
-        }
-    });
+let sortedExpenses = [...expenses].sort((a,b)=>
+new Date(a.date)-new Date(b.date)
+);
+
+labels: sortedExpenses.map(e =>
+new Date(e.date).toLocaleDateString()
+),
+
+datasets:[{
+label:"Daily Spending",
+data: sortedExpenses.map(e=>e.amount),
+borderColor:"blue",
+fill:false
+}]     
 
     // Monthly comparison
-    monthlyChart = new Chart(document.getElementById("monthlyChart"), {
-        type: "bar",
-        data: {
-            labels: ["Income", "Expenses"],
-            datasets: [{
-                data: [
-                    incomes.reduce((a,b)=>a+b.amount,0),
-                    expenses.reduce((a,b)=>a+b.amount,0)
-                ],
-                backgroundColor: ["green","red"]
-            }]
-        }
-    });
+    monthlyChart = new Chart(
+document.getElementById("monthlyChart"),
+{
+type:"bar",
+data:{
+labels:["Income","Expenses"],
+datasets:[{
+label:"Current Month",
+data:[incomeTotal,expenseTotal],
+backgroundColor:["green","red"]
+}]
+}
+});
 
     // Expense categories
     let cats = {};
