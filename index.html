@@ -404,24 +404,50 @@ function drawCharts() {
         }
     );
 
-    // MONTHLY COMPARISON
-    monthlyChart = new Chart(
-        document.getElementById("monthlyChart"),
-        {
-            type:"bar",
-            data:{
-                labels:["Income","Expenses"],
-                datasets:[{
-                    label:"Current Month",
-                    data:[incomeTotal,expenseTotal],
-                    backgroundColor:["green","red"]
-                }]
-            },
-            options:{
-                responsive:true
-            }
+ // MONTHLY COMPARISON (Previous vs Current)
+
+const now = new Date();
+const currentMonth = now.getMonth();
+const currentYear = now.getFullYear();
+
+let currentExpense = 0;
+let previousExpense = 0;
+
+expenses.forEach(e=>{
+    const d = new Date(e.date);
+
+    if(
+        d.getMonth() === currentMonth &&
+        d.getFullYear() === currentYear
+    ){
+        currentExpense += e.amount;
+    }
+
+    if(
+        d.getMonth() === currentMonth-1 &&
+        d.getFullYear() === currentYear
+    ){
+        previousExpense += e.amount;
+    }
+});
+
+monthlyChart = new Chart(
+    document.getElementById("monthlyChart"),
+    {
+        type:"bar",
+        data:{
+            labels:["Previous Month","Current Month"],
+            datasets:[{
+                label:"Expenses Comparison",
+                data:[previousExpense,currentExpense],
+                backgroundColor:["orange","green"]
+            }]
+        },
+        options:{
+            responsive:true
         }
-    );
+    }
+);
 
     // EXPENSE CATEGORY CHART
     let categories = {};
@@ -485,7 +511,17 @@ used<80?`Healthy (${used.toFixed(1)}%)`:
 used<=100?`Warning (${used.toFixed(1)}%)`:
 `Exceeded by KES ${expense-budget}`;
 }
+let comparison = "";
 
+if(currentExpense > previousExpense){
+    comparison = `Expenses increased by KES ${currentExpense - previousExpense}`;
+}
+else if(currentExpense < previousExpense){
+    comparison = `Expenses reduced by KES ${previousExpense - currentExpense}`;
+}
+else{
+    comparison = "Expenses unchanged from last month";
+}
 insights.innerHTML=`
 Income: KES ${income}<br><br>
 Expenses: KES ${expense}<br><br>
