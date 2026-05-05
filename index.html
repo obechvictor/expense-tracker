@@ -361,67 +361,57 @@ onclick="deleteExpense('${e.id}')">Delete</button>`
 }
 
 // CHARTS
-function drawCharts(){
+function drawCharts() {
+    if(dailyChart) dailyChart.destroy();
+    if(monthlyChart) monthlyChart.destroy();
+    if(expenseChart) expenseChart.destroy();
 
-if(dailyChart)dailyChart.destroy();
-if(monthlyChart)monthlyChart.destroy();
-if(expenseChart)expenseChart.destroy();
+    // Daily trend
+    dailyChart = new Chart(document.getElementById("dailyChart"), {
+        type: "line",
+        data: {
+            labels: expenses.map(e => new Date(e.date).toLocaleDateString()),
+            datasets: [{
+                label: "Daily Spending",
+                data: expenses.map(e => e.amount),
+                borderColor: "blue",
+                fill: false
+            }]
+        }
+    });
 
-dailyChart=new Chart(document.getElementById("dailyChart"),{
-type:"line",
-data:{
-labels:labels,
-datasets:[{
-label:"Daily Spending",
-data:data,
-fill:false,
-tension:0.3
-}]
-}
-});
+    // Monthly comparison
+    monthlyChart = new Chart(document.getElementById("monthlyChart"), {
+        type: "bar",
+        data: {
+            labels: ["Income", "Expenses"],
+            datasets: [{
+                data: [
+                    incomes.reduce((a,b)=>a+b.amount,0),
+                    expenses.reduce((a,b)=>a+b.amount,0)
+                ],
+                backgroundColor: ["green","red"]
+            }]
+        }
+    });
 
-let months={};
+    // Expense categories
+    let cats = {};
 
-incomes.forEach(i=>{
-let d=new Date(i.date);
-let k=`${d.getFullYear()}-${d.getMonth()+1}`;
-months[k]=months[k]||{income:0,expense:0};
-months[k].income+=i.amount;
-});
+    expenses.forEach(e=>{
+        cats[e.category]=(cats[e.category]||0)+e.amount;
+    });
 
-expenses.forEach(e=>{
-let d=new Date(e.date);
-let k=`${d.getFullYear()}-${d.getMonth()+1}`;
-months[k]=months[k]||{income:0,expense:0};
-months[k].expense+=e.amount;
-});
-
-let labels=Object.keys(months);
-
-monthlyChart=new Chart(document.getElementById("monthlyChart"),{
-type:"bar",
-data:{
-labels,
-datasets:[
-{label:"Income",data:labels.map(l=>months[l].income)},
-{label:"Expenses",data:labels.map(l=>months[l].expense)}
-]
-}
-});
-
-let cats={};
-expenses.forEach(e=>{
-cats[e.category]=(cats[e.category]||0)+e.amount;
-});
-
-expenseChart=new Chart(document.getElementById("expenseChart"),{
-type:"doughnut",
-data:{
-labels:Object.keys(cats),
-datasets:[{data:Object.values(cats)}]
-}
-});
-}
+    expenseChart = new Chart(document.getElementById("expenseChart"), {
+        type: "doughnut",
+        data: {
+            labels: Object.keys(cats),
+            datasets: [{
+                data: Object.values(cats)
+            }]
+        }
+    });
+      }
 
 // INSIGHTS
 function generateInsights(){
