@@ -194,88 +194,92 @@ dashboard.style.display="none";
 
 // LOAD
 function loadData(){
-const uid=auth.currentUser.uid;
 
-db.collection("users")
-.doc(uid)
-.get()
-.then(doc=>{
+    const uid = auth.currentUser.uid;
 
-if(doc.exists){
-
-let data=doc.data();
-
-if(data.budgetMonth===getCurrentMonthKey()){
-budget=Number(data.budget||0);
-budgetInput.value=budget;
-}else{
-budget=0;
-budgetInput.value="";
-}
-}
-
-updateUI();
-});
-
-db.collection("users")
-.doc(uid)
-.collection("income")
-.onSnapshot(s=>{
-
-    incomes=[];
+    incomes = [];
+    expenses = [];
 
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
-    s.forEach(d=>{
+    // LOAD INCOME
+    db.collection("users")
+    .doc(uid)
+    .collection("income")
+    .onSnapshot(snapshot=>{
 
-        let x = d.data();
-        x.id = d.id;
-        x.amount = Number(x.amount || 0);
+        incomes = [];
 
-        const incomeDate = new Date(x.date);
+        snapshot.forEach(doc=>{
 
-        if(
-            incomeDate.getMonth() === currentMonth &&
-            incomeDate.getFullYear() === currentYear
-        ){
-            incomes.push(x);
-        }
+            let data = doc.data();
+            data.id = doc.id;
+            data.amount = Number(data.amount || 0);
+
+            const date = new Date(data.date);
+
+            if(
+                date.getMonth() === currentMonth &&
+                date.getFullYear() === currentYear
+            ){
+                incomes.push(data);
+            }
+        });
+
+        updateUI();
+        generateInsights();
     });
 
-    updateUI();
-});
+    // LOAD EXPENSES
+    db.collection("users")
+    .doc(uid)
+    .collection("expenses")
+    .onSnapshot(snapshot=>{
 
-db.collection("users")
-.doc(uid)
-.collection("expenses")
-.onSnapshot(s=>{
+        expenses = [];
 
-    expenses=[];
+        snapshot.forEach(doc=>{
 
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+            let data = doc.data();
+            data.id = doc.id;
+            data.amount = Number(data.amount || 0);
 
-    s.forEach(d=>{
+            const date = new Date(data.date);
 
-        let x = d.data();
-        x.id = d.id;
-        x.amount = Number(x.amount || 0);
+            if(
+                date.getMonth() === currentMonth &&
+                date.getFullYear() === currentYear
+            ){
+                expenses.push(data);
+            }
+        });
 
-        const expenseDate = new Date(x.date);
-
-        if(
-            expenseDate.getMonth() === currentMonth &&
-            expenseDate.getFullYear() === currentYear
-        ){
-            expenses.push(x);
-        }
+        updateUI();
+        generateInsights();
     });
 
-    updateUI();
-});
+    // LOAD BUDGET
+    db.collection("users")
+    .doc(uid)
+    .collection("settings")
+    .doc("budget")
+    .get()
+    .then(doc=>{
+
+        if(doc.exists){
+            budget = Number(doc.data().amount || 0);
+            budgetInput.value = budget;
+        }else{
+            budget = 0;
+            budgetInput.value = "";
+        }
+
+        updateUI();
+        generateInsights();
+    });
+  }
 
 // ADD
 function addIncome(){
