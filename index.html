@@ -266,9 +266,7 @@ let expense=expenses.reduce((a,b)=>a+b.amount,0);
 balance.innerText=(income-expense).toLocaleString();
 
 records.innerHTML="";
-drawCharts();
-generateInsights();
-renderRecords();
+
 let grouped={};
 
 expenses.forEach(e=>{
@@ -278,9 +276,10 @@ grouped[e.category]=(grouped[e.category]||0)+e.amount;
 for(let cat in grouped){
 records.innerHTML+=`<div class="record">${cat} - KES ${grouped[cat]}</div>`;
 }
-
-generateInsights(income,expense);
+    
 drawCharts();
+generateInsights(income,expense);
+renderRecords();
 }
 
 function generateInsights(income,expense){
