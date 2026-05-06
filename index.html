@@ -334,6 +334,7 @@ function updateDashboard() {
     document.getElementById("balance").innerText = "KSh " + (income - expenses);
 
     renderTransactions();
+    generateAnalytics();
 }
 
 function renderTransactions() {
