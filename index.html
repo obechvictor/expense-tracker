@@ -194,28 +194,128 @@ button:hover {
 </div>
 
 <script>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getAuth,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+/* ============================
+   FIREBASE CONFIG
+============================ */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+  authDomain: "expense-tracker-2ee7b.firebaseapp.com",
+  projectId: "expense-tracker-2ee7b",
+  storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
+  messagingSenderId: "306376576940",
+  appId: "1:306376576940:web:f7bf235be67524c9c8b409",
+  measurementId: "G-V7B8WSWCZ8"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ============================
+   GLOBAL DATA
+============================ */
+
 let transactions = [];
 
-function login() {
-    document.getElementById("authSection").style.display = "none";
-    document.getElementById("dashboard").style.display = "block";
+/* ============================
+   REGISTER
+============================ */
+
+window.register = async function() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert("Registered successfully");
+    } catch (error) {
+        alert(error.message);
+    }
 }
 
-function register() {
-    alert("Registration frontend ready.");
+/* ============================
+   LOGIN
+============================ */
+
+window.login = async function() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+
+        document.getElementById("authSection").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+
+        loadTransactions();
+
+    } catch (error) {
+        alert(error.message);
+    }
 }
 
-function addTransaction() {
+/* ============================
+   ADD TRANSACTION
+============================ */
+
+window.addTransaction = async function() {
+
     const amount = Number(document.getElementById("amount").value);
     const type = document.getElementById("type").value;
     const category = document.getElementById("category").value;
 
-    transactions.push({ amount, type, category });
+    await addDoc(collection(db, "transactions"), {
+        amount,
+        type,
+        category,
+        date: new Date()
+    });
+
+    loadTransactions();
+}
+
+/* ============================
+   LOAD TRANSACTIONS
+============================ */
+
+async function loadTransactions() {
+
+    transactions = [];
+
+    const querySnapshot = await getDocs(collection(db, "transactions"));
+
+    querySnapshot.forEach((doc) => {
+        transactions.push(doc.data());
+    });
 
     updateDashboard();
 }
 
+/* ============================
+   UPDATE DASHBOARD
+============================ */
+
 function updateDashboard() {
+
     let income = transactions
         .filter(t => t.type === "income")
         .reduce((sum, t) => sum + t.amount, 0);
@@ -232,40 +332,22 @@ function updateDashboard() {
 }
 
 function renderTransactions() {
+
     const list = document.getElementById("transactionList");
+
     list.innerHTML = "";
 
     transactions.forEach(t => {
+
         list.innerHTML += `
-            <div class="transaction-item">
-                <span>${t.category}</span>
-                <span>${t.type}: KSh ${t.amount}</span>
-            </div>
+        <div class="transaction-item">
+            <span>${t.category}</span>
+            <span>${t.type}: KSh ${t.amount}</span>
+        </div>
         `;
     });
 }
 
-new Chart(document.getElementById("dailyChart"), {
-    type: "line",
-    data: {
-        labels: ["Mon","Tue","Wed","Thu","Fri"],
-        datasets: [{
-            label: "Expenses",
-            data: [500,700,400,900,650]
-        }]
-    }
-});
-
-new Chart(document.getElementById("monthlyChart"), {
-    type: "bar",
-    data: {
-        labels: ["Jan","Feb","Mar"],
-        datasets: [{
-            label: "Expenses",
-            data: [5000,7000,6000]
-        }]
-    }
-});
 </script>
 
 </body>
