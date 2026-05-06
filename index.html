@@ -196,7 +196,8 @@ const db = getFirestore(app);
 let transactions = [];
 let dailyChart;
 let monthlyChart;
-
+let donutChart;
+    
 window.register = async function () {
     try {
         await createUserWithEmailAndPassword(
