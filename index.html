@@ -290,6 +290,7 @@ function generateAnalytics() {
 
     generateDailyChart();
     generateMonthlyChart();
+    generateDonutchart();
     generateInsights();
 }
 
@@ -341,7 +342,7 @@ function generateMonthlyChart() {
             expenseData[month] = (expenseData[month] || 0) + t.amount;
         }
     });
-
+    
     const labels = [...new Set([
         ...Object.keys(incomeData),
         ...Object.keys(expenseData)
