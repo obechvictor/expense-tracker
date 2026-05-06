@@ -345,91 +345,83 @@ insights.innerHTML = `
 `;
     }
 
-function drawCharts() {
+function drawCharts(){
 
-    if (dailyChart) dailyChart.destroy();
-    if (monthlyChart) monthlyChart.destroy();
-    if (expenseChart) expenseChart.destroy();
+const dailyCanvas=document.getElementById("dailyChart");
+const monthlyCanvas=document.getElementById("monthlyChart");
+const expenseCanvas=document.getElementById("expenseChart");
 
-    const sortedExpenses = [...expenses].sort(
-        (a,b)=>new Date(a.date)-new Date(b.date)
-    );
+if(!dailyCanvas || !monthlyCanvas || !expenseCanvas) return;
 
-    const incomeTotal = incomes.reduce((a,b)=>a+b.amount,0);
-    const expenseTotal = expenses.reduce((a,b)=>a+b.amount,0);
+if(dailyChart){
+dailyChart.destroy();
+dailyChart=null;
+}
 
-    // DAILY TREND
-    dailyChart = new Chart(
-        document.getElementById("dailyChart"),
-        {
-            type:"line",
-            data:{
-                labels: sortedExpenses.map(e =>
-                    new Date(e.date).toLocaleDateString("en-GB",{
-                        day:"numeric",
-                        month:"short"
-                    })
-                ),
-                datasets:[{
-                    label:"Daily Spending",
-                    data: sortedExpenses.map(e=>e.amount),
-                    borderColor:"blue",
-                    backgroundColor:"rgba(0,0,255,0.1)",
-                    fill:true,
-                    tension:0.3
-                }]
-            },
-            options:{
-                responsive:true,
-                plugins:{
-                    legend:{display:true}
-                }
-            }
-        }
-    );
+if(monthlyChart){
+monthlyChart.destroy();
+monthlyChart=null;
+}
 
-    // MONTHLY COMPARISON
-    monthlyChart = new Chart(
-        document.getElementById("monthlyChart"),
-        {
-            type:"bar",
-            data:{
-                labels:["Income","Expenses"],
-                datasets:[{
-                    label:"Current Month",
-                    data:[incomeTotal,expenseTotal],
-                    backgroundColor:["green","red"]
-                }]
-            },
-            options:{
-                responsive:true
-            }
-        }
-    );
+if(expenseChart){
+expenseChart.destroy();
+expenseChart=null;
+}
 
-    // EXPENSE CATEGORY CHART
-    let categories = {};
+const sortedExpenses=[...expenses].sort((a,b)=>
+new Date(a.date)-new Date(b.date)
+);
 
-    expenses.forEach(e=>{
-        categories[e.category] =
-            (categories[e.category] || 0) + e.amount;
-    });
+dailyChart=new Chart(dailyCanvas,{
+type:"line",
+data:{
+labels:sortedExpenses.map(e=>
+new Date(e.date).toLocaleDateString()
+),
+datasets:[{
+label:"Daily Spending",
+data:sortedExpenses.map(e=>e.amount),
+borderWidth:3,
+fill:true
+}]
+},
+options:{
+responsive:true
+}
+});
 
-    expenseChart = new Chart(
-        document.getElementById("expenseChart"),
-        {
-            type:"doughnut",
-            data:{
-                labels:Object.keys(categories),
-                datasets:[{
-                    data:Object.values(categories)
-                }]
-            },
-            options:{
-                responsive:true
-            }
-        }
-    );
+monthlyChart=new Chart(monthlyCanvas,{
+type:"bar",
+data:{
+labels:["Income","Expenses"],
+datasets:[{
+label:"Current Month",
+data:[
+incomes.reduce((a,b)=>a+b.amount,0),
+expenses.reduce((a,b)=>a+b.amount,0)
+]
+}]
+}
+});
+
+let categories={};
+
+expenses.forEach(e=>{
+categories[e.category]=(categories[e.category]||0)+e.amount;
+});
+
+expenseChart=new Chart(expenseCanvas,{
+type:"doughnut",
+data:{
+labels:Object.keys(categories),
+datasets:[{
+data:Object.values(categories)
+}]
+},
+options:{
+responsive:true
+}
+});
     }
 function downloadPDF(){
 const {jsPDF}=window.jspdf;
