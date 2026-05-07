@@ -97,9 +97,31 @@ height:300px !important;
 </div>
 
 <div class="dashboard" id="dashboard">
+<div class="header" style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+background:#16c94c;
+color:white;
+">
 
-<div class="header">
-<h2>Financial Dashboard</h2>
+<h2>Finance Dashboard</h2>
+
+<button
+id="dashboardEditBtn"
+onclick="toggleDashboardEdit()"
+style="
+width:auto;
+padding:10px 20px;
+background:white;
+color:#16c94c;
+font-weight:bold;
+border-radius:12px;
+font-size:14px;
+">
+Edit
+</button>
+
 </div>
 
 <div class="cards">
