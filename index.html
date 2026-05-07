@@ -273,6 +273,10 @@ updateDashboard();
 }
 window.toggleDashboardEdit=function(){
 
+if(editMode){
+saveEditedTransactions();
+}
+
 editMode=!editMode;
 
 dashboardEditBtn.innerText=
@@ -280,7 +284,7 @@ editMode ? "Done" : "Edit";
 
 renderTransactions();
 }
-  
+
 const view=document.getElementById(`view-${index}`);
 const edit=document.getElementById(`edit-${index}`);
 const btn=document.getElementById(`btn-${index}`);
