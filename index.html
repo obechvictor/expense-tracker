@@ -216,6 +216,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let transactions=[];
+let editMode = false;
 let dailyChart;
 let monthlyChart;
 let donutChart;
