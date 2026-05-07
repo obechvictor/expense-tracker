@@ -367,7 +367,41 @@ function generateMonthlyChart() {
         }
     });
 }
+function generateDonutChart() {
 
+    const categoryTotals = {};
+
+    transactions
+        .filter(t => t.type === "expense")
+        .forEach(t => {
+
+            const category = t.category || "other";
+
+            categoryTotals[category] =
+                (categoryTotals[category] || 0) + t.amount;
+        });
+
+    const labels = Object.keys(categoryTotals);
+    const data = Object.values(categoryTotals);
+
+    if (donutChart) {
+        donutChart.destroy();
+    }
+
+    donutChart = new Chart(
+        document.getElementById("donutChart"),
+        {
+            type: "doughnut",
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data
+                }]
+            }
+        }
+    );
+    }
+    
 function generateInsights() {
 
     const income = transactions
