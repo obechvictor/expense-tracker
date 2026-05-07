@@ -271,12 +271,33 @@ function renderTransactions(){
 
 transactionList.innerHTML="";
 
-transactions.forEach(t=>{
+transactions.forEach((t,index)=>{
+
 transactionList.innerHTML+=`
 <div class="transaction-item">
-<span>${t.category}</span>
-<span>${t.type}: KSh ${t.amount}</span>
-</div>`;
+
+<div id="view-${index}">
+<strong>${t.category}</strong><br>
+${t.type}: KSh ${t.amount}
+</div>
+
+<div id="edit-${index}" style="display:none;">
+<input
+type="number"
+id="editAmount-${index}"
+value="${t.amount}"
+style="width:90px;padding:6px;font-size:12px;">
+</div>
+
+<button
+id="btn-${index}"
+style="width:auto;padding:6px 10px;font-size:12px"
+onclick="toggleEdit(${index})">
+Edit
+</button>
+
+</div>
+`;
 });
 }
 
