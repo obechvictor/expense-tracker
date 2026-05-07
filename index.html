@@ -248,7 +248,33 @@ transactions.push(doc.data());
 
 updateDashboard();
 }
+window.toggleEdit=function(index){
 
+const view=document.getElementById(`view-${index}`);
+const edit=document.getElementById(`edit-${index}`);
+const btn=document.getElementById(`btn-${index}`);
+
+if(btn.innerText==="Edit"){
+
+view.style.display="none";
+edit.style.display="block";
+btn.innerText="Done";
+
+}else{
+
+const newAmount=document.getElementById(
+`editAmount-${index}`
+).value;
+
+transactions[index].amount=Number(newAmount);
+
+view.style.display="block";
+edit.style.display="none";
+btn.innerText="Edit";
+
+updateDashboard();
+}
+}
 function updateDashboard(){
 
 const income=transactions
