@@ -388,19 +388,22 @@ function generateDonutChart() {
         donutChart.destroy();
     }
 
-    donutChart = new Chart(
-        document.getElementById("donutChart"),
-        {
-            type: "doughnut",
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data
-                }]
-            }
+ donutChart = new Chart(
+    document.getElementById("donutChart"),
+    {
+        type: "doughnut",
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
         }
-    );
-}
+    }
+);   
     
 function generateInsights() {
 
