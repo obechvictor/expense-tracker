@@ -8,159 +8,156 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Times New Roman";
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
 }
 
-body {
-    background: #f4f7fb;
-    color: #222;
+body{
+background:#f4f7fb;
+color:#222;
 }
 
-.auth-container {
-    width: 90%;
-    max-width: 350px;
-    margin: 60px auto;
-    padding: 25px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+.auth-container{
+width:90%;
+max-width:350px;
+margin:60px auto;
+padding:25px;
+background:white;
+border-radius:12px;
+box-shadow:0 8px 20px rgba(0,0,0,0.1);
 }
 
-.auth-container h2 {
-    text-align: center;
-    margin-bottom: 20px;
+.auth-container h2{
+text-align:center;
+margin-bottom:20px;
 }
 
-input, select, button {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border-radius: 8px;
-    border: 1px solid #ddd;
+input,button,select{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:8px;
+border:1px solid #ddd;
 }
 
-button {
-    background: #2563eb;
-    color: white;
-    border: none;
+button{
+background:#2563eb;
+color:white;
+border:none;
+cursor:pointer;
 }
 
-.dashboard {
-    display: none;
-    padding: 15px;
+.dashboard{
+display:none;
+padding:15px;
 }
 
-.header, .card, .chart-box, .transactions {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 15px;
+.header,.card,.chart-box,.transactions{
+background:white;
+padding:20px;
+border-radius:12px;
+margin-bottom:15px;
 }
 
-.cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+.cards{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
 }
 
-.card {
-    flex: 1;
-    min-width: 120px;
+.card{
+flex:1;
+min-width:120px;
 }
 
-.transaction-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
+.transaction-item{
+display:flex;
+justify-content:space-between;
+padding:10px 0;
+border-bottom:1px solid #eee;
 }
-#donutChart {
-height: 300px !important;
+
+canvas{
+width:100% !important;
+height:300px !important;
 }
 </style>
 </head>
 <body>
 
 <div class="auth-container" id="authSection">
-    <h2>Expense Tracker</h2>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <button onclick="register()">Register</button>
+<h2>Expense Tracker</h2>
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<button onclick="register()">Register</button>
 </div>
 
 <div class="dashboard" id="dashboard">
 
-    <div class="header">
-        <h2>Financial Dashboard</h2>
-    </div>
+<div class="header">
+<h2>Financial Dashboard</h2>
+</div>
 
-    <div class="cards">
-        <div class="card">
-            <h3>Income</h3>
-            <p id="income">KSh 0</p>
-        </div>
+<div class="cards">
+<div class="card">
+<h3>Income</h3>
+<p id="income">KSh 0</p>
+</div>
 
-        <div class="card">
-            <h3>Expenses</h3>
-            <p id="expenses">KSh 0</p>
-        </div>
+<div class="card">
+<h3>Expenses</h3>
+<p id="expenses">KSh 0</p>
+</div>
 
-        <div class="card">
-            <h3>Balance</h3>
-            <p id="balance">KSh 0</p>
-        </div>
-    </div>
+<div class="card">
+<h3>Balance</h3>
+<p id="balance">KSh 0</p>
+</div>
+</div>
 
-    <div class="chart-box">
-        <h3>Add Transaction</h3>
+<div class="chart-box">
+<h3>Add Transaction</h3>
 
-        <input type="number" id="amount" placeholder="Amount">
+<input type="number" id="amount" placeholder="Amount">
 
-        <select id="type">
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-        </select>
+<select id="type">
+<option value="income">Income</option>
+<option value="expense">Expense</option>
+</select>
 
-        <select id="category">
-            <option>Food</option>
-            <option>Transport</option>
-            <option>Rent</option>
-            <option>Entertainment</option>
-            <option>Other</option>
-        </select>
+<input type="text" id="category" placeholder="Enter category">
 
-        <button onclick="addTransaction()">Add</button>
-    </div>
+<button onclick="addTransaction()">Add</button>
+</div>
 
-    <div class="chart-box">
-        <h3>Daily Expense Trend</h3>
-        <canvas id="dailyChart"></canvas>
-    </div>
+<div class="chart-box">
+<h3>Daily Expense Trend</h3>
+<canvas id="dailyChart"></canvas>
+</div>
 
-    <div class="chart-box">
-        <h3>Monthly Comparison</h3>
-        <canvas id="monthlyChart"></canvas>
-    </div>
-    
-    <div class="chart-box">
-    <h3>Expense Breakdown (By Category)</h3>
-    <canvas id="donutChart"></canvas>
-    </div>
-    
-    <div class="chart-box">
-        <h3>Financial Insights</h3>
-        <div id="insights"></div>
-    </div>
+<div class="chart-box">
+<h3>Monthly Comparison</h3>
+<canvas id="monthlyChart"></canvas>
+</div>
 
-    <div class="transactions">
-        <h3>Transaction History</h3>
-        <div id="transactionList"></div>
-    </div>
+<div class="chart-box">
+<h3>Expense Breakdown</h3>
+<canvas id="donutChart"></canvas>
+</div>
+
+<div class="chart-box">
+<h3>Financial Insights</h3>
+<div id="insights"></div>
+</div>
+
+<div class="transactions">
+<h3>Transaction History</h3>
+<div id="transactionList"></div>
+</div>
 
 </div>
 
@@ -182,258 +179,232 @@ getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
-  authDomain: "expense-tracker-2ee7b.firebaseapp.com",
-  databaseURL: "https://expense-tracker-2ee7b-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "expense-tracker-2ee7b",
-  storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
-  messagingSenderId: "306376576940",
-  appId: "1:306376576940:web:f7bf235be67524c9c8b409",
-  measurementId: "G-V7B8WSWCZ8"
+apiKey:"YOUR_API_KEY",
+authDomain:"YOUR_AUTH_DOMAIN",
+projectId:"YOUR_PROJECT_ID",
+storageBucket:"YOUR_STORAGE_BUCKET",
+messagingSenderId:"YOUR_SENDER_ID",
+appId:"YOUR_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let transactions = [];
+let transactions=[];
 let dailyChart;
 let monthlyChart;
 let donutChart;
-    
-window.register = async function () {
-    try {
-        await createUserWithEmailAndPassword(
-            auth,
-            email.value,
-            password.value
-        );
-        alert("Registered successfully");
-    } catch (error) {
-        alert(error.message);
-    }
-};
 
-window.login = async function () {
-    try {
-        await signInWithEmailAndPassword(
-            auth,
-            email.value,
-            password.value
-        );
-
-        authSection.style.display = "none";
-        dashboard.style.display = "block";
-
-        await loadTransactions();
-
-    } catch (error) {
-        alert(error.message);
-    }
-};
-
-window.addTransaction = async function () {
-
-    await addDoc(collection(db, "transactions"), {
-        amount: Number(amount.value),
-        type: type.value,
-        category: category.value,
-        date: new Date()
-    });
-
-    await loadTransactions();
-};
-
-async function loadTransactions() {
-
-    transactions = [];
-
-    const querySnapshot = await getDocs(collection(db, "transactions"));
-
-    querySnapshot.forEach(doc => {
-        transactions.push(doc.data());
-    });
-
-    updateDashboard();
+window.register=async function(){
+try{
+await createUserWithEmailAndPassword(auth,email.value,password.value);
+alert("Registered successfully");
+}catch(error){
+alert(error.message);
+}
 }
 
-function updateDashboard() {
+window.login=async function(){
+try{
+await signInWithEmailAndPassword(auth,email.value,password.value);
 
-    const income = transactions
-        .filter(t => t.type === "income")
-        .reduce((sum, t) => sum + t.amount, 0);
+authSection.style.display="none";
+dashboard.style.display="block";
 
-    const expenses = transactions
-        .filter(t => t.type === "expense")
-        .reduce((sum, t) => sum + t.amount, 0);
+await loadTransactions();
 
-    document.getElementById("income").innerText = "KSh " + income;
-    document.getElementById("expenses").innerText = "KSh " + expenses;
-    document.getElementById("balance").innerText = "KSh " + (income - expenses);
-
-    renderTransactions();
-    generateAnalytics();
+}catch(error){
+alert(error.message);
+}
 }
 
-function renderTransactions() {
+window.addTransaction=async function(){
 
-    transactionList.innerHTML = "";
+await addDoc(collection(db,"transactions"),{
+amount:Number(amount.value),
+type:type.value,
+category:category.value.trim().toLowerCase(),
+date:new Date()
+});
 
-    transactions.forEach(t => {
-        transactionList.innerHTML += `
-        <div class="transaction-item">
-            <span>${t.category}</span>
-            <span>${t.type}: KSh ${t.amount}</span>
-        </div>`;
-    });
+amount.value="";
+category.value="";
+
+await loadTransactions();
 }
 
-function generateAnalytics() {
-    if (!transactions.length) return;
+async function loadTransactions(){
 
-    generateDailyChart();
-    generateMonthlyChart();
-    generateDonutchart();
-    generateInsights();
+transactions=[];
+
+const querySnapshot=await getDocs(collection(db,"transactions"));
+
+querySnapshot.forEach(doc=>{
+transactions.push(doc.data());
+});
+
+updateDashboard();
 }
 
-function getSafeDate(t) {
-    if (t.date && t.date.seconds) {
-        return new Date(t.date.seconds * 1000);
-    }
-    return new Date();
+function updateDashboard(){
+
+const income=transactions
+.filter(t=>t.type==="income")
+.reduce((sum,t)=>sum+t.amount,0);
+
+const expenses=transactions
+.filter(t=>t.type==="expense")
+.reduce((sum,t)=>sum+t.amount,0);
+
+document.getElementById("income").innerText="KSh "+income;
+document.getElementById("expenses").innerText="KSh "+expenses;
+document.getElementById("balance").innerText="KSh "+(income-expenses);
+
+renderTransactions();
+generateAnalytics();
 }
 
-function generateDailyChart() {
+function renderTransactions(){
 
-    const dailyTotals = {};
+transactionList.innerHTML="";
 
-    transactions
-        .filter(t => t.type === "expense")
-        .forEach(t => {
-            const day = getSafeDate(t).toLocaleDateString();
-            dailyTotals[day] = (dailyTotals[day] || 0) + t.amount;
-        });
-
-    if (dailyChart) dailyChart.destroy();
-
-    dailyChart = new Chart(dailyChartCanvas(), {
-        type: "line",
-        data: {
-            labels: Object.keys(dailyTotals),
-            datasets: [{
-                label: "Daily Expenses",
-                data: Object.values(dailyTotals)
-            }]
-        }
-    });
+transactions.forEach(t=>{
+transactionList.innerHTML+=`
+<div class="transaction-item">
+<span>${t.category}</span>
+<span>${t.type}: KSh ${t.amount}</span>
+</div>`;
+});
 }
 
-function generateMonthlyChart() {
-
-    const incomeData = {};
-    const expenseData = {};
-
-    transactions.forEach(t => {
-        const month = getSafeDate(t).toLocaleString("default", {
-            month: "short"
-        });
-
-        if (t.type === "income") {
-            incomeData[month] = (incomeData[month] || 0) + t.amount;
-        } else {
-            expenseData[month] = (expenseData[month] || 0) + t.amount;
-        }
-    });
-    
-    const labels = [...new Set([
-        ...Object.keys(incomeData),
-        ...Object.keys(expenseData)
-    ])];
-
-    if (monthlyChart) monthlyChart.destroy();
-
-    monthlyChart = new Chart(monthlyChartCanvas(), {
-        type: "bar",
-        data: {
-            labels,
-            datasets: [
-                {
-                    label: "Income",
-                    data: labels.map(m => incomeData[m] || 0)
-                },
-                {
-                    label: "Expenses",
-                    data: labels.map(m => expenseData[m] || 0)
-                }
-            ]
-        }
-    });
+function getSafeDate(t){
+if(t.date && t.date.seconds){
+return new Date(t.date.seconds*1000);
 }
-function generateDonutChart() {
-
-    const categoryTotals = {};
-
-    transactions
-        .filter(t => t.type === "expense")
-        .forEach(t => {
-
-            const category = t.category || "other";
-
-            categoryTotals[category] =
-                (categoryTotals[category] || 0) + t.amount;
-        });
-
-    const labels = Object.keys(categoryTotals);
-    const data = Object.values(categoryTotals);
-
-    if (donutChart) {
-        donutChart.destroy();
-    }
-
- donutChart = new Chart(
-    document.getElementById("donutChart"),
-    {
-        type: "doughnut",
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    }
-);   
-    
-function generateInsights() {
-
-    const income = transactions
-        .filter(t => t.type === "income")
-        .reduce((a,b)=>a+b.amount,0);
-
-    const expenses = transactions
-        .filter(t => t.type === "expense")
-        .reduce((a,b)=>a+b.amount,0);
-
-    const savingsRate = income
-        ? (((income - expenses)/income)*100).toFixed(1)
-        : 0;
-
-    insights.innerHTML = `
-        <p>• Savings Rate: ${savingsRate}%</p>
-        <p>• Total Transactions: ${transactions.length}</p>
-    `;
+return new Date();
 }
 
-function dailyChartCanvas() {
-    return document.getElementById("dailyChart");
+function generateAnalytics(){
+if(!transactions.length)return;
+
+generateDailyChart();
+generateMonthlyChart();
+generateDonutChart();
+generateInsights();
 }
 
-function monthlyChartCanvas() {
-    return document.getElementById("monthlyChart");
+function generateDailyChart(){
+
+const dailyTotals={};
+
+transactions
+.filter(t=>t.type==="expense")
+.forEach(t=>{
+const day=getSafeDate(t).toLocaleDateString();
+dailyTotals[day]=(dailyTotals[day]||0)+t.amount;
+});
+
+if(dailyChart)dailyChart.destroy();
+
+dailyChart=new Chart(document.getElementById("dailyChart"),{
+type:"line",
+data:{
+labels:Object.keys(dailyTotals),
+datasets:[{
+label:"Daily Expenses",
+data:Object.values(dailyTotals)
+}]
+}
+});
+}
+
+function generateMonthlyChart(){
+
+const incomeData={};
+const expenseData={};
+
+transactions.forEach(t=>{
+
+const month=getSafeDate(t).toLocaleString("default",{month:"short"});
+
+if(t.type==="income"){
+incomeData[month]=(incomeData[month]||0)+t.amount;
+}else{
+expenseData[month]=(expenseData[month]||0)+t.amount;
+}
+});
+
+const labels=[...new Set([
+...Object.keys(incomeData),
+...Object.keys(expenseData)
+])];
+
+if(monthlyChart)monthlyChart.destroy();
+
+monthlyChart=new Chart(document.getElementById("monthlyChart"),{
+type:"bar",
+data:{
+labels,
+datasets:[
+{
+label:"Income",
+data:labels.map(m=>incomeData[m]||0)
+},
+{
+label:"Expenses",
+data:labels.map(m=>expenseData[m]||0)
+}
+]
+}
+});
+}
+
+function generateDonutChart(){
+
+const categoryTotals={};
+
+transactions
+.filter(t=>t.type==="expense")
+.forEach(t=>{
+categoryTotals[t.category]=(categoryTotals[t.category]||0)+t.amount;
+});
+
+if(donutChart)donutChart.destroy();
+
+donutChart=new Chart(document.getElementById("donutChart"),{
+type:"doughnut",
+data:{
+labels:Object.keys(categoryTotals),
+datasets:[{
+data:Object.values(categoryTotals)
+}]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false
+}
+});
+}
+
+function generateInsights(){
+
+const income=transactions
+.filter(t=>t.type==="income")
+.reduce((a,b)=>a+b.amount,0);
+
+const expenses=transactions
+.filter(t=>t.type==="expense")
+.reduce((a,b)=>a+b.amount,0);
+
+const savingsRate=income
+?(((income-expenses)/income)*100).toFixed(1)
+:0;
+
+insights.innerHTML=`
+<p>• Savings Rate: ${savingsRate}%</p>
+<p>• Transactions: ${transactions.length}</p>
+`;
 }
 
 </script>
