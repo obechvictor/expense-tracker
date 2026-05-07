@@ -97,6 +97,7 @@ height:300px !important;
 </div>
 
 <div class="dashboard" id="dashboard">
+  
 <div class="header" style="
 display:flex;
 justify-content:space-between;
@@ -378,6 +379,18 @@ Delete
 if(!editMode){
 saveEditedTransactions();
 }
+function saveEditedTransactions(){
+
+transactions.forEach((t,index)=>{
+
+const input=document.getElementById(`editAmount-${index}`);
+
+if(input){
+t.amount=Number(input.value);
+}
+});
+
+updateDashboard();
 }
 
 function getSafeDate(t){
