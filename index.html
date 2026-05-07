@@ -331,31 +331,49 @@ transactionList.innerHTML="";
 transactions.forEach((t,index)=>{
 
 transactionList.innerHTML+=`
+
 <div class="transaction-item">
 
-<div id="view-${index}">
-<strong>${t.category}</strong><br>
-${t.type}: KSh ${t.amount}
-</div>
+<div>
 
-<div id="edit-${index}" style="display:none;">
-<input
+<strong>${t.category}</strong><br>
+
+${
+editMode
+? `<input
 type="number"
 id="editAmount-${index}"
 value="${t.amount}"
-style="width:90px;padding:6px;font-size:12px;">
+style="width:100px;padding:6px;">`
+: `${t.type}: KSh ${t.amount}`
+}
+
 </div>
 
+${
+editMode
+? `
 <button
-id="btn-${index}"
-style="width:auto;padding:6px 10px;font-size:12px"
-onclick="toggleEdit(${index})">
-Edit
+style="
+width:auto;
+padding:6px 10px;
+background:#dc2626;
+font-size:12px;
+"
+onclick="deleteTransaction(${index})">
+Delete
 </button>
+`
+: ""
+}
 
 </div>
 `;
 });
+
+if(!editMode){
+saveEditedTransactions();
+}
 }
 
 function getSafeDate(t){
