@@ -271,8 +271,16 @@ transactions.push(doc.data());
 
 updateDashboard();
 }
-window.toggleEdit=function(index){
+window.toggleDashboardEdit=function(){
 
+editMode=!editMode;
+
+dashboardEditBtn.innerText=
+editMode ? "Done" : "Edit";
+
+renderTransactions();
+}
+  
 const view=document.getElementById(`view-${index}`);
 const edit=document.getElementById(`edit-${index}`);
 const btn=document.getElementById(`btn-${index}`);
