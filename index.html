@@ -43,7 +43,7 @@ import { getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword } fro
 import { getFirestore,collection,addDoc,getDocs,deleteDoc,doc,setDoc,getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 const firebaseConfig={apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",authDomain:"expense-tracker-2ee7b.firebaseapp.com",projectId:"expense-tracker-2ee7b",storageBucket:"expense-tracker-2ee7b.firebasestorage.app",messagingSenderId:"306376576940",appId:"1:306376576940:web:f7bf235be67524c9c8b409"};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
-let transactions=[],budget=0,editMode=false,dailyChart,monthlyChart,donutChart;
+let transactions=[],budget=Number(localStorage.getItem('budget'))||0,editMode=false,dailyChart,monthlyChart,donutChart;
 window.register=async()=>{try{await createUserWithEmailAndPassword(auth,email.value,password.value);alert('Registered')}catch(e){alert(e.message)}};
 window.login=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value);authSection.style.display='none';dashboard.style.display='block';loadTransactions()}catch(e){alert(e.message)}};
 window.addTransaction=async()=>{await addDoc(collection(db,'transactions'),{amount:Number(amount.value),type:type.value,category:category.value,date:new Date()});loadTransactions()};
