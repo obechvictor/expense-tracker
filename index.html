@@ -45,7 +45,7 @@ const firebaseConfig={apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",authDomai
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 let transactions=[],budget=Number(localStorage.getItem('budget'))||0,editMode=false,dailyChart,monthlyChart,donutChart;
 window.register=async()=>{try{await createUserWithEmailAndPassword(auth,email.value,password.value);alert('Registered')}catch(e){alert(e.message)}};
-window.login=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value);authSection.style.display='none';dashboard.style.display='block';loadTransactions()}catch(e){alert(e.message)}};
+window.login=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value);authSection.style.display='none';dashboard.style.display='block';budgetInput.value=budget;loadTransactions()
 window.addTransaction=async()=>{await addDoc(collection(db,'transactions'),{amount:Number(amount.value),type:type.value,category:category.value,date:new Date()});loadTransactions()};
 window.setBudget=async()=>{budget=Number(budgetInput.value);localStorage.setItem('budget',budget);updateDashboard()};
 window.toggleDashboardEdit=()=>{editMode=!editMode;dashboardEditBtn.innerText=editMode?'Done':'Edit';renderTransactions()};
