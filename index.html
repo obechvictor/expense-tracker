@@ -47,7 +47,7 @@ let transactions=[],budget=0,editMode=false,dailyChart,monthlyChart,donutChart;
 window.register=async()=>{try{await createUserWithEmailAndPassword(auth,email.value,password.value);alert('Registered')}catch(e){alert(e.message)}};
 window.login=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value);authSection.style.display='none';dashboard.style.display='block';loadTransactions()}catch(e){alert(e.message)}};
 window.addTransaction=async()=>{await addDoc(collection(db,'transactions'),{amount:Number(amount.value),type:type.value,category:category.value,date:new Date()});loadTransactions()};
-window.setBudget=()=>{budget=Number(budgetInput.value);updateDashboard()};
+window.setBudget=async()=>{budget=Number(budgetInput.value);localStorage.setItem('budget',budget);await setDoc(doc(db,'settings','budget'),{value:budget,time:new Date()});updateDashboard()};
 window.toggleDashboardEdit=()=>{editMode=!editMode;dashboardEditBtn.innerText=editMode?'Done':'Edit';renderTransactions()};
 window.deleteTransaction=async(i)=>{await deleteDoc(doc(db,'transactions',transactions[i].id));loadTransactions()};
 async function loadTransactions(){transactions=[];const qs=await getDocs(collection(db,'transactions'));qs.forEach(d=>transactions.push({id:d.id,...d.data()}));updateDashboard()}
