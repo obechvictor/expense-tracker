@@ -326,12 +326,33 @@ income.innerText='KSh '+inc;
 expenses.innerText='KSh '+exp;
 balance.innerText='KSh '+(inc-exp);
 
-budgetStatus.innerText=
-budget?
-(exp<=budget?
-'Remaining: '+(budget-exp):
-'Over by '+(exp-budget))
-:'No budget set';
+const status = document.getElementById("budgetStatus");
+
+if (!budget) {
+    status.innerHTML = "No budget set";
+    status.style.color = "gray";
+}
+else {
+    const remaining = budget - expenses;
+
+    if (remaining > budget * 0.3) {
+        status.innerHTML =
+            `Budget: KSh ${budget}<br>
+             Remaining: KSh ${remaining}`;
+        status.style.color = "green";
+    }
+    else if (remaining > 0) {
+        status.innerHTML =
+            `⚠ Near limit<br>
+             Remaining: KSh ${remaining}`;
+        status.style.color = "orange";
+    }
+    else {
+        status.innerHTML =
+            `🚨 Overspent by KSh ${Math.abs(remaining)}`;
+        status.style.color = "red";
+    }
+}
 
 renderTransactions();
 daily();
