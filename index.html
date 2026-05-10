@@ -212,7 +212,7 @@ const db=getFirestore(app);
 
 /* VARIABLES */
 let transactions=[];
-let budget=Number(localStorage.getItem('budget'))||0;
+let budget = Number(localStorage.getItem("budget_" + (auth.currentUser?.uid || "guest"))) || 0;
 let editMode=false;
 let dailyChart,monthlyChart,donutChart;
 
