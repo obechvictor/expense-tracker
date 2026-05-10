@@ -4,21 +4,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Expense Tracker</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-body{background:#f4f7fb;padding:15px}
-.auth-container,.header,.card,.chart-box,.transactions{background:#fff;padding:18px;border-radius:14px;margin-bottom:15px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
-.auth-container{max-width:400px;margin:40px auto}
-input,button,select{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #ddd}
-button{background:#16c94c;color:#fff;border:none;cursor:pointer}
-.dashboard{display:none}.cards{display:flex;gap:10px;flex-wrap:wrap}.card{flex:1;min-width:120px}
-.header{display:flex;justify-content:space-between;align-items:center;background:#16c94c;color:#fff}
-.small-btn{width:auto;background:#fff;color:#16c94c;font-weight:bold;padding:8px 14px}
-.transaction-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}
-canvas{max-height:280px}
-</style>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,Arial,sans-serif}body{background:#0f172a;padding:18px;color:#fff}.auth-container,.header,.card,.chart-box,.transactions{background:rgba(255,255,255,.08);backdrop-filter:blur(18px);padding:20px;border-radius:20px;margin-bottom:18px;border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 30px rgba(0,0,0,.25)}.auth-container{max-width:420px;margin:40px auto}input,button,select{width:100%;padding:14px;margin:8px 0;border-radius:14px;border:none}input,select{background:rgba(255,255,255,.08);color:#fff}button{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:700;cursor:pointer}.dashboard{display:none}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px}.card{background:linear-gradient(145deg,#1e293b,#0f172a)}.header{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1d4ed8,#0ea5e9)}.small-btn{width:auto;background:#fff;color:#1d4ed8;font-weight:bold;padding:10px 18px}.transaction-item{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.1)}canvas{max-height:280px}</style>
 </head>
-<body>
+<body><button onclick="toggleTheme()" style="position:fixed;top:10px;right:10px;z-index:1000;padding:10px 14px;border:none;border-radius:12px;background:#fff;color:#111">Theme</button>
 <div class="auth-container" id="authSection">
 <h2>Expense Tracker</h2>
 <input id="email" type="email" placeholder="Email">
@@ -27,8 +15,8 @@ canvas{max-height:280px}
 <button onclick="login()">Login</button>
 </div>
 <div class="dashboard" id="dashboard">
-<div class="header"><h2>Finance Dashboard</h2><button id="dashboardEditBtn" class="small-btn" onclick="toggleDashboardEdit()">Edit</button></div>
-<div class="cards"><div class="card"><h3>Income</h3><p id="income">KSh 0</p></div><div class="card"><h3>Expenses</h3><p id="expenses">KSh 0</p></div><div class="card"><h3>Balance</h3><p id="balance">KSh 0</p></div></div>
+<div class="header"><button onclick="exportPDF()" class="small-btn">PDF Statement</button><h2>Banking Dashboard</h2><button id="dashboardEditBtn" class="small-btn" onclick="toggleDashboardEdit()">Edit</button></div>
+<div class="cards"><div class="card"><h3>Wallet</h3><p id="walletCard">KSh 0</p></div><div class="card"><h3>Savings</h3><p id="savingsCard">KSh 0</p></div><div class="card"><h3>Financial Score</h3><p id="scoreCard">0</p></div><div class="card"><h3>Income</h3><p id="income">KSh 0</p></div><div class="card"><h3>Expenses</h3><p id="expenses">KSh 0</p></div><div class="card"><h3>Balance</h3><p id="balance">KSh 0</p></div></div>
 <div class="chart-box"><h3>Budget</h3><input id="budgetInput" type="number"><button onclick="setBudget()">Set Budget</button><p id="budgetStatus">No budget set</p></div>
 <div class="chart-box"><h3>Add Transaction</h3><input id="amount" type="number" placeholder="Amount"><select id="type"><option value="income">Income</option><option value="expense">Expense</option></select><input id="category" placeholder="Category"><button onclick="addTransaction()">Add</button></div>
 <div class="chart-box"><h3>Daily Trend</h3><canvas id="dailyChart"></canvas></div>
@@ -41,7 +29,7 @@ canvas{max-height:280px}
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {getFirestore,collection,addDoc,getDocs,deleteDoc,doc} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-const firebaseConfig={apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",authDomain:"expense-tracker-2ee7b.firebaseapp.com",projectId:"expense-tracker-2ee7b",storageBucket:"expense-tracker-2ee7b.firebasestorage.app",messagingSenderId:"306376576940",appId:"1:306376576940:web:f7bf235be67524c9c8b409"};
+const firebaseConfig={apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",authDomain:"expense-tracker-2ee7b.firebaseapp.com",databaseURL:"https://expense-tracker-2ee7b-default-rtdb.europe-west1.firebasedatabase.app",projectId:"expense-tracker-2ee7b",storageBucket:"expense-tracker-2ee7b.firebasestorage.app",messagingSenderId:"306376576940",appId:"1:306376576940:web:f7bf235be67524c9c8b409",measurementId:"G-V7B8WSWCZ8"};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 let transactions=[],budget=0,editMode=false,dailyChart,monthlyChart,donutChart;
 window.register=async()=>{try{await createUserWithEmailAndPassword(auth,email.value,password.value);alert('Registered')}catch(e){alert(e.message)}};
@@ -52,14 +40,14 @@ window.deleteTransaction=async(i)=>{await deleteDoc(doc(db,'users',auth.currentU
 window.toggleDashboardEdit=()=>{editMode=!editMode;dashboardEditBtn.innerText=editMode?'Done':'Edit';renderTransactions()};
 async function loadTransactions(){transactions=[];const u=auth.currentUser;const qs=await getDocs(collection(db,'users',u.uid,'transactions'));qs.forEach(d=>{const x=d.data();if(x.uid===u.uid)transactions.push({id:d.id,...x})});updateDashboard()}
 function sum(t){return transactions.filter(x=>x.type===t).reduce((a,b)=>a+b.amount,0)}
-function updateDashboard(){const inc=sum('income'),exp=sum('expense');income.innerText='KSh '+inc;expenses.innerText='KSh '+exp;balance.innerText='KSh '+(inc-exp);budgetView(exp);renderTransactions();daily();monthly();donut();insight(inc,exp)}
+window.toggleTheme=()=>{document.body.classList.toggle('light')};window.exportPDF=()=>{window.print()};function updateDashboard(){const inc=sum('income'),exp=sum('expense');income.innerText='KSh '+inc;expenses.innerText='KSh '+exp;balance.innerText='KSh '+(inc-exp);budgetView(exp);renderTransactions();daily();monthly();donut();insight(inc,exp)}
 function budgetView(exp){if(!budget){budgetStatus.innerHTML='No budget set';return}const r=budget-exp;if(r>0)budgetStatus.innerHTML='Remaining: KSh '+r;else budgetStatus.innerHTML='Overspent: KSh '+Math.abs(r)}
-function renderTransactions(){transactionList.innerHTML='';transactions.forEach((t,i)=>transactionList.innerHTML+=`<div class='transaction-item'><span>${t.category} - KSh ${t.amount}</span>${editMode?`<button style='width:auto;background:red' onclick='deleteTransaction(${i})'>Delete</button>`:''}</div>`)}
+function renderTransactions(){transactionList.innerHTML='';transactions.forEach((t,i)=>const icon=t.type==='income'?'💰':'💸';transactionList.innerHTML+=`<div class='transaction-item'><span>${icon} ${t.category} - KSh ${t.amount}</span>${editMode?`<button style='width:auto;background:red' onclick='deleteTransaction(${i})'>Delete</button>`:''}</div>`)}
 function d(x){return x.date?.seconds?new Date(x.date.seconds*1000):new Date()}
-function daily(){const o={};transactions.filter(x=>x.type==='expense').forEach(x=>{const k=d(x).toISOString().split('T')[0];o[k]=(o[k]||0)+x.amount});if(dailyChart)dailyChart.destroy();dailyChart=new Chart(document.getElementById('dailyChart'),{type:'line',data:{labels:Object.keys(o).sort(),datasets:[{label:'Daily Expenses',data:Object.keys(o).sort().map(k=>o[k])}]}})}
-function monthly(){const i={},e={};transactions.forEach(x=>{const m=d(x).toLocaleString('default',{month:'short'});(x.type==='income'?i:e)[m]=((x.type==='income'?i:e)[m]||0)+x.amount});const l=[...new Set([...Object.keys(i),...Object.keys(e)])];if(monthlyChart)monthlyChart.destroy();monthlyChart=new Chart(document.getElementById('monthlyChart'),{type:'bar',data:{labels:l,datasets:[{label:'Income',data:l.map(x=>i[x]||0)},{label:'Expense',data:l.map(x=>e[x]||0)}]}})}
-function donut(){const c={};transactions.filter(x=>x.type==='expense').forEach(x=>c[x.category]=(c[x.category]||0)+x.amount);if(donutChart)donutChart.destroy();donutChart=new Chart(document.getElementById('donutChart'),{type:'doughnut',data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}})}
-function insight(i,e){const rate=i?(((i-e)/i)*100).toFixed(1):0;insights.innerHTML=`<p>Monthly Income: KES ${i}</p><p>Monthly Expenses: KES ${e}</p><p>Savings Rate: ${rate}%</p><p>${e>budget&&budget?'⚠ Over budget':'Budget healthy'}</p>`}
+function daily(){const o={};transactions.filter(x=>x.type==='expense').forEach(x=>{const k=d(x).toISOString().split('T')[0];o[k]=(o[k]||0)+x.amount});if(dailyChart)dailyChart.destroy();dailyChart=new Chart(document.getElementById('dailyChart'),{type:'line',options:{animation:{duration:1800}},data:{labels:Object.keys(o).sort(),datasets:[{label:'Daily Expenses',data:Object.keys(o).sort().map(k=>o[k])}]}})}
+function monthly(){const i={},e={};transactions.forEach(x=>{const m=d(x).toLocaleString('default',{month:'short'});(x.type==='income'?i:e)[m]=((x.type==='income'?i:e)[m]||0)+x.amount});const l=[...new Set([...Object.keys(i),...Object.keys(e)])];if(monthlyChart)monthlyChart.destroy();monthlyChart=new Chart(document.getElementById('monthlyChart'),{type:'bar',options:{animation:{duration:1800}},data:{labels:l,datasets:[{label:'Income',data:l.map(x=>i[x]||0)},{label:'Expense',data:l.map(x=>e[x]||0)}]}})}
+function donut(){const c={};transactions.filter(x=>x.type==='expense').forEach(x=>c[x.category]=(c[x.category]||0)+x.amount);if(donutChart)donutChart.destroy();donutChart=new Chart(document.getElementById('donutChart'),{type:'doughnut',options:{animation:{duration:1800}},data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}})}
+function financialScore(i,e){if(!i)return 0;return Math.max(0,Math.min(100,Math.round(((i-e)/i)*100)))}function insight(i,e){const rate=i?(((i-e)/i)*100).toFixed(1):0;const score=financialScore(i,e);walletCard.innerText='KSh '+(i-e);savingsCard.innerText='KSh '+Math.max(0,i-e);scoreCard.innerText=score+'/100';insights.innerHTML=`<p>Monthly Income: KES ${i}</p><p>Monthly Expenses: KES ${e}</p><p>Savings Rate: ${rate}%</p><p>Financial Score: ${score}/100</p><p>${e>budget&&budget?'⚠ Over budget':'Budget healthy'}</p>`}
 </script>
 </body>
 </html>
