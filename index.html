@@ -233,6 +233,7 @@ auth,email.value,password.value
 );
 authSection.style.display='none';
 dashboard.style.display='block';
+document.getElementById("budgetInput").value = budget || "";
 budgetInput.value=budget;
 await loadTransactions();
 }catch(e){alert(e.message)}
