@@ -239,10 +239,16 @@ await loadTransactions();
 };
 
 /* BUDGET */
-window.setBudget=()=>{
-budget=Number(budgetInput.value);
-localStorage.setItem('budget',budget);
-updateDashboard();
+window.setBudget = function () {
+    const user = auth.currentUser;
+
+    if (!user) return;
+
+    budget = Number(budgetInput.value);
+
+    localStorage.setItem("budget_" + user.uid, budget);
+
+    updateDashboard();
 };
 
 /* ADD */
