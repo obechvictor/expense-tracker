@@ -41,7 +41,7 @@ canvas{max-height:280px}
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {getFirestore,collection,addDoc,getDocs,deleteDoc,doc} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-const firebaseConfig={apiKey:'YOUR_API_KEY',authDomain:'YOUR_AUTH_DOMAIN',projectId:'YOUR_PROJECT_ID',storageBucket:'YOUR_STORAGE_BUCKET',messagingSenderId:'YOUR_SENDER_ID',appId:'YOUR_APP_ID'};
+const firebaseConfig={apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",authDomain:"expense-tracker-2ee7b.firebaseapp.com",projectId:"expense-tracker-2ee7b",storageBucket:"expense-tracker-2ee7b.firebasestorage.app",messagingSenderId:"306376576940",appId:"1:306376576940:web:f7bf235be67524c9c8b409"};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 let transactions=[],budget=0,editMode=false,dailyChart,monthlyChart,donutChart;
 window.register=async()=>{try{await createUserWithEmailAndPassword(auth,email.value,password.value);alert('Registered')}catch(e){alert(e.message)}};
@@ -63,3 +63,13 @@ function insight(i,e){const rate=i?(((i-e)/i)*100).toFixed(1):0;insights.innerHT
 </script>
 </body>
 </html>
+const firebaseConfig = {
+  apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+  authDomain: "expense-tracker-2ee7b.firebaseapp.com",
+  databaseURL: "https://expense-tracker-2ee7b-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "expense-tracker-2ee7b",
+  storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
+  messagingSenderId: "306376576940",
+  appId: "1:306376576940:web:f7bf235be67524c9c8b409",
+  measurementId: "G-V7B8WSWCZ8"
+};
