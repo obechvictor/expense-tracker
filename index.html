@@ -226,19 +226,37 @@ alert("Registered");
 }catch(e){alert(e.message)}
 };
 
-window.login=async()=>{
-try{
-await signInWithEmailAndPassword(
-auth,email.value,password.value
-);
-authSection.style.display='none';
-dashboard.style.display='block';
-document.getElementById("budgetInput").value = budget || "";
-budgetInput.value=budget;
-await loadTransactions();
-}catch(e){alert(e.message)}
-};
+/* ================= LOGIN ================= */
 
+window.login = async () => {
+try {
+
+    await signInWithEmailAndPassword(
+        auth,
+        email.value,
+        password.value
+    );
+
+    const user = auth.currentUser;
+
+    budget = Number(
+        localStorage.getItem(
+            "budget_" + user.uid
+        )
+    ) || 0;
+
+    budgetInput.value = budget;
+
+    authSection.style.display = "none";
+    dashboard.style.display = "block";
+
+    loadTransactions();
+
+} catch (e) {
+    alert(e.message);
+}
+
+};
 /* BUDGET */
 window.setBudget = function () {
     const user = auth.currentUser;
