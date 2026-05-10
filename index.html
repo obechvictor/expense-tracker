@@ -246,14 +246,20 @@ updateDashboard();
 };
 
 /* ADD */
-window.addTransaction=async()=>{
-await addDoc(collection(db,'transactions'),{
-amount:Number(amount.value),
-type:type.value,
-category:category.value,
-date:new Date()
-});
-loadTransactions();
+window.addTransaction = async function () {
+    const user = auth.currentUser;
+
+    if (!user) return alert("Login required");
+
+    await addDoc(collection(db, "transactions"), {
+        uid: user.uid,
+        amount: Number(amount.value),
+        type: type.value,
+        category: category.value,
+        date: new Date()
+    });
+
+    loadTransactions();
 };
 
 /* EDIT */
