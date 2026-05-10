@@ -443,26 +443,7 @@ data:Object.values(c)
 }
 
 /* INSIGHT */
-function insight(){
-
-const i=sum('income');
-const e=sum('expense');
-
-const r=
-i?
-((e/i)*100).toFixed(1)
-:0;
-
-let advice='Excellent';
-
-if(r>80)
-advice='Reduce spending';
-
-else if(r>60)
-advice='Watch expenses';
-
-else if(r>40)
-advice='Stable';
+function insight(){const inc=sum('income'),exp=sum('expense'),bal=inc-exp,rate=inc?(((bal)/inc)*100).toFixed(1):0;let msg=<p><b>Savings Rate:</b> ${rate}%</p>;if(rate<10)msg+=<p style='color:red'>⚠ Critical: Your savings are dangerously low.</p><p>Advice: Cut non-essential spending immediately.</p>;else if(rate<20)msg+=<p style='color:orange'>⚠ Warning: Savings below healthy range.</p><p>Advice: Reduce flexible expenses like entertainment.</p>;else msg+=<p style='color:green'>✓ Healthy savings trend.</p>;if(budget&&exp>budget)msg+=<p style='color:red'>🚨 Budget exceeded by KSh ${exp-budget}</p><p>Advice: Freeze discretionary purchases.</p>;const cats={};transactions.filter(t=>t.type==='expense').forEach(t=>cats[t.category]=(cats[t.category]||0)+t.amount);const top=Object.keys(cats).reduce((a,b)=>cats[a]>cats[b]?a:b,Object.keys(cats)[0]);if(top)msg+=<p>Highest spending: <b>${top}</b></p><p>Advice: Review this category for savings opportunities.</p>;if(bal<0)msg+=<p style='color:red'>🚨 Negative balance detected.</p><p>Advice: Prioritize income growth or immediate expense cuts.</p>;insights.innerHTML=msg}
 
 insights.innerHTML=
 '<h3>Financial Insights</h3>'+
