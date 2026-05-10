@@ -41,16 +41,16 @@ canvas{max-height:280px}
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {getFirestore,collection,addDoc,getDocs,deleteDoc,doc} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-const firebaseConfig={apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",authDomain:"expense-tracker-2ee7b.firebaseapp.com",projectId:"expense-tracker-2ee7b",storageBucket:"expense-tracker-2ee7b.firebasestorage.app",messagingSenderId:"306376576940",appId:"1:306376576940:web:f7bf235be67524c9c8b409"};
+const firebaseConfig={apiKey:'YOUR_API_KEY',authDomain:'YOUR_AUTH_DOMAIN',projectId:'YOUR_PROJECT_ID',storageBucket:'YOUR_STORAGE_BUCKET',messagingSenderId:'YOUR_SENDER_ID',appId:'YOUR_APP_ID'};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 let transactions=[],budget=0,editMode=false,dailyChart,monthlyChart,donutChart;
 window.register=async()=>{try{await createUserWithEmailAndPassword(auth,email.value,password.value);alert('Registered')}catch(e){alert(e.message)}};
 window.login=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value);const u=auth.currentUser;budget=Number(localStorage.getItem('budget_'+u.uid))||0;budgetInput.value=budget;authSection.style.display='none';dashboard.style.display='block';loadTransactions()}catch(e){alert(e.message)}};
 window.setBudget=()=>{const u=auth.currentUser;if(!u)return;budget=Number(budgetInput.value);localStorage.setItem('budget_'+u.uid,budget);updateDashboard()};
-window.addTransaction=async()=>{const u=auth.currentUser;if(!u)return;await addDoc(collection(db,'transactions'),{uid:u.uid,amount:Number(amount.value),type:type.value,category:category.value,date:new Date()});loadTransactions()};
-window.deleteTransaction=async(i)=>{await deleteDoc(doc(db,'transactions',transactions[i].id));loadTransactions()};
+window.addTransaction=async()=>{const u=auth.currentUser;if(!u)return;await addDoc(collection(db,'users',u.uid,'transactions'),{uid:u.uid,amount:Number(amount.value),type:type.value,category:category.value,date:new Date()});loadTransactions()};
+window.deleteTransaction=async(i)=>{await deleteDoc(doc(db,'users',auth.currentUser.uid,'transactions',transactions[i].id));loadTransactions()};
 window.toggleDashboardEdit=()=>{editMode=!editMode;dashboardEditBtn.innerText=editMode?'Done':'Edit';renderTransactions()};
-async function loadTransactions(){transactions=[];const u=auth.currentUser;const qs=await getDocs(collection(db,'transactions'));qs.forEach(d=>{const x=d.data();if(x.uid===u.uid)transactions.push({id:d.id,...x})});updateDashboard()}
+async function loadTransactions(){transactions=[];const u=auth.currentUser;const qs=await getDocs(collection(db,'users',u.uid,'transactions'));qs.forEach(d=>{const x=d.data();if(x.uid===u.uid)transactions.push({id:d.id,...x})});updateDashboard()}
 function sum(t){return transactions.filter(x=>x.type===t).reduce((a,b)=>a+b.amount,0)}
 function updateDashboard(){const inc=sum('income'),exp=sum('expense');income.innerText='KSh '+inc;expenses.innerText='KSh '+exp;balance.innerText='KSh '+(inc-exp);budgetView(exp);renderTransactions();daily();monthly();donut();insight(inc,exp)}
 function budgetView(exp){if(!budget){budgetStatus.innerHTML='No budget set';return}const r=budget-exp;if(r>0)budgetStatus.innerHTML='Remaining: KSh '+r;else budgetStatus.innerHTML='Overspent: KSh '+Math.abs(r)}
