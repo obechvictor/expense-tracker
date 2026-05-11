@@ -51,6 +51,7 @@ window.addTransaction=async()=>{await addDoc(collection(db,'users',auth.currentU
 window.deleteTransaction=async i=>{await deleteDoc(doc(db,'users',auth.currentUser.uid,'transactions',transactions[i].id));loadTransactions()};
 window.toggleDashboardEdit=()=>{editMode=!editMode;dashboardEditBtn.innerText=editMode?'Done':'Edit';renderTransactions()};
 window.toggleTheme=()=>document.body.classList.toggle('light');window.exportPDF=()=>window.print();
+window.addEventListener("load",()=>{if(localStorage.getItem("theme")==="dark"){document.body.classList.add("dark");themeBtn.innerText="☀ Light";}});
 async function loadTransactions(){transactions=[];const qs=await getDocs(collection(db,'users',auth.currentUser.uid,'transactions'));qs.forEach(d=>transactions.push({id:d.id,...d.data()}));updateDashboard()}
 function sum(t){return transactions.filter(x=>x.type===t).reduce((a,b)=>a+b.amount,0)}
 function updateDashboard(){const i=sum('income'),e=sum('expense');income.innerText='KSh '+i;expenses.innerText='KSh '+e;balance.innerText='KSh '+(i-e);budgetStatus.innerText=budget?`Remaining: KSh ${budget-e}`:'No budget set';renderTransactions();daily();monthly();donut()}
