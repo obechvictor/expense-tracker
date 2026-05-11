@@ -43,6 +43,7 @@ const firebaseConfig={apiKey:'AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA',authDomai
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 let transactions=[],budget=0,editMode=false,dailyChart,monthlyChart,donutChart;
 onAuthStateChanged(auth,u=>{if(u){authSection.style.display='none';dashboard.style.display='block';budget=Number(localStorage.getItem('budget_'+u.uid))||0;loadTransactions();}});
+window.onload=()=>{if(localStorage.getItem("theme")==="dark"){document.body.classList.add("dark");document.getElementById("themeBtn").innerText="☀ Light";}}; 
 window.register=async()=>{try{await createUserWithEmailAndPassword(auth,email.value,password.value)}catch(e){alert(e.message)}};
 window.login=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value)}catch(e){alert(e.message)}};
 window.setBudget=()=>{budget=Number(budgetInput.value);localStorage.setItem('budget_'+auth.currentUser.uid,budget);updateDashboard()};
