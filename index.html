@@ -2,64 +2,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Expense Tracker</title>
+<title>Expense Tracker</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,Arial}
-body{background:#0f172a;padding:18px;color:#fff}
-.auth-container,.header,.card,.chart-box,.transactions{background:rgba(255,255,255,.08);padding:20px;border-radius:20px;margin-bottom:18px}
-.auth-container{max-width:420px;margin:40px auto}.dashboard{display:none}
-input,button,select{width:100%;padding:14px;margin:8px 0;border:none;border-radius:14px}
-button{background:#22c55e;color:#fff;font-weight:700;cursor:pointer}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-.header{display:flex;justify-content:space-between;align-items:center}.small-btn{width:auto;padding:8px 14px;background:#fff;color:#111}
-.transaction-item{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+body{margin:0;font-family:Arial;background:#0f172a;color:#fff;padding:12px}.box{background:#1e293b;padding:16px;border-radius:14px;margin:12px 0}input,select,button{width:100%;padding:10px;margin:6px 0;border-radius:8px}button{background:#22c55e;color:#fff;border:none}.small{width:auto;padding:8px 14px}canvas{max-height:320px}
 </style>
 </head>
 <body>
-<button class="small-btn" onclick="toggleTheme()">☾</button>
-<div class="auth-container" id="authSection">
-<h2>Expense Tracker</h2>
-<input id="email" type="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<button onclick="register()">Register</button>
-<button onclick="login()">Login</button>
-</div>
-<div class="dashboard" id="dashboard">
-<div class="header"><button class="small-btn" onclick="exportPDF()">PDF</button><h2>Banking Dashboard</h2><button id="dashboardEditBtn" class="small-btn" onclick="toggleDashboardEdit()">Edit</button></div>
-<div class="cards"><div class="card"><h3>Income</h3><p id="income">0</p></div><div class="card"><h3>Expenses</h3><p id="expenses">0</p></div><div class="card"><h3>Balance</h3><p id="balance">0</p></div></div>
-<div class="chart-box"><h3>Budget</h3><input id="budgetInput" type="number"><button onclick="setBudget()">Set Budget</button><p id="budgetStatus">No budget set</p></div>
-<div class="chart-box"><h3>Add Transaction</h3><input id="amount" type="number"><select id="type"><option value="income">Income</option><option value="expense">Expense</option></select><input id="category"><button onclick="addTransaction()">Add</button></div>
-<div class="chart-box"><canvas id="dailyChart"></canvas></div>
-<div class="chart-box"><canvas id="monthlyChart"></canvas></div>
-<div class="chart-box"><canvas id="donutChart"></canvas></div>
-<div class="transactions"><div id="transactionList"></div></div>
+<div class="box" id="authSection"><h2>Login</h2><input id="email"><input id="password" type="password"><button onclick="login()">Login</button><button onclick="register()">Register</button></div>
+<div id="dashboard" style="display:none">
+<div class="box"><button id="themeBtn" class="small" onclick="toggleTheme()">🌙 Dark</button></div>
+<div class="box"><input id="amount" type="number"><select id="type"><option value="income">Income</option><option value="expense">Expense</option></select><input id="category"><button onclick="addTransaction()">Add</button></div>
+<div class="box"><canvas id="dailyChart"></canvas></div>
+<div class="box"><canvas id="monthlyChart"></canvas></div>
+<div class="box"><canvas id="donutChart"></canvas></div>
+<div class="box" id="transactionList"></div>
 </div>
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import {getFirestore,collection,addDoc,getDocs,deleteDoc,doc,updateDoc} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-const firebaseConfig={apiKey:'AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA',authDomain:'expense-tracker-2ee7b.firebaseapp.com',projectId:'expense-tracker-2ee7b',storageBucket:'expense-tracker-2ee7b.firebasestorage.app',messagingSenderId:'306376576940',appId:'1:306376576940:web:f7bf235be67524c9c8b409'};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
-let transactions=[],budget=0,editMode=false,dailyChart,monthlyChart,donutChart;
-onAuthStateChanged(auth,u=>{if(u){authSection.style.display='none';dashboard.style.display='block';budget=Number(localStorage.getItem('budget_'+u.uid))||0;loadTransactions();}});
-window.onload=()=>{if(localStorage.getItem("theme")==="dark"){document.body.classList.add("dark");document.getElementById("themeBtn").innerText="☀ Light";}}; 
-window.register=async()=>{try{await createUserWithEmailAndPassword(auth,email.value,password.value)}catch(e){alert(e.message)}};
-window.login=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value)}catch(e){alert(e.message)}};
-window.setBudget=()=>{budget=Number(budgetInput.value);localStorage.setItem('budget_'+auth.currentUser.uid,budget);updateDashboard()};
-window.addTransaction=async()=>{const amt=Number(amount.value);const cat=category.value.trim().toLowerCase();const typ=type.value;const q=transactions.find(t=>t.category===cat && t.type===typ);if(q){await updateDoc(doc(db,"users",auth.currentUser.uid,"transactions",q.id),{amount:q.amount+amt});}else{await addDoc(collection(db,"users",auth.currentUser.uid,"transactions"),{amount:amt,category:cat,type:typ,date:new Date()});}amount.value="";category.value="";loadTransactions();};
-window.deleteTransaction=async i=>{await deleteDoc(doc(db,'users',auth.currentUser.uid,'transactions',transactions[i].id));loadTransactions()};
-window.toggleDashboardEdit=()=>{editMode=!editMode;dashboardEditBtn.innerText=editMode?'Done':'Edit';renderTransactions()};
-window.toggleTheme=()=>document.body.classList.toggle('light');window.exportPDF=()=>window.print();
-window.addEventListener("load",()=>{if(localStorage.getItem("theme")==="dark"){document.body.classList.add("dark");themeBtn.innerText="☀ Light";}});
-async function loadTransactions(){transactions=[];const qs=await getDocs(collection(db,'users',auth.currentUser.uid,'transactions'));qs.forEach(d=>transactions.push({id:d.id,...d.data()}));updateDashboard()}
-function sum(t){return transactions.filter(x=>x.type===t).reduce((a,b)=>a+b.amount,0)}
-function updateDashboard(){const i=sum('income'),e=sum('expense');income.innerText='KSh '+i;expenses.innerText='KSh '+e;balance.innerText='KSh '+(i-e);budgetStatus.innerText=budget?`Remaining: KSh ${budget-e}`:'No budget set';renderTransactions();daily();monthly();donut()}
-function renderTransactions(){transactionList.innerHTML='';transactions.forEach((t,i)=>{const icon=t.type==='income'?'💰':'💸';transactionList.innerHTML+=`<div class='transaction-item'><span>${icon} ${t.category} - KSh ${t.amount}</span>${editMode?`<button onclick='deleteTransaction(${i})'>Delete</button>`:''}</div>`})}
-function dt(x){return x.date?.seconds?new Date(x.date.seconds*1000):new Date(x.date)}
-function daily(){const d={};transactions.filter(t=>t.type==="expense").forEach(t=>{const dt=date(t);const key=dt.toISOString().split("T")[0];d[key]=(d[key]||0)+t.amount;});const labels=Object.keys(d).sort();const values=labels.map(x=>d[x]);if(dailyChart)dailyChart.destroy();dailyChart=new Chart(document.getElementById("dailyChart"),{type:"line",data:{labels:labels,datasets:[{label:"Daily Expenses",data:values,tension:.4,fill:false}]},options:{responsive:true,plugins:{legend:{display:true}}}});}
-function monthly(){const i=sum('income'),e=sum('expense');if(monthlyChart)monthlyChart.destroy();monthlyChart=new Chart(document.getElementById('monthlyChart'),{type:'bar',data:{labels:['This Month'],datasets:[{label:'Income',data:[i]},{label:'Expense',data:[e]}]}})}
-function donut(){const c={};transactions.filter(x=>x.type==='expense').forEach(x=>c[x.category]=(c[x.category]||0)+x.amount);if(donutChart)donutChart.destroy();donutChart=new Chart(document.getElementById('donutChart'),{type:'doughnut',data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}})}
+import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import {getFirestore,collection,addDoc,getDocs,doc,deleteDoc,updateDoc} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+const firebaseConfig={apiKey:'AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA',authDomain:'expense-tracker-2ee7b.firebaseapp.com',databaseURL:'https://expense-tracker-2ee7b-default-rtdb.europe-west1.firebasedatabase.app',projectId:'expense-tracker-2ee7b',storageBucket:'expense-tracker-2ee7b.firebasestorage.app',messagingSenderId:'306376576940',appId:'1:306376576940:web:f7bf235be67524c9c8b409'};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);let transactions=[],dailyChart,monthlyChart,donutChart;
+window.register=()=>createUserWithEmailAndPassword(auth,email.value,password.value);
+window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value);
+onAuthStateChanged(auth,u=>{if(u){authSection.style.display='none';dashboard.style.display='block';loadTransactions();}});
+window.toggleTheme=()=>document.body.classList.toggle('dark');
+window.addTransaction=async()=>{const cat=category.value.trim().toLowerCase();const amt=+amount.value;const typ=type.value;const q=transactions.find(t=>t.category===cat&&t.type===typ);if(q){await updateDoc(doc(db,'users',auth.currentUser.uid,'transactions',q.id),{amount:q.amount+amt});}else await addDoc(collection(db,'users',auth.currentUser.uid,'transactions'),{category:cat,amount:amt,type:typ,date:new Date()});loadTransactions();};
+async function loadTransactions(){transactions=[];const s=await getDocs(collection(db,'users',auth.currentUser.uid,'transactions'));s.forEach(d=>transactions.push({id:d.id,...d.data()}));render();}
+function render(){daily();monthly();donut();transactionList.innerHTML=transactions.map((t,i)=>`<div>${t.category} - ${t.amount} <button onclick='del(${i})'>Delete</button></div>`).join('');}
+window.del=async i=>{await deleteDoc(doc(db,'users',auth.currentUser.uid,'transactions',transactions[i].id));loadTransactions();};
+function date(t){return t.date?.seconds?new Date(t.date.seconds*1000):new Date();}
+function daily(){const d={};transactions.filter(t=>t.type==='expense').forEach(t=>{const k=date(t).toISOString().split('T')[0];d[k]=(d[k]||0)+t.amount});const l=Object.keys(d).sort();if(dailyChart)dailyChart.destroy();dailyChart=new Chart(dailyChart=document.getElementById('dailyChart'),{type:'line',data:{labels:l,datasets:[{label:'Daily Expenses',data:l.map(x=>d[x])}]}})}
+function monthly(){const i=transactions.filter(t=>t.type==='income').reduce((a,b)=>a+b.amount,0),e=transactions.filter(t=>t.type==='expense').reduce((a,b)=>a+b.amount,0);if(monthlyChart)monthlyChart.destroy();monthlyChart=new Chart(document.getElementById('monthlyChart'),{type:'bar',data:{labels:['This Month'],datasets:[{label:'Income',data:[i]},{label:'Expense',data:[e]}]}})}
+function donut(){const c={};transactions.filter(t=>t.type==='expense').forEach(t=>c[t.category]=(c[t.category]||0)+t.amount);if(donutChart)donutChart.destroy();donutChart=new Chart(document.getElementById('donutChart'),{type:'doughnut',data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}})}
 </script>
 </body>
 </html>
