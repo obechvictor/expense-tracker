@@ -4,38 +4,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Expense Tracker</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-body{margin:0;font-family:Arial;background:#0f172a;color:#fff;padding:12px}.box{background:#1e293b;padding:16px;border-radius:14px;margin:12px 0}input,select,button{width:100%;padding:10px;margin:6px 0;border-radius:8px}button{background:#22c55e;color:#fff;border:none}.small{width:auto;padding:8px 14px}canvas{max-height:320px}
+body{margin:0;font-family:Arial;background:#0f172a;color:#fff;padding:12px}.dark{background:#fff;color:#111}.box{background:#1e293b;padding:16px;border-radius:14px;margin:12px 0}.dark .box{background:#e5e7eb}input,select,button{width:100%;padding:10px;margin:6px 0;border-radius:8px}button{background:#22c55e;color:#fff;border:none}.small{width:auto;padding:6px 12px}.del{width:auto;padding:4px 8px;background:#ef4444;font-size:12px}canvas{max-height:320px}
 </style>
 </head>
 <body>
 <div class="box" id="authSection"><h2>Login</h2><input id="email"><input id="password" type="password"><button onclick="login()">Login</button><button onclick="register()">Register</button></div>
 <div id="dashboard" style="display:none">
-<div class="box"><button id="themeBtn" class="small" onclick="toggleTheme()">🌙 Dark</button></div>
+<div class="box"><button id="themeBtn" class="small" onclick="toggleTheme()">Theme</button><button id="editBtn" class="small" onclick="toggleEdit()">Edit</button><button class="small" onclick="downloadPDF()">PDF</button></div>
 <div class="box"><input id="amount" type="number"><select id="type"><option value="income">Income</option><option value="expense">Expense</option></select><input id="category"><button onclick="addTransaction()">Add</button></div>
-<div class="box"><canvas id="dailyChart"></canvas></div>
-<div class="box"><canvas id="monthlyChart"></canvas></div>
-<div class="box"><canvas id="donutChart"></canvas></div>
-<div class="box" id="transactionList"></div>
+<div class="box" id="insights"></div><div class="box"><canvas id="dailyChart"></canvas></div><div class="box"><canvas id="monthlyChart"></canvas></div><div class="box"><canvas id="donutChart"></canvas></div><div class="box" id="transactionList"></div>
 </div>
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {getFirestore,collection,addDoc,getDocs,doc,deleteDoc,updateDoc} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 const firebaseConfig={apiKey:'AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA',authDomain:'expense-tracker-2ee7b.firebaseapp.com',databaseURL:'https://expense-tracker-2ee7b-default-rtdb.europe-west1.firebasedatabase.app',projectId:'expense-tracker-2ee7b',storageBucket:'expense-tracker-2ee7b.firebasestorage.app',messagingSenderId:'306376576940',appId:'1:306376576940:web:f7bf235be67524c9c8b409'};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);let transactions=[],dailyChart,monthlyChart,donutChart;
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);let transactions=[],dailyChart,monthlyChart,donutChart,editMode=false;
 window.register=()=>createUserWithEmailAndPassword(auth,email.value,password.value);
 window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value);
-onAuthStateChanged(auth,u=>{if(u){authSection.style.display='none';dashboard.style.display='block';loadTransactions();}});
+onAuthStateChanged(auth,u=>{authSection.style.display=u?'none':'block';dashboard.style.display=u?'block':'none';if(u)loadTransactions();});
 window.toggleTheme=()=>document.body.classList.toggle('dark');
-window.addTransaction=async()=>{const cat=category.value.trim().toLowerCase();const amt=+amount.value;const typ=type.value;const q=transactions.find(t=>t.category===cat&&t.type===typ);if(q){await updateDoc(doc(db,'users',auth.currentUser.uid,'transactions',q.id),{amount:q.amount+amt});}else await addDoc(collection(db,'users',auth.currentUser.uid,'transactions'),{category:cat,amount:amt,type:typ,date:new Date()});loadTransactions();};
+window.toggleEdit=()=>{editMode=!editMode;editBtn.innerText=editMode?'Done':'Edit';render();};
+window.addTransaction=async()=>{const cat=category.value.trim().toLowerCase(),amt=+amount.value,typ=type.value;const q=transactions.find(t=>t.category===cat&&t.type===typ);if(q)await updateDoc(doc(db,'users',auth.currentUser.uid,'transactions',q.id),{amount:q.amount+amt});else await addDoc(collection(db,'users',auth.currentUser.uid,'transactions'),{category:cat,amount:amt,type:typ,date:new Date()});loadTransactions();};
 async function loadTransactions(){transactions=[];const s=await getDocs(collection(db,'users',auth.currentUser.uid,'transactions'));s.forEach(d=>transactions.push({id:d.id,...d.data()}));render();}
-function render(){daily();monthly();donut();transactionList.innerHTML=transactions.map((t,i)=>`<div>${t.category} - ${t.amount} <button onclick='del(${i})'>Delete</button></div>`).join('');}
 window.del=async i=>{await deleteDoc(doc(db,'users',auth.currentUser.uid,'transactions',transactions[i].id));loadTransactions();};
+function render(){transactionList.innerHTML=transactions.map((t,i)=>`<div>${t.category} - ${t.amount} ${editMode?`<button class='del' onclick='del(${i})'>Delete</button>`:''}</div>`).join('');daily();monthly();donut();insights();}
 function date(t){return t.date?.seconds?new Date(t.date.seconds*1000):new Date();}
 function daily(){const d={};transactions.filter(t=>t.type==='expense').forEach(t=>{const k=date(t).toISOString().split('T')[0];d[k]=(d[k]||0)+t.amount});const l=Object.keys(d).sort();if(dailyChart)dailyChart.destroy();dailyChart=new Chart(dailyChart=document.getElementById('dailyChart'),{type:'line',data:{labels:l,datasets:[{label:'Daily Expenses',data:l.map(x=>d[x])}]}})}
-function monthly(){const i=transactions.filter(t=>t.type==='income').reduce((a,b)=>a+b.amount,0),e=transactions.filter(t=>t.type==='expense').reduce((a,b)=>a+b.amount,0);if(monthlyChart)monthlyChart.destroy();monthlyChart=new Chart(document.getElementById('monthlyChart'),{type:'bar',data:{labels:['This Month'],datasets:[{label:'Income',data:[i]},{label:'Expense',data:[e]}]}})}
-function donut(){const c={};transactions.filter(t=>t.type==='expense').forEach(t=>c[t.category]=(c[t.category]||0)+t.amount);if(donutChart)donutChart.destroy();donutChart=new Chart(document.getElementById('donutChart'),{type:'doughnut',data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}})}
-</script>
-</body>
-</html>
+function monthly(){const i=sum('income'),e=sum('expense');if(monthlyChart)monthlyChart.destroy();monthlyChart=new Chart(monthlyChart=document.getElementById('monthlyChart'),{type:'bar',data:{labels:['This Month'],datasets:[{label:'Income',data:[i]},{label:'Expense',data:[e]}]}})}
+function donut(){const c={};transactions.filter(t=>t.type==='expense').forEach(t=>c[t.category]=(c[t.category]||0)+t.amount);if(donutChart)donutChart.destroy();donutChart=new Chart(donutChart=document.getElementById('donutChart'),{type:'doughnut',data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}})}
+function sum(type){return transactions.filter(t=>t.type===type).reduce((a,b)=>a+b.amount,0)}
+function insights(){const i=sum('income'),e=sum('expense'),s=i-e,r=i?((e/i)*100).toFixed(1):0;let a='Healthy';if(r>80)a='Critical spending';else if(r>60)a='Reduce spending';insights.innerHTML=`<h3>Insights</h3><p>Income: ${i}</p><p>Expenses: ${e}</p><p>Savings: ${s}</p><p>${a}</p>`;}
+window.downloadPDF=()=>{const {jsPDF}=window.jspdf,p=new jsPDF();p.text('Expense Report',20,20);p.text('Income: '+sum('income'),20,40);p.text('Expenses: '+sum('expense'),20,50);p.save('report.pdf');};
+</script></body></html>
