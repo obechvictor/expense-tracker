@@ -1,41 +1,39 @@
 <!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Expense Tracker</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Smart Expense Tracker</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-body{margin:0;font-family:Arial;background:#0f172a;color:#fff;padding:12px}.dark{background:#fff;color:#111}.box{background:#1e293b;padding:16px;border-radius:14px;margin:12px 0}.dark .box{background:#e5e7eb}input,select,button{width:100%;padding:10px;margin:6px 0;border-radius:8px}button{background:#22c55e;color:#fff;border:none}.small{width:auto;padding:6px 12px}.del{width:auto;padding:4px 8px;background:#ef4444;font-size:12px}canvas{max-height:320px}
+body{margin:0;font-family:Arial;background:#f5f7fb;color:#222;padding:12px}.card,.header{background:#fff;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 4px 10px rgba(0,0,0,.08)}.header{background:#16c94c;color:#fff;display:flex;justify-content:space-between}.btn{background:#16c94c;color:#fff;border:none;padding:10px;border-radius:8px;width:100%;margin:6px 0}.small{width:auto;padding:6px 12px;background:#fff;color:#16c94c}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.hidden{display:none}input,select{width:100%;padding:10px;margin:6px 0;border:1px solid #ddd;border-radius:8px}.insight-good{color:#16c94c}.insight-bad{color:#ef4444}
 </style>
 </head>
 <body>
-<div class="box" id="authSection"><h2>Login</h2><input id="email"><input id="password" type="password"><button onclick="login()">Login</button><button onclick="register()">Register</button></div>
-<div id="dashboard" style="display:none">
-<div class="box"><button id="themeBtn" class="small" onclick="toggleTheme()">Theme</button><button id="editBtn" class="small" onclick="toggleEdit()">Edit</button><button class="small" onclick="downloadPDF()">PDF</button></div>
-<div class="box"><input id="amount" type="number"><select id="type"><option value="income">Income</option><option value="expense">Expense</option></select><input id="category"><button onclick="addTransaction()">Add</button></div>
-<div class="box" id="insights"></div><div class="box"><canvas id="dailyChart"></canvas></div><div class="box"><canvas id="monthlyChart"></canvas></div><div class="box"><canvas id="donutChart"></canvas></div><div class="box" id="transactionList"></div>
+<div id="auth" class="card"><h2>Expense Tracker</h2><input id="email" placeholder="Email"><input id="password" type="password" placeholder="Password"><button class="btn" onclick="register()">Register</button><button class="btn" onclick="login()">Login</button></div>
+<div id="dash" class="hidden">
+<div class="header"><h2>Finance Dashboard</h2><button class="small" onclick="toggleEdit()" id="editBtn">Edit</button></div>
+<div class="grid"><div class="card"><h3>Income</h3><p id="income">0</p></div><div class="card"><h3>Expenses</h3><p id="expenses">0</p></div><div class="card"><h3>Balance</h3><p id="balance">0</p></div></div>
+<div class="card"><h3>Budget</h3><input id="budget"><button class="btn" onclick="setBudget()">Set Budget</button><p id="budgetStatus"></p></div>
+<div class="card"><h3>Add Transaction</h3><input id="amount"><select id="type"><option>income</option><option>expense</option></select><input id="category"><button class="btn" onclick="addTransaction()">Add</button></div>
+<div class="card"><canvas id="daily"></canvas></div>
+<div class="card"><canvas id="donut"></canvas></div>
+<div class="card"><h3>Financial Insights</h3><div id="insights"></div></div>
+<div class="card"><div id="list"></div></div>
 </div>
-<script type="module">
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import {getFirestore,collection,addDoc,getDocs,doc,deleteDoc,updateDoc} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-const firebaseConfig={apiKey:'AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA',authDomain:'expense-tracker-2ee7b.firebaseapp.com',databaseURL:'https://expense-tracker-2ee7b-default-rtdb.europe-west1.firebasedatabase.app',projectId:'expense-tracker-2ee7b',storageBucket:'expense-tracker-2ee7b.firebasestorage.app',messagingSenderId:'306376576940',appId:'1:306376576940:web:f7bf235be67524c9c8b409'};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);let transactions=[],dailyChart,monthlyChart,donutChart,editMode=false;
-window.register=()=>createUserWithEmailAndPassword(auth,email.value,password.value);
-window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value);
-onAuthStateChanged(auth,u=>{authSection.style.display=u?'none':'block';dashboard.style.display=u?'block':'none';if(u)loadTransactions();});
-window.toggleTheme=()=>document.body.classList.toggle('dark');
-window.toggleEdit=()=>{editMode=!editMode;editBtn.innerText=editMode?'Done':'Edit';render();};
-window.addTransaction=async()=>{const cat=category.value.trim().toLowerCase(),amt=+amount.value,typ=type.value;const q=transactions.find(t=>t.category===cat&&t.type===typ);if(q)await updateDoc(doc(db,'users',auth.currentUser.uid,'transactions',q.id),{amount:q.amount+amt});else await addDoc(collection(db,'users',auth.currentUser.uid,'transactions'),{category:cat,amount:amt,type:typ,date:new Date()});loadTransactions();};
-async function loadTransactions(){transactions=[];const s=await getDocs(collection(db,'users',auth.currentUser.uid,'transactions'));s.forEach(d=>transactions.push({id:d.id,...d.data()}));render();}
-window.del=async i=>{await deleteDoc(doc(db,'users',auth.currentUser.uid,'transactions',transactions[i].id));loadTransactions();};
-function render(){transactionList.innerHTML=transactions.map((t,i)=>`<div>${t.category} - ${t.amount} ${editMode?`<button class='del' onclick='del(${i})'>Delete</button>`:''}</div>`).join('');daily();monthly();donut();insights();}
-function date(t){return t.date?.seconds?new Date(t.date.seconds*1000):new Date();}
-function daily(){const d={};transactions.filter(t=>t.type==='expense').forEach(t=>{const k=date(t).toISOString().split('T')[0];d[k]=(d[k]||0)+t.amount});const l=Object.keys(d).sort();if(dailyChart)dailyChart.destroy();dailyChart=new Chart(dailyChart=document.getElementById('dailyChart'),{type:'line',data:{labels:l,datasets:[{label:'Daily Expenses',data:l.map(x=>d[x])}]}})}
-function monthly(){const i=sum('income'),e=sum('expense');if(monthlyChart)monthlyChart.destroy();monthlyChart=new Chart(monthlyChart=document.getElementById('monthlyChart'),{type:'bar',data:{labels:['This Month'],datasets:[{label:'Income',data:[i]},{label:'Expense',data:[e]}]}})}
-function donut(){const c={};transactions.filter(t=>t.type==='expense').forEach(t=>c[t.category]=(c[t.category]||0)+t.amount);if(donutChart)donutChart.destroy();donutChart=new Chart(donutChart=document.getElementById('donutChart'),{type:'doughnut',data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}})}
-function sum(type){return transactions.filter(t=>t.type===type).reduce((a,b)=>a+b.amount,0)}
-function insights(){const i=sum('income'),e=sum('expense'),s=i-e,r=i?((e/i)*100).toFixed(1):0;let a='Healthy';if(r>80)a='Critical spending';else if(r>60)a='Reduce spending';insights.innerHTML=`<h3>Insights</h3><p>Income: ${i}</p><p>Expenses: ${e}</p><p>Savings: ${s}</p><p>${a}</p>`;}
-window.downloadPDF=()=>{const {jsPDF}=window.jspdf,p=new jsPDF();p.text('Expense Report',20,20);p.text('Income: '+sum('income'),20,40);p.text('Expenses: '+sum('expense'),20,50);p.save('report.pdf');};
-</script></body></html>
+<script>
+let transactions=[],budget=0,edit=false;
+function register(){localStorage.setItem('user',email.value);login()}
+function login(){if(email.value){localStorage.setItem('user',email.value);auth.classList.add('hidden');dash.classList.remove('hidden');load()}}
+function load(){transactions=JSON.parse(localStorage.getItem(localStorage.getItem('user')+'_tx')||'[]');budget=+localStorage.getItem(localStorage.getItem('user')+'_budget')||0;render()}
+function save(){localStorage.setItem(localStorage.getItem('user')+'_tx',JSON.stringify(transactions));localStorage.setItem(localStorage.getItem('user')+'_budget',budget)}
+function addTransaction(){transactions.push({amount:+amount.value,type:type.value,category:category.value,date:new Date().toISOString()});save();render()}
+function setBudget(){budget=+document.getElementById('budget').value;save();render()}
+function toggleEdit(){edit=!edit;editBtn.innerText=edit?'Done':'Edit';render()}
+function del(i){transactions.splice(i,1);save();render()}
+let dailyChart,monthlyChart;
+function drawCharts(){const d={};transactions.filter(t=>t.type=='expense').forEach(t=>{const x=t.date.split('T')[0];d[x]=(d[x]||0)+t.amount});const labels=Object.keys(d).sort();const vals=labels.map(x=>d[x]);if(dailyChart)dailyChart.destroy();dailyChart=new Chart(document.getElementById('daily'),{type:'line',data:{labels:labels,datasets:[{label:'Daily Expenses',data:vals}]}});const inc=transactions.filter(t=>t.type=='income').reduce((a,b)=>a+b.amount,0),exp=transactions.filter(t=>t.type=='expense').reduce((a,b)=>a+b.amount,0);if(monthlyChart)monthlyChart.destroy();monthlyChart=new Chart(document.getElementById('donut'),{type:'bar',data:{labels:['This Month'],datasets:[{label:'Income',data:[inc]},{label:'Expense',data:[exp]}]}})}
+function render(){let inc=transactions.filter(t=>t.type=='income').reduce((a,b)=>a+b.amount,0),exp=transactions.filter(t=>t.type=='expense').reduce((a,b)=>a+b.amount,0);income.innerText='KSh '+inc;expenses.innerText='KSh '+exp;balance.innerText='KSh '+(inc-exp);budgetStatus.innerText=budget?('Remaining: '+(budget-exp)):'No budget set';insights.innerHTML='<p class='+(exp>budget?'"insight-bad"':'"insight-good"')+'>'+((exp>budget)?'Over budget':'Healthy spending')+'</p>';list.innerHTML=transactions.map((t,i)=>`<p>${t.category} KSh ${t.amount} ${edit?'<button onclick=del('+i+')>X</button>':''}</p>`).join('');drawCharts();}
+if(localStorage.getItem('user')){auth.classList.add('hidden');dash.classList.remove('hidden');load()}
+</script>
+</body>
+</html>
