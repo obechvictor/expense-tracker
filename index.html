@@ -47,7 +47,7 @@ window.onload=()=>{if(localStorage.getItem("theme")==="dark"){document.body.clas
 window.register=async()=>{try{await createUserWithEmailAndPassword(auth,email.value,password.value)}catch(e){alert(e.message)}};
 window.login=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value)}catch(e){alert(e.message)}};
 window.setBudget=()=>{budget=Number(budgetInput.value);localStorage.setItem('budget_'+auth.currentUser.uid,budget);updateDashboard()};
-window.addTransaction=async()=>{await addDoc(collection(db,'users',auth.currentUser.uid,'transactions'),{amount:+amount.value,type:type.value,category:category.value,date:new Date()});loadTransactions()};
+window.addTransaction=async()=>{const amt=Number(amount.value);const cat=category.value.trim().toLowerCase();const typ=type.value;const q=transactions.find(t=>t.category===cat && t.type===typ);if(q){await updateDoc(doc(db,"users",auth.currentUser.uid,"transactions",q.id),{amount:q.amount+amt});}else{await addDoc(collection(db,"users",auth.currentUser.uid,"transactions"),{amount:amt,category:cat,type:typ,date:new Date()});}amount.value="";category.value="";loadTransactions();};
 window.deleteTransaction=async i=>{await deleteDoc(doc(db,'users',auth.currentUser.uid,'transactions',transactions[i].id));loadTransactions()};
 window.toggleDashboardEdit=()=>{editMode=!editMode;dashboardEditBtn.innerText=editMode?'Done':'Edit';renderTransactions()};
 window.toggleTheme=()=>document.body.classList.toggle('light');window.exportPDF=()=>window.print();
