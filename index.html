@@ -1,42 +1,444 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Smart Expense Tracker</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-body{margin:0;font-family:Arial;background:#f5f7fb;color:#222;padding:12px}.card,.header{background:#fff;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 4px 10px rgba(0,0,0,.08)}.header{background:#16c94c;color:#fff;display:flex;justify-content:space-between}.btn{background:#16c94c;color:#fff;border:none;padding:10px;border-radius:8px;width:100%;margin:6px 0}.small{width:auto;padding:6px 12px;background:#fff;color:#16c94c}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.hidden{display:none}input,select{width:100%;padding:10px;margin:6px 0;border:1px solid #ddd;border-radius:8px}.insight-good{color:#16c94c}.insight-bad{color:#ef4444}
+body{
+font-family:Arial,sans-serif;
+background:#f4f7fb;
+margin:0;
+padding:15px;
+color:#222;
+}
+
+.card{
+background:#fff;
+padding:18px;
+border-radius:14px;
+margin-bottom:15px;
+box-shadow:0 4px 10px rgba(0,0,0,.08);
+}
+
+.hidden{display:none;}
+
+input,select,button{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:8px;
+border:1px solid #ddd;
+}
+
+button{
+background:#16c94c;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+.small{
+width:auto;
+padding:6px 12px;
+}
+
+.del{
+width:auto;
+padding:4px 8px;
+font-size:12px;
+background:red;
+}
+
+.row{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:12px;
+}
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+background:#16c94c;
+color:white;
+}
 </style>
 </head>
 <body>
-<div id="auth" class="card"><h2>Expense Tracker</h2><input id="email" placeholder="Email"><input id="password" type="password" placeholder="Password"><button class="btn" onclick="register()">Register</button><button class="btn" onclick="login()">Login</button></div>
-<div id="dash" class="hidden">
-<div class="header"><h2>Finance Dashboard</h2><button class="small" onclick="toggleEdit()" id="editBtn">Edit</button></div>
-<div class="grid"><div class="card"><h3>Income</h3><p id="income">0</p></div><div class="card"><h3>Expenses</h3><p id="expenses">0</p></div><div class="card"><h3>Balance</h3><p id="balance">0</p></div></div>
-<div class="card"><h3>Budget</h3><input id="budget"><button class="btn" onclick="setBudget()">Set Budget</button><p id="budgetStatus"></p></div>
-<div class="card"><h3>Add Transaction</h3><input id="amount"><select id="type"><option>income</option><option>expense</option></select><input id="category"><button class="btn" onclick="addTransaction()">Add</button></div>
-<div class="card"><canvas id="daily"></canvas></div>
-<div class="card"><canvas id="donut"></canvas></div>
-<div class="card"><h3>Financial Insights</h3><div id="insights"></div></div>
-<div class="card"><div id="list"></div></div>
+
+<!-- AUTH -->
+<div id="authBox" class="card">
+<h2>Expense Tracker</h2>
+
+<input id="email" type="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="register()">Register</button>
+<button onclick="login()">Login</button>
 </div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden">
+
+<div class="card header">
+<h2>Finance Dashboard</h2>
+<button id="editBtn" class="small" onclick="toggleEdit()">Edit</button>
+</div>
+
+<div class="row">
+<div class="card">
+<h3>Income</h3>
+<p id="income">KSh 0</p>
+</div>
+
+<div class="card">
+<h3>Expenses</h3>
+<p id="expenses">KSh 0</p>
+</div>
+
+<div class="card">
+<h3>Balance</h3>
+<p id="balance">KSh 0</p>
+</div>
+</div>
+
+<div class="card">
+<h3>Budget</h3>
+<input id="budgetInput" type="number">
+<button onclick="setBudget()">Set Budget</button>
+<p id="budgetStatus">No budget set</p>
+</div>
+
+<div class="card">
+<h3>Add Transaction</h3>
+
+<input id="amount" type="number">
+
+<select id="type">
+<option value="income">Income</option>
+<option value="expense">Expense</option>
+</select>
+
+<input id="category" placeholder="Category">
+
+<button onclick="addTransaction()">Add</button>
+</div>
+
+<div class="card">
+<canvas id="dailyChart"></canvas>
+</div>
+
+<div class="card">
+<canvas id="monthlyChart"></canvas>
+</div>
+
+<div class="card">
+<canvas id="donutChart"></canvas>
+</div>
+
+<div class="card">
+<h3>Financial Insights</h3>
+<div id="insights"></div>
+</div>
+
+<div class="card">
+<button onclick="downloadPDF()">PDF Report</button>
+</div>
+
+<div class="card">
+<div id="transactionList"></div>
+</div>
+
+</div>
+
 <script type="module">
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import {getFirestore,collection,addDoc,getDocs,deleteDoc,doc,setDoc,getDoc} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-const firebaseConfig={apiKey:'AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA',authDomain:'expense-tracker-2ee7b.firebaseapp.com',databaseURL:'https://expense-tracker-2ee7b-default-rtdb.europe-west1.firebasedatabase.app',projectId:'expense-tracker-2ee7b',storageBucket:'expense-tracker-2ee7b.firebasestorage.app',messagingSenderId:'306376576940',appId:'1:306376576940:web:f7bf235be67524c9c8b409'};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);let transactions=[],budget=0,edit=false,dailyChart,monthlyChart;
-window.register=()=>createUserWithEmailAndPassword(auth,email.value,password.value).catch(e=>alert(e.message));
-window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value).catch(e=>alert(e.message));
-onAuthStateChanged(auth,u=>{if(u){auth.classList.add('hidden');dash.classList.remove('hidden');load()}else{auth.classList.remove('hidden');dash.classList.add('hidden')}});
-async function load(){transactions=[];const snap=await getDocs(collection(db,'users',auth.currentUser.uid,'transactions'));snap.forEach(d=>transactions.push({id:d.id,...d.data()}));const b=await getDoc(doc(db,'users',auth.currentUser.uid,'settings','budget'));budget=b.exists()?b.data().amount:0;render()}
-window.addTransaction=async()=>{await addDoc(collection(db,'users',auth.currentUser.uid,'transactions'),{amount:+amount.value,type:type.value,category:category.value,date:new Date().toISOString()});load()};
-window.setBudget=async()=>{budget=+document.getElementById('budget').value;await setDoc(doc(db,'users',auth.currentUser.uid,'settings','budget'),{amount:budget});render()};
-window.toggleEdit=()=>{edit=!edit;editBtn.innerText=edit?'Done':'Edit';render()};
-window.del=async i=>{await deleteDoc(doc(db,'users',auth.currentUser.uid,'transactions',transactions[i].id));load()};
-window.register=window.register;window.login=window.login;window.addTransaction=window.addTransaction;window.setBudget=window.setBudget;window.toggleEdit=window.toggleEdit;window.del=window.del;
-let drawCharts="+""+";
-function render(){let inc=transactions.filter(t=>t.type=='income').reduce((a,b)=>a+b.amount,0),exp=transactions.filter(t=>t.type=='expense').reduce((a,b)=>a+b.amount,0);income.innerText='KSh '+inc;expenses.innerText='KSh '+exp;balance.innerText='KSh '+(inc-exp);budgetStatus.innerText=budget?('Remaining: '+(budget-exp)):'No budget set';insights.innerHTML=`<p>${exp>budget&&budget?'Over budget':'Healthy spending'}</p>`;list.innerHTML=transactions.map((t,i)=>`<p>${t.category} KSh ${t.amount} ${edit?'<button onclick="del('+i+')">X</button>':''}</p>`).join('');}
+
+import {
+initializeApp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getAuth,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+getDocs,
+deleteDoc,
+doc,
+updateDoc,
+setDoc,
+getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+authDomain: "expense-tracker-2ee7b.firebaseapp.com",
+projectId: "expense-tracker-2ee7b",
+storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
+messagingSenderId: "306376576940",
+appId: "1:306376576940:web:f7bf235be67524c9c8b409"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let transactions = [];
+let budget = 0;
+let editMode = false;
+
+let dailyChart;
+let monthlyChart;
+let donutChart;
+
+window.register = async () => {
+try{
+await createUserWithEmailAndPassword(auth,email.value,password.value);
+}catch(e){
+alert(e.message);
+}
+};
+
+window.login = async () => {
+try{
+await signInWithEmailAndPassword(auth,email.value,password.value);
+}catch(e){
+alert(e.message);
+}
+};
+
+onAuthStateChanged(auth,user=>{
+if(user){
+authBox.classList.add("hidden");
+dashboard.classList.remove("hidden");
+loadTransactions();
+}else{
+authBox.classList.remove("hidden");
+dashboard.classList.add("hidden");
+}
+});
+
+window.setBudget = async ()=>{
+budget = Number(budgetInput.value);
+
+await setDoc(
+doc(db,"users",auth.currentUser.uid,"settings","budget"),
+{amount:budget}
+);
+
+render();
+};
+
+window.addTransaction = async ()=>{
+
+const amt = Number(amount.value);
+const cat = category.value.trim().toLowerCase();
+const typ = type.value;
+
+const existing = transactions.find(
+t=>t.category===cat && t.type===typ
+);
+
+if(existing){
+
+await updateDoc(
+doc(db,"users",auth.currentUser.uid,"transactions",existing.id),
+{amount:existing.amount+amt}
+);
+
+}else{
+
+await addDoc(
+collection(db,"users",auth.currentUser.uid,"transactions"),
+{
+amount:amt,
+category:cat,
+type:typ,
+date:new Date().toISOString()
+}
+);
+
+}
+
+loadTransactions();
+};
+
+window.toggleEdit = ()=>{
+editMode=!editMode;
+editBtn.innerText=editMode?"Done":"Edit";
+render();
+};
+
+window.deleteTransaction = async(i)=>{
+await deleteDoc(
+doc(
+db,
+"users",
+auth.currentUser.uid,
+"transactions",
+transactions[i].id
+)
+);
+
+loadTransactions();
+};
+
+async function loadTransactions(){
+
+transactions=[];
+
+const snap=await getDocs(
+collection(db,"users",auth.currentUser.uid,"transactions")
+);
+
+snap.forEach(d=>{
+transactions.push({
+id:d.id,
+...d.data()
+});
+});
+
+const b=await getDoc(
+doc(db,"users",auth.currentUser.uid,"settings","budget")
+);
+
+budget=b.exists()?b.data().amount:0;
+
+render();
+}
+
+function sum(type){
+return transactions
+.filter(t=>t.type===type)
+.reduce((a,b)=>a+b.amount,0);
+}
+
+function render(){
+
+const incomeTotal=sum("income");
+const expenseTotal=sum("expense");
+
+income.innerText="KSh "+incomeTotal;
+expenses.innerText="KSh "+expenseTotal;
+balance.innerText="KSh "+(incomeTotal-expenseTotal);
+
+budgetStatus.innerText=
+budget?
+"Remaining: KSh "+(budget-expenseTotal):
+"No budget set";
+
+transactionList.innerHTML="";
+
+transactions.forEach((t,i)=>{
+transactionList.innerHTML+=`
+<div>
+${t.category} - KSh ${t.amount}
+${editMode?
+`<button class="del" onclick="deleteTransaction(${i})">X</button>`
+:""}
+</div>
+`;
+});
+
+insights.innerHTML=
+expenseTotal>budget && budget
+? "<p style='color:red'>Over Budget</p>"
+: "<p style='color:green'>Healthy Spending</p>";
+
+drawCharts();
+}
+
+function drawCharts(){
+
+const daily={};
+
+transactions
+.filter(t=>t.type==="expense")
+.forEach(t=>{
+const d=t.date.split("T")[0];
+daily[d]=(daily[d]||0)+t.amount;
+});
+
+const labels=Object.keys(daily).sort();
+const values=labels.map(x=>daily[x]);
+
+if(dailyChart)dailyChart.destroy();
+
+dailyChart=new Chart(
+document.getElementById("dailyChart"),
+{
+type:"line",
+data:{
+labels,
+datasets:[{
+label:"Daily Expenses",
+data:values
+}]
+}
+}
+);
+
+if(monthlyChart)monthlyChart.destroy();
+
+monthlyChart=new Chart(
+document.getElementById("monthlyChart"),
+{
+type:"bar",
+data:{
+labels:["This Month"],
+datasets:[
+{
+label:"Income",
+data:[sum("income")]
+},
+{
+label:"Expense",
+data:[sum("expense")]
+}
+]
+}
+}
+);
+
+const cat={};
+
+transactions
+.filter(t=>t.type==="expense")
+.forEach(t=>{
+cat[t.category]=(cat[t.category]||0)+t.amount;
+});
+
+if(donutChart)donutChart.destroy();
+
+donutChart=new Chart(
+document.getElementById("donutChart"),
+{
+type:"doughnut",
+data:{
+labels:Object.keys(cat),
+datasets:[{
+data:Object.values(cat)
+}]
+}
+}
+);
+}
+
+window.downloadPDF=()=>{
+window.print();
+};
+
 </script>
+
 </body>
-</html>
+  </html>
