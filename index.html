@@ -397,45 +397,41 @@ budgetInput.value=budget;
 }
 
 /* ADD TRANSACTION */
-
 window.addTransaction=async()=>{
 
-const amount=Number(document.getElementById("amount").value);
+const amt=Number(amount.value);
+const cat=category.value.trim().toLowerCase();
+const typ=type.value;
 
-const type=document.getElementById("type").value;
-
-const category=document.getElementById("category").value;
-
-if(!amount||!category){
-
-alert("Fill all fields");
-
-return;
-
-}
-
-await addDoc(
-
-collection(db,"users",currentUser.uid,"transactions"),
-
-{
-amount,
-type,
-category,
-date:new Date().toISOString()
-}
-
+const q=transactions.find(
+t=>t.category===cat && t.type===typ
 );
 
-document.getElementById("amount").value="";
-document.getElementById("category").value="";
+if(q){
+await updateDoc(
+doc(db,"users",auth.currentUser.uid,"transactions",q.id),
+{
+amount:q.amount+amt
+}
+);
+}else{
+await addDoc(
+collection(db,"users",auth.currentUser.uid,"transactions"),
+{
+amount:amt,
+category:cat,
+type:typ,
+date:new Date()
+}
+);
+}
 
-await loadTransactions();
+amount.value="";
+category.value="";
 
-render();
-
+loadTransactions();
 };
-
+  
 /* LOAD */
 
 async function loadTransactions(){
