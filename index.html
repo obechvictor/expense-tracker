@@ -698,6 +698,8 @@ drawCharts();
 
 function drawCharts(){
 
+setTimeout(()=>{
+
 /* DAILY */
 
 const daily={};
@@ -712,17 +714,21 @@ daily[d]=(daily[d]||0)+t.amount;
 
 });
 
-const labels=Object.keys(daily).sort();
+const labels=Object.keys(daily);
 
-const values=labels.map(x=>daily[x]);
+const values=Object.values(daily);
 
-if(dailyChart) dailyChart.destroy();
+const dailyCanvas=document.getElementById("dailyChart");
 
-dailyChart=new Chart(
+if(!dailyCanvas) return;
 
-document.getElementById("dailyChart"),
+const dailyCtx=dailyCanvas.getContext("2d");
 
-{
+if(dailyChart){
+dailyChart.destroy();
+}
+
+dailyChart=new Chart(dailyCtx,{
 type:"line",
 
 data:{
@@ -736,21 +742,27 @@ backgroundColor:"rgba(22,201,76,0.2)",
 fill:true,
 tension:0.4
 }]
+},
+
+options:{
+responsive:true,
+maintainAspectRatio:false
 }
 
-}
-
-);
+});
 
 /* MONTHLY */
 
-if(monthlyChart) monthlyChart.destroy();
+const monthlyCanvas=document.getElementById("monthlyChart");
 
-monthlyChart=new Chart(
+const monthlyCtx=monthlyCanvas.getContext("2d");
 
-document.getElementById("monthlyChart"),
+if(monthlyChart){
+monthlyChart.destroy();
+}
 
-{
+monthlyChart=new Chart(monthlyCtx,{
+
 type:"bar",
 
 data:{
@@ -772,11 +784,14 @@ backgroundColor:"#ff6384"
 
 ]
 
+},
+
+options:{
+responsive:true,
+maintainAspectRatio:false
 }
 
-}
-
-);
+});
 
 /* DONUT */
 
@@ -790,16 +805,20 @@ cat[t.category]=(cat[t.category]||0)+t.amount;
 
 });
 
-if(donutChart) donutChart.destroy();
+const donutCanvas=document.getElementById("donutChart");
 
-donutChart=new Chart(
+const donutCtx=donutCanvas.getContext("2d");
 
-document.getElementById("donutChart"),
+if(donutChart){
+donutChart.destroy();
+}
 
-{
+donutChart=new Chart(donutCtx,{
+
 type:"doughnut",
 
 data:{
+
 labels:Object.keys(cat),
 
 datasets:[{
@@ -817,11 +836,16 @@ backgroundColor:[
 
 }]
 
+},
+
+options:{
+responsive:true,
+maintainAspectRatio:false
 }
 
-}
+});
 
-);
+},500);
 
 }
 
