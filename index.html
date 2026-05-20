@@ -563,23 +563,48 @@ budget>0
 /* TRANSACTIONS */
 
 const transactionList=document.getElementById("transactionList");
-
 transactionList.innerHTML="";
 
+const grouped={};
+
 transactions.forEach(t=>{
+
+const key=t.type+"-"+t.category;
+
+if(!grouped[key]){
+
+grouped[key]={
+amount:0,
+ids:[]
+};
+
+}
+
+grouped[key].amount+=t.amount;
+
+grouped[key].ids.push(t.id);
+
+});
+
+Object.keys(grouped).forEach(key=>{
+
+const parts=key.split("-");
+
+const type=parts[0];
+const category=parts[1];
 
 transactionList.innerHTML+=`
 
 <div class="transaction-item">
 
 <span>
-${t.category} - KSh ${t.amount}
+${category} - KSh ${grouped[key].amount}
 </span>
 
 ${editMode
 ?
 `<button class="del"
-onclick="deleteTransaction('${t.id}')">
+onclick="deleteGroup('${key}')">
 X
 </button>`
 :
@@ -591,7 +616,7 @@ X
 `;
 
 });
-
+  
 /* INSIGHTS */
 
 let ratio=budget>0
