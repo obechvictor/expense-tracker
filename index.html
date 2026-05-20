@@ -727,9 +727,10 @@ const dailyValues=Object.values(daily);
 
 /* DAILY CHART */
 
-new Chart(
+if(dailyChart) dailyChart.destroy();
 
-document.getElementById("dailyChart"),
+dailyChart=new Chart(
+document.getElementById("dailyChart").getContext("2d"),
 
 {
 type:"line",
@@ -757,10 +758,11 @@ maintainAspectRatio:false
 );
 
 /* MONTHLY CHART */
-
-new Chart(
-
-document.getElementById("monthlyChart"),
+  
+if(monthlyChart) monthyChart.destroy();  
+  
+monthlyChart=new Chart(
+document.getElementById("monthlyChart").getContext("2d"),
 
 {
 type:"bar",
@@ -808,10 +810,11 @@ cat[t.category]=(cat[t.category]||0)+t.amount;
 });
 
 /* DONUT CHART */
-
-new Chart(
-
-document.getElementById("donutChart"),
+  
+if(donutChart) donutChart.destroy();
+  
+donutChart=new Chart(
+document.getElementById("donutChart").getContext("2d"),
 
 {
 type:"doughnut",
