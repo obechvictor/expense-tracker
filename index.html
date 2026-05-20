@@ -590,42 +590,45 @@ function drawCharts(){
 /* DAILY */
 
 function daily(){
-const d={};
+
+const daily={};
 
 transactions
 .filter(t=>t.type==="expense")
 .forEach(t=>{
-const dt=date(t);
-const key=dt.toISOString().split("T")[0];
-d[key]=(d[key]||0)+t.amount;
+
+const d=t.date.split("T")[0];
+
+daily[d]=(daily[d]||0)+t.amount;
+
 });
 
-const labels=Object.keys(d).sort();
-const values=labels.map(x=>d[x]);
+const labels=Object.keys(daily).sort();
 
-if(dailyChart)dailyChart.destroy();
+const values=labels.map(x=>daily[x]);
+
+if(dailyChart) dailyChart.destroy();
 
 dailyChart=new Chart(
-document.getElementById("dailyChart"),
+
+document.getElementById("dailyChart").getContext("2d"),
+
 {
 type:"line",
+
 data:{
 labels:labels,
+
 datasets:[{
 label:"Daily Expenses",
 data:values,
-tension:.4,
-fill:false
+borderColor:"#16c94c",
+fill:false,
+tension:4
 }]
-},
-options:{
-responsive:true,
-plugins:{
-legend:{display:true}
 }
 }
-});
-}
+);
 
 /* MONTHLY */
 
@@ -654,13 +657,9 @@ label:"Expense",
 data:[sum("expense")],
 backgroundColor:"#ff6384"
 }
-
 ]
-
 }
-
 }
-
 );
 
 /* DONUT */
@@ -698,15 +697,10 @@ backgroundColor:[
 "#4bc0c0",
 "#9966ff"
 ]
-
 }]
-
 }
-
 }
-
 );
-
 }
 
 /* PDF */
