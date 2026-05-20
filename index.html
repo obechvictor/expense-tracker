@@ -690,113 +690,152 @@ document.getElementById("insights").innerHTML=`
 
 /* DRAW */
 
-function getSafeDate(t){
-if(t.date && t.date.seconds){
-return new Date(t.date.seconds*1000);
-}
-return new Date();
-}
+function drawCharts(){
 
-function generateAnalytics(){
-if(!transactions.length)return;
+setTimeout(()=>{
 
-generateDailyChart();
-generateMonthlyChart();
-generateDonutChart();
-generateInsights();
-}
+/* DAILY DATA */
 
-function generateDailyChart(){
-
-const dailyTotals={};
+const daily={};
 
 transactions
 .filter(t=>t.type==="expense")
 .forEach(t=>{
-const day=getSafeDate(t).toLocaleDateString();
-dailyTotals[day]=(dailyTotals[day]||0)+t.amount;
+
+const d=t.date.split("T")[0];
+
+daily[d]=(daily[d]||0)+t.amount;
+
 });
 
-if(dailyChart)dailyChart.destroy();
+const dailyLabels=Object.keys(daily);
 
-dailyChart=new Chart(document.getElementById("dailyChart"),{
+const dailyValues=Object.values(daily);
+
+/* DAILY CHART */
+
+new Chart(
+
+document.getElementById("dailyChart"),
+
+{
 type:"line",
+
 data:{
-labels:Object.keys(dailyTotals),
+labels:dailyLabels,
+
 datasets:[{
 label:"Daily Expenses",
-data:Object.values(dailyTotals)
-}]
-}
-});
-}
-
-function generateMonthlyChart(){
-
-const incomeData={};
-const expenseData={};
-
-transactions.forEach(t=>{
-
-const month=getSafeDate(t).toLocaleString("default",{month:"short"});
-
-if(t.type==="income"){
-incomeData[month]=(incomeData[month]||0)+t.amount;
-}else{
-expenseData[month]=(expenseData[month]||0)+t.amount;
-}
-});
-
-const labels=[...new Set([
-...Object.keys(incomeData),
-...Object.keys(expenseData)
-])];
-
-if(monthlyChart)monthlyChart.destroy();
-
-monthlyChart=new Chart(document.getElementById("monthlyChart"),{
-type:"bar",
-data:{
-labels,
-datasets:[
-{
-label:"Income",
-data:labels.map(m=>incomeData[m]||0)
-},
-{
-label:"Expenses",
-data:labels.map(m=>expenseData[m]||0)
-}
-]
-}
-});
-}
-
-function generateDonutChart(){
-
-const categoryTotals={};
-
-transactions
-.filter(t=>t.type==="expense")
-.forEach(t=>{
-categoryTotals[t.category]=(categoryTotals[t.category]||0)+t.amount;
-});
-
-if(donutChart)donutChart.destroy();
-
-donutChart=new Chart(document.getElementById("donutChart"),{
-type:"doughnut",
-data:{
-labels:Object.keys(categoryTotals),
-datasets:[{
-data:Object.values(categoryTotals)
+data:dailyValues,
+borderColor:"#16c94c",
+backgroundColor:"rgba(22,201,76,0.2)",
+fill:true,
+tension:0.4
 }]
 },
+
 options:{
 responsive:true,
 maintainAspectRatio:false
 }
+
+}
+
+);
+
+/* MONTHLY CHART */
+
+new Chart(
+
+document.getElementById("monthlyChart"),
+
+{
+type:"bar",
+
+data:{
+labels:["This Month"],
+
+datasets:[
+
+{
+label:"Income",
+data:[sum("income")],
+backgroundColor:"#36a2eb"
+},
+
+{
+label:"Expenses",
+data:[sum("expense")],
+backgroundColor:"#ff6384"
+}
+
+]
+
+},
+
+options:{
+responsive:true,
+maintainAspectRatio:false
+}
+
+}
+
+);
+
+/* DONUT DATA */
+
+const cat={};
+
+transactions
+.filter(t=>t.type==="expense")
+.forEach(t=>{
+
+cat[t.category]=(cat[t.category]||0)+t.amount;
+
 });
+
+/* DONUT CHART */
+
+new Chart(
+
+document.getElementById("donutChart"),
+
+{
+type:"doughnut",
+
+data:{
+
+labels:Object.keys(cat),
+
+datasets:[{
+
+data:Object.values(cat),
+
+backgroundColor:[
+"#36a2eb",
+"#ff6384",
+"#ffce56",
+"#4bc0c0",
+"#9966ff",
+"#ff9f40",
+"#16c94c"
+]
+
+}]
+
+},
+
+options:{
+responsive:true,
+maintainAspectRatio:false
+}
+
+}
+
+);
+
+},300);
+
 }
 
 /* PDF */
