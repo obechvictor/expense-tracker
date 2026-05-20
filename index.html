@@ -690,16 +690,26 @@ document.getElementById("insights").innerHTML=`
 drawCharts();
 }
   
-/* DRAW */
+/* =========================
+   CHART VARIABLES
+========================= */
+
 let dailyChart=null;
 let monthlyChart=null;
 let donutChart=null;
-  
+
+
+/* =========================
+   DRAW CHARTS
+========================= */
+
 function drawCharts(){
 
 setTimeout(()=>{
 
-/* DAILY DATA */
+/* =========================
+   DAILY DATA
+========================= */
 
 const daily={};
 
@@ -717,11 +727,21 @@ const dailyLabels=Object.keys(daily);
 
 const dailyValues=Object.values(daily);
 
-/* DAILY CHART */
 
-new Chart(
+/* =========================
+   DAILY CHART
+========================= */
 
-document.getElementById("dailyChart").getContext("2d"),
+if(dailyChart){
+dailyChart.destroy();
+}
+
+dailyChart=new Chart(
+
+document
+.getElementById("dailyChart")
+.getContext("2d"),
+
 {
 type:"line",
 
@@ -729,48 +749,77 @@ data:{
 labels:dailyLabels,
 
 datasets:[{
+
 label:"Daily Expenses",
+
 data:dailyValues,
+
 borderColor:"#16c94c",
+
 backgroundColor:"rgba(22,201,76,0.2)",
+
 fill:true,
+
 tension:0.4
+
 }]
+
 },
 
 options:{
+
 responsive:true,
+
 maintainAspectRatio:false
+
 }
 
 }
 
 );
 
-/* MONTHLY CHART */
 
-new Chart(
+/* =========================
+   MONTHLY CHART
+========================= */
 
-document.getElementById("monthlyChart").getContext("2d"),
+if(monthlyChart){
+monthlyChart.destroy();
+}
+
+monthlyChart=new Chart(
+
+document
+.getElementById("monthlyChart")
+.getContext("2d"),
 
 {
 type:"bar",
 
 data:{
+
 labels:["This Month"],
 
 datasets:[
 
 {
+
 label:"Income",
+
 data:[sum("income")],
+
 backgroundColor:"#36a2eb"
+
 },
 
 {
+
 label:"Expenses",
+
 data:[sum("expense")],
+
 backgroundColor:"#ff6384"
+
 }
 
 ]
@@ -778,15 +827,21 @@ backgroundColor:"#ff6384"
 },
 
 options:{
+
 responsive:true,
+
 maintainAspectRatio:false
+
 }
 
 }
 
 );
 
-/* DONUT DATA */
+
+/* =========================
+   DONUT DATA
+========================= */
 
 const cat={};
 
@@ -798,11 +853,20 @@ cat[t.category]=(cat[t.category]||0)+t.amount;
 
 });
 
-/* DONUT CHART */
 
-new Chart(
+/* =========================
+   DONUT CHART
+========================= */
 
-document.getElementById("donutChart").getContext("2d"),
+if(donutChart){
+donutChart.destroy();
+}
+
+donutChart=new Chart(
+
+document
+.getElementById("donutChart")
+.getContext("2d"),
 
 {
 type:"doughnut",
@@ -816,6 +880,7 @@ datasets:[{
 data:Object.values(cat),
 
 backgroundColor:[
+
 "#36a2eb",
 "#ff6384",
 "#ffce56",
@@ -823,6 +888,7 @@ backgroundColor:[
 "#9966ff",
 "#ff9f40",
 "#16c94c"
+
 ]
 
 }]
@@ -830,8 +896,11 @@ backgroundColor:[
 },
 
 options:{
+
 responsive:true,
+
 maintainAspectRatio:false
+
 }
 
 }
