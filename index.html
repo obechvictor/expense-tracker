@@ -690,158 +690,113 @@ document.getElementById("insights").innerHTML=`
 
 /* DRAW */
 
-drawCharts();
-
+function getSafeDate(t){
+if(t.date && t.date.seconds){
+return new Date(t.date.seconds*1000);
+}
+return new Date();
 }
 
-/* CHARTS */
+function generateAnalytics(){
+if(!transactions.length)return;
 
-function drawCharts(){
+generateDailyChart();
+generateMonthlyChart();
+generateDonutChart();
+generateInsights();
+}
 
-setTimeout(()=>{
+function generateDailyChart(){
 
-/* DAILY */
-
-const daily={};
+const dailyTotals={};
 
 transactions
 .filter(t=>t.type==="expense")
 .forEach(t=>{
-
-const d=t.date.split("T")[0];
-
-daily[d]=(daily[d]||0)+t.amount;
-
+const day=getSafeDate(t).toLocaleDateString();
+dailyTotals[day]=(dailyTotals[day]||0)+t.amount;
 });
 
-const labels=Object.keys(daily);
+if(dailyChart)dailyChart.destroy();
 
-const values=Object.values(daily);
-
-const dailyCanvas=document.getElementById("dailyChart");
-
-if(!dailyCanvas) return;
-
-const dailyCtx=dailyCanvas.getContext("2d");
-
-if(dailyChart){
-dailyChart.destroy();
-}
-
-dailyChart=new Chart(dailyCtx,{
+dailyChart=new Chart(document.getElementById("dailyChart"),{
 type:"line",
-
 data:{
-labels:labels,
-
+labels:Object.keys(dailyTotals),
 datasets:[{
 label:"Daily Expenses",
-data:values,
-borderColor:"#16c94c",
-backgroundColor:"rgba(22,201,76,0.2)",
-fill:true,
-tension:0.4
+data:Object.values(dailyTotals)
 }]
-},
-
-options:{
-responsive:true,
-maintainAspectRatio:false
+}
+});
 }
 
+function generateMonthlyChart(){
+
+const incomeData={};
+const expenseData={};
+
+transactions.forEach(t=>{
+
+const month=getSafeDate(t).toLocaleString("default",{month:"short"});
+
+if(t.type==="income"){
+incomeData[month]=(incomeData[month]||0)+t.amount;
+}else{
+expenseData[month]=(expenseData[month]||0)+t.amount;
+}
 });
 
-/* MONTHLY */
+const labels=[...new Set([
+...Object.keys(incomeData),
+...Object.keys(expenseData)
+])];
 
-const monthlyCanvas=document.getElementById("monthlyChart");
+if(monthlyChart)monthlyChart.destroy();
 
-const monthlyCtx=monthlyCanvas.getContext("2d");
-
-if(monthlyChart){
-monthlyChart.destroy();
-}
-
-monthlyChart=new Chart(monthlyCtx,{
-
+monthlyChart=new Chart(document.getElementById("monthlyChart"),{
 type:"bar",
-
 data:{
-labels:["This Month"],
-
+labels,
 datasets:[
-
 {
 label:"Income",
-data:[sum("income")],
-backgroundColor:"#36a2eb"
+data:labels.map(m=>incomeData[m]||0)
 },
-
 {
 label:"Expenses",
-data:[sum("expense")],
-backgroundColor:"#ff6384"
+data:labels.map(m=>expenseData[m]||0)
 }
-
 ]
-
-},
-
-options:{
-responsive:true,
-maintainAspectRatio:false
+}
+});
 }
 
-});
+function generateDonutChart(){
 
-/* DONUT */
-
-const cat={};
+const categoryTotals={};
 
 transactions
 .filter(t=>t.type==="expense")
 .forEach(t=>{
-
-cat[t.category]=(cat[t.category]||0)+t.amount;
-
+categoryTotals[t.category]=(categoryTotals[t.category]||0)+t.amount;
 });
 
-const donutCanvas=document.getElementById("donutChart");
+if(donutChart)donutChart.destroy();
 
-const donutCtx=donutCanvas.getContext("2d");
-
-if(donutChart){
-donutChart.destroy();
-}
-
-donutChart=new Chart(donutCtx,{
-
+donutChart=new Chart(document.getElementById("donutChart"),{
 type:"doughnut",
-
 data:{
-
-labels:Object.keys(cat),
-
+labels:Object.keys(categoryTotals),
 datasets:[{
-
-data:Object.values(cat),
-
-backgroundColor:[
-"#36a2eb",
-"#ff6384",
-"#ffce56",
-"#4bc0c0",
-"#9966ff",
-"#ff9f40"
-]
+data:Object.values(categoryTotals)
 }]
 },
-
 options:{
 responsive:true,
 maintainAspectRatio:false
 }
 });
-},500);
 }
 
 /* PDF */
