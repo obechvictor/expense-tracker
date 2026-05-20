@@ -53,7 +53,7 @@ font-weight:bold;
 button:hover{
 opacity:0.9;
 }
-
+  
 .small{
 width:auto;
 padding:6px 12px;
@@ -707,9 +707,7 @@ function drawCharts(){
 
 setTimeout(()=>{
 
-/* =========================
-   DAILY DATA
-========================= */
+/* DAILY DATA */
 
 const daily={};
 
@@ -727,20 +725,11 @@ const dailyLabels=Object.keys(daily);
 
 const dailyValues=Object.values(daily);
 
+/* DAILY CHART */
 
-/* =========================
-   DAILY CHART
-========================= */
+new Chart(
 
-if(dailyChart){
-dailyChart.destroy();
-}
-
-dailyChart=new Chart(
-
-document
-.getElementById("dailyChart")
-.getContext("2d"),
+document.getElementById("dailyChart"),
 
 {
 type:"line",
@@ -749,77 +738,48 @@ data:{
 labels:dailyLabels,
 
 datasets:[{
-
 label:"Daily Expenses",
-
 data:dailyValues,
-
 borderColor:"#16c94c",
-
 backgroundColor:"rgba(22,201,76,0.2)",
-
 fill:true,
-
 tension:0.4
-
 }]
-
 },
 
 options:{
-
 responsive:true,
-
 maintainAspectRatio:false
-
 }
 
 }
 
 );
 
+/* MONTHLY CHART */
 
-/* =========================
-   MONTHLY CHART
-========================= */
+new Chart(
 
-if(monthlyChart){
-monthlyChart.destroy();
-}
-
-monthlyChart=new Chart(
-
-document
-.getElementById("monthlyChart")
-.getContext("2d"),
+document.getElementById("monthlyChart"),
 
 {
 type:"bar",
 
 data:{
-
 labels:["This Month"],
 
 datasets:[
 
 {
-
 label:"Income",
-
 data:[sum("income")],
-
 backgroundColor:"#36a2eb"
-
 },
 
 {
-
 label:"Expenses",
-
 data:[sum("expense")],
-
 backgroundColor:"#ff6384"
-
 }
 
 ]
@@ -827,21 +787,15 @@ backgroundColor:"#ff6384"
 },
 
 options:{
-
 responsive:true,
-
 maintainAspectRatio:false
-
 }
 
 }
 
 );
 
-
-/* =========================
-   DONUT DATA
-========================= */
+/* DONUT DATA */
 
 const cat={};
 
@@ -853,20 +807,11 @@ cat[t.category]=(cat[t.category]||0)+t.amount;
 
 });
 
+/* DONUT CHART */
 
-/* =========================
-   DONUT CHART
-========================= */
+new Chart(
 
-if(donutChart){
-donutChart.destroy();
-}
-
-donutChart=new Chart(
-
-document
-.getElementById("donutChart")
-.getContext("2d"),
+document.getElementById("donutChart"),
 
 {
 type:"doughnut",
@@ -880,7 +825,6 @@ datasets:[{
 data:Object.values(cat),
 
 backgroundColor:[
-
 "#36a2eb",
 "#ff6384",
 "#ffce56",
@@ -888,7 +832,6 @@ backgroundColor:[
 "#9966ff",
 "#ff9f40",
 "#16c94c"
-
 ]
 
 }]
@@ -896,11 +839,8 @@ backgroundColor:[
 },
 
 options:{
-
 responsive:true,
-
 maintainAspectRatio:false
-
 }
 
 }
