@@ -510,7 +510,38 @@ await loadTransactions();
 render();
 
 };
+  
+window.deleteGroup=async(key)=>{
 
+const parts=key.split("-");
+
+const type=parts[0];
+const category=parts[1];
+
+const filtered=transactions.filter(
+t=>t.type===type && t.category===category
+);
+
+for(const item of filtered){
+
+await deleteDoc(
+doc(
+db,
+"users",
+currentUser.uid,
+"transactions",
+item.id
+)
+);
+
+}
+
+await loadTransactions();
+
+render();
+
+};
+  
 /* EDIT */
 
 window.toggleEdit=()=>{
