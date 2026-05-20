@@ -84,8 +84,8 @@ color:white;
   
 .chart-container{
 position:relative;
-height:350px;
-width:150%;
+height:320px;
+width:100%;
 }
 
 canvas{
@@ -718,8 +718,7 @@ const dailyValues=Object.values(daily);
 
 new Chart(
 
-document.getElementById("dailyChart"),
-
+document.getElementById("dailyChart").getContext("2d"),
 {
 type:"line",
 
@@ -749,7 +748,7 @@ maintainAspectRatio:false
 
 new Chart(
 
-document.getElementById("monthlyChart"),
+document.getElementById("monthlyChart").getContext("2d")
 
 {
 type:"bar",
@@ -800,7 +799,7 @@ cat[t.category]=(cat[t.category]||0)+t.amount;
 
 new Chart(
 
-document.getElementById("donutChart"),
+document.getElementById("donutChart").getContext("2d")
 
 {
 type:"doughnut",
