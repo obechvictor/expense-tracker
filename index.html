@@ -691,7 +691,10 @@ drawCharts();
 }
   
 /* DRAW */
-
+let dailyChart=null;
+let monthlyChart=null;
+let donutChart=null;
+  
 function drawCharts(){
 
 setTimeout(()=>{
@@ -748,7 +751,7 @@ maintainAspectRatio:false
 
 new Chart(
 
-document.getElementById("monthlyChart").getContext("2d")
+document.getElementById("monthlyChart").getContext("2d"),
 
 {
 type:"bar",
@@ -799,7 +802,7 @@ cat[t.category]=(cat[t.category]||0)+t.amount;
 
 new Chart(
 
-document.getElementById("donutChart").getContext("2d")
+document.getElementById("donutChart").getContext("2d"),
 
 {
 type:"doughnut",
