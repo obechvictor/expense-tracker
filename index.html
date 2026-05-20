@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Smart Expense Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Finance Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
+
 body{
 font-family:"Times New Roman";
 background:#f4f7fb;
@@ -21,16 +23,11 @@ background:#fff;
 padding:18px;
 border-radius:14px;
 margin-bottom:15px;
-box-shadow:0 4px 10px rgba(0,0,0,.08);
-overflow:hidden;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
 }
-  
-.hidden{display:none;}
-  
-canvas{
-width:100%!important;
-height:280px!important;
-display:block;
+
+.hidden{
+display:none;
 }
 
 input,select,button{
@@ -39,6 +36,7 @@ padding:12px;
 margin:8px 0;
 border-radius:8px;
 border:1px solid #ddd;
+box-sizing:border-box;
 }
 
 button{
@@ -46,18 +44,25 @@ background:#16c94c;
 color:white;
 border:none;
 cursor:pointer;
+font-weight:bold;
+}
+
+button:hover{
+opacity:0.9;
 }
 
 .small{
 width:auto;
 padding:6px 12px;
+font-size:12px;
 }
 
 .del{
 width:auto;
 padding:4px 8px;
-font-size:12px;
+font-size:11px;
 background:red;
+margin-left:10px;
 }
 
 .row{
@@ -73,57 +78,112 @@ align-items:center;
 background:#16c94c;
 color:white;
 }
+
+canvas{
+width:100% !important;
+height:280px !important;
+}
+
+.transaction-item{
+display:flex;
+justify-content:space-between;
+padding:10px 0;
+border-bottom:1px solid #eee;
+}
+
+.green{
+color:green;
+font-weight:bold;
+}
+
+.red{
+color:red;
+font-weight:bold;
+}
+
+.orange{
+color:orange;
+font-weight:bold;
+}
+
+.auth-box{
+max-width:400px;
+margin:40px auto;
+}
+
 </style>
 </head>
 <body>
 
-<!-- AUTH -->
-<div id="authBox" class="card">
+<!-- LOGIN -->
+
+<div id="authSection" class="auth-box">
+
+<div class="card">
+
 <h2>Expense Tracker</h2>
 
 <input id="email" type="email" placeholder="Email">
+
 <input id="password" type="password" placeholder="Password">
 
 <button onclick="register()">Register</button>
+
 <button onclick="login()">Login</button>
+
+</div>
+
 </div>
 
 <!-- DASHBOARD -->
+
 <div id="dashboard" class="hidden">
 
 <div class="card header">
 <h2>Finance Dashboard</h2>
-<button id="editBtn" class="small" onclick="toggleEdit()">Edit</button>
+<button class="small" onclick="toggleEdit()" id="editBtn">Edit</button>
 </div>
 
 <div class="row">
+
 <div class="card">
-<h3>Income</h3>
+<h2>Income</h2>
 <p id="income">KSh 0</p>
 </div>
 
 <div class="card">
-<h3>Expenses</h3>
+<h2>Expenses</h2>
 <p id="expenses">KSh 0</p>
 </div>
 
 <div class="card">
-<h3>Balance</h3>
+<h2>Balance</h2>
 <p id="balance">KSh 0</p>
 </div>
+
 </div>
 
+<!-- BUDGET -->
+
 <div class="card">
-<h3>Budget</h3>
-<input id="budgetInput" type="number">
+
+<h2>Budget</h2>
+
+<input id="budgetInput" type="number" placeholder="Enter Budget">
+
 <button onclick="setBudget()">Set Budget</button>
+
 <p id="budgetStatus">No budget set</p>
+
 </div>
 
-<div class="card">
-<h3>Add Transaction</h3>
+<!-- ADD TRANSACTION -->
 
-<input id="amount" type="number">
+<div class="card">
+
+<h2>Add Transaction</h2>
+
+<input id="amount" type="number" placeholder="Amount">
 
 <select id="type">
 <option value="income">Income</option>
@@ -133,262 +193,433 @@ color:white;
 <input id="category" placeholder="Category">
 
 <button onclick="addTransaction()">Add</button>
+
 </div>
 
+<!-- CHARTS -->
+
 <div class="card">
+<h2>Daily Trend</h2>
 <canvas id="dailyChart"></canvas>
 </div>
 
 <div class="card">
+<h2>Monthly Comparison</h2>
 <canvas id="monthlyChart"></canvas>
 </div>
 
 <div class="card">
+<h2>Expense Breakdown</h2>
 <canvas id="donutChart"></canvas>
 </div>
 
+<!-- INSIGHTS -->
+
 <div class="card">
-<h3>Financial Insights</h3>
+
+<h2>Financial Insights</h2>
+
 <div id="insights"></div>
+
 </div>
 
+<!-- PDF -->
+
 <div class="card">
+
 <button onclick="downloadPDF()">PDF Report</button>
+
 </div>
 
+<!-- TRANSACTIONS -->
+
 <div class="card">
+
+<h2>Records</h2>
+
 <div id="transactionList"></div>
+
 </div>
 
 </div>
 
 <script type="module">
 
-import {
-initializeApp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+/* FIREBASE */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
 getAuth,
 createUserWithEmailAndPassword,
 signInWithEmailAndPassword,
 onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
 getFirestore,
 collection,
 addDoc,
 getDocs,
+query,
 deleteDoc,
 doc,
-updateDoc,
 setDoc,
 getDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* FIREBASE CONFIG */
 
 const firebaseConfig = {
 apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
 authDomain: "expense-tracker-2ee7b.firebaseapp.com",
+databaseURL: "https://expense-tracker-2ee7b-default-rtdb.europe-west1.firebasedatabase.app",
 projectId: "expense-tracker-2ee7b",
 storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
 messagingSenderId: "306376576940",
-appId: "1:306376576940:web:f7bf235be67524c9c8b409"
+appId: "1:306376576940:web:f7bf235be67524c9c8b409",
+measurementId: "G-V7B8WSWCZ8"
 };
 
 const app = initializeApp(firebaseConfig);
+
 const auth = getAuth(app);
+
 const db = getFirestore(app);
 
-let transactions = [];
-let budget = 0;
-let editMode = false;
+/* VARIABLES */
+
+let currentUser=null;
+
+let transactions=[];
+
+let budget=0;
+
+let editMode=false;
 
 let dailyChart;
 let monthlyChart;
 let donutChart;
 
-window.register = async () => {
+/* LOGIN */
+
+window.register=async()=>{
+
+const email=document.getElementById("email").value;
+
+const password=document.getElementById("password").value;
+
 try{
-await createUserWithEmailAndPassword(auth,email.value,password.value);
-}catch(e){
-alert(e.message);
+
+await createUserWithEmailAndPassword(auth,email,password);
+
+alert("Registered");
+
+}catch(err){
+
+alert(err.message);
+
 }
+
 };
 
-window.login = async () => {
+window.login=async()=>{
+
+const email=document.getElementById("email").value;
+
+const password=document.getElementById("password").value;
+
 try{
-await signInWithEmailAndPassword(auth,email.value,password.value);
-}catch(e){
-alert(e.message);
+
+await signInWithEmailAndPassword(auth,email,password);
+
+}catch(err){
+
+alert(err.message);
+
 }
+
 };
 
-onAuthStateChanged(auth,user=>{
+/* AUTH STATE */
+
+onAuthStateChanged(auth,async(user)=>{
+
 if(user){
-authBox.classList.add("hidden");
+
+currentUser=user;
+
+authSection.classList.add("hidden");
+
 dashboard.classList.remove("hidden");
-loadTransactions();
-}else{
-authBox.classList.remove("hidden");
-dashboard.classList.add("hidden");
+
+await loadBudget();
+
+await loadTransactions();
+
+render();
+
 }
+
 });
 
-window.setBudget = async ()=>{
-budget = Number(budgetInput.value);
+/* BUDGET */
 
-await setDoc(
-doc(db,"users",auth.currentUser.uid,"settings","budget"),
-{amount:budget}
-);
+window.setBudget=async()=>{
+
+budget=Number(budgetInput.value);
+
+await setDoc(doc(db,"users",currentUser.uid),{
+
+budget:budget
+
+});
 
 render();
+
 };
 
-window.addTransaction = async ()=>{
+async function loadBudget(){
 
-const amt = Number(amount.value);
-const cat = category.value.trim().toLowerCase();
-const typ = type.value;
+const snap=await getDoc(doc(db,"users",currentUser.uid));
 
-const existing = transactions.find(
-t=>t.category===cat && t.type===typ
-);
+if(snap.exists()){
 
-if(existing){
+budget=snap.data().budget||0;
 
-await updateDoc(
-doc(db,"users",auth.currentUser.uid,"transactions",existing.id),
-{amount:existing.amount+amt}
-);
+budgetInput.value=budget;
 
-}else{
+}
+
+}
+
+/* ADD TRANSACTION */
+
+window.addTransaction=async()=>{
+
+const amount=Number(document.getElementById("amount").value);
+
+const type=document.getElementById("type").value;
+
+const category=document.getElementById("category").value;
+
+if(!amount||!category){
+
+alert("Fill all fields");
+
+return;
+
+}
 
 await addDoc(
-collection(db,"users",auth.currentUser.uid,"transactions"),
+
+collection(db,"users",currentUser.uid,"transactions"),
+
 {
-amount:amt,
-category:cat,
-type:typ,
+amount,
+type,
+category,
 date:new Date().toISOString()
 }
+
 );
 
-}
+document.getElementById("amount").value="";
+document.getElementById("category").value="";
 
-loadTransactions();
-};
+await loadTransactions();
 
-window.toggleEdit = ()=>{
-editMode=!editMode;
-editBtn.innerText=editMode?"Done":"Edit";
 render();
+
 };
 
-window.deleteTransaction = async(i)=>{
-await deleteDoc(
-doc(
-db,
-"users",
-auth.currentUser.uid,
-"transactions",
-transactions[i].id
-)
-);
-
-loadTransactions();
-};
+/* LOAD */
 
 async function loadTransactions(){
 
 transactions=[];
 
-const snap=await getDocs(
-collection(db,"users",auth.currentUser.uid,"transactions")
-);
+const q=query(collection(db,"users",currentUser.uid,"transactions"));
 
-snap.forEach(d=>{
+const snap=await getDocs(q);
+
+snap.forEach(docu=>{
+
 transactions.push({
-id:d.id,
-...d.data()
+
+id:docu.id,
+...docu.data()
+
 });
+
 });
 
-const b=await getDoc(
-doc(db,"users",auth.currentUser.uid,"settings","budget")
-);
-
-budget=b.exists()?b.data().amount:0;
-
-render();
 }
 
+/* DELETE */
+
+window.deleteTransaction=async(id)=>{
+
+await deleteDoc(doc(db,"users",currentUser.uid,"transactions",id));
+
+await loadTransactions();
+
+render();
+
+};
+
+/* EDIT MODE */
+
+window.toggleEdit=()=>{
+
+editMode=!editMode;
+
+editBtn.innerText=editMode?"Done":"Edit";
+
+render();
+
+};
+
+/* SUM */
+
 function sum(type){
+
 return transactions
 .filter(t=>t.type===type)
 .reduce((a,b)=>a+b.amount,0);
+
 }
+
+/* RENDER */
 
 function render(){
 
 const incomeTotal=sum("income");
-const expenseTotal=sum("expense");
-  
-income.innerText="KSh "+incomeTotal;
-expenses.innerText="KSh "+expenseTotal;
-balance.innerText="KSh "+(incomeTotal-expenseTotal);
 
-budgetStatus.innerText=
-budget?
-"Remaining: KSh "+(budget-expenseTotal):
-"No budget set";
+const expenseTotal=sum("expense");
+
+const balance=incomeTotal-expenseTotal;
+
+income.innerText="KSh "+incomeTotal;
+
+expenses.innerText="KSh "+expenseTotal;
+
+document.getElementById("balance").innerText="KSh "+balance;
+
+budgetStatus.innerHTML=
+budget>0
+? "Remaining: KSh "+(budget-expenseTotal)
+: "No budget set";
+
+/* TRANSACTIONS */
 
 transactionList.innerHTML="";
 
-transactions.forEach((t,i)=>{
+transactions.forEach(t=>{
+
 transactionList.innerHTML+=`
-<div>
+
+<div class="transaction-item">
+
+<span>
 ${t.category} - KSh ${t.amount}
+</span>
+
 ${editMode?
-`<button class="del" onclick="deleteTransaction(${i})">X</button>`
+
+`<button class="del" onclick="deleteTransaction('${t.id}')">X</button>`
+
 :""}
+
 </div>
+
 `;
+
 });
 
-insights.innerHTML=
-expenseTotal>budget && budget
-? "<p style='color:red'>Over Budget</p>"
-: "<p style='color:green'>Healthy Spending</p>";
-alert(typeof Chart);
-drawCharts();
+/* INSIGHTS */
+
+let ratio=budget>0?((expenseTotal/budget)*100).toFixed(1):0;
+
+let advice="";
+let cls="green";
+
+if(ratio>=100){
+
+advice="You are over budget. Reduce non-essential spending.";
+
+cls="red";
+
 }
+else if(ratio>=75){
+
+advice="Caution: spending is getting high.";
+
+cls="orange";
+
+}
+else{
+
+advice="Healthy spending habits.";
+
+cls="green";
+
+}
+
+insights.innerHTML=`
+
+<p><b>Monthly Income:</b> KSh ${incomeTotal}</p>
+
+<p><b>Monthly Expenses:</b> KSh ${expenseTotal}</p>
+
+<p><b>Expense Ratio:</b> ${ratio}%</p>
+
+<p class="${cls}">${advice}</p>
+
+`;
+
+/* CHARTS */
+
+drawCharts();
+
+}
+
+/* CHARTS */
 
 function drawCharts(){
 
-setTimeout(()=>{
+/* DAILY */
 
 const daily={};
 
 transactions
 .filter(t=>t.type==="expense")
 .forEach(t=>{
+
 const d=t.date.split("T")[0];
+
 daily[d]=(daily[d]||0)+t.amount;
+
 });
 
 const labels=Object.keys(daily).sort();
+
 const values=labels.map(x=>daily[x]);
 
 if(dailyChart) dailyChart.destroy();
 
-dailyChart = new Chart(
+dailyChart=new Chart(
+
 document.getElementById("dailyChart").getContext("2d"),
+
 {
 type:"line",
+
 data:{
 labels:labels,
+
 datasets:[{
 label:"Daily Expenses",
 data:values,
@@ -397,51 +628,75 @@ fill:false,
 tension:0.4
 }]
 }
+
 }
+
 );
+
+/* MONTHLY */
 
 if(monthlyChart) monthlyChart.destroy();
 
-monthlyChart = new Chart(
+monthlyChart=new Chart(
+
 document.getElementById("monthlyChart").getContext("2d"),
+
 {
 type:"bar",
+
 data:{
 labels:["This Month"],
+
 datasets:[
+
 {
 label:"Income",
 data:[sum("income")],
-backgroundColor:"#16c94c"
+backgroundColor:"#36a2eb"
 },
+
 {
-label:"Expenses",
+label:"Expense",
 data:[sum("expense")],
 backgroundColor:"#ff6384"
 }
+
 ]
+
 }
+
 }
+
 );
+
+/* DONUT */
 
 const cat={};
 
 transactions
 .filter(t=>t.type==="expense")
 .forEach(t=>{
+
 cat[t.category]=(cat[t.category]||0)+t.amount;
+
 });
 
 if(donutChart) donutChart.destroy();
 
-donutChart = new Chart(
+donutChart=new Chart(
+
 document.getElementById("donutChart").getContext("2d"),
+
 {
 type:"doughnut",
+
 data:{
 labels:Object.keys(cat),
+
 datasets:[{
+
 data:Object.values(cat),
+
 backgroundColor:[
 "#36a2eb",
 "#ff6384",
@@ -449,19 +704,37 @@ backgroundColor:[
 "#4bc0c0",
 "#9966ff"
 ]
+
 }]
+
 }
+
 }
+
 );
 
-},300);
 }
 
+/* PDF */
+
 window.downloadPDF=()=>{
-window.print();
+
+const { jsPDF } = window.jspdf;
+
+const doc=new jsPDF();
+
+doc.text("Finance Report",20,20);
+
+doc.text("Income: KSh "+sum("income"),20,40);
+
+doc.text("Expenses: KSh "+sum("expense"),20,50);
+
+doc.text("Balance: KSh "+(sum("income")-sum("expense")),20,60);
+
+doc.save("finance-report.pdf");
+
 };
 
 </script>
-
 </body>
-  </html>
+</html>
