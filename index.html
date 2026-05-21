@@ -296,8 +296,7 @@ getFirestore,
 doc,
 setDoc,
 getDoc
-}
-  
+} 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   
 import {
@@ -307,7 +306,6 @@ signInWithEmailAndPassword,
 onAuthStateChanged
 
 }
-
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 /* YOUR FIREBASE CONFIG */
@@ -324,17 +322,25 @@ const firebaseConfig = {
 };
 
 const app=initializeApp(firebaseConfig); 
+  
 const auth=getAuth(app);
+  
 const db=getFirestore(app);
   
 /* VARIABLES */
 
 let currentUser=null;
+  
 let transactions=[];
+  
 let budget=0;
+  
 let editMode=false;
+  
 let dailyChart=null;
+  
 let monthlyChart=null;
+  
 let donutChart=null;
 
 /* LOAD USER DATA */
