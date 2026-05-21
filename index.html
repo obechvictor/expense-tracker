@@ -288,112 +288,73 @@ Download Smart PDF Report
 /* FIREBASE */
 
 import { initializeApp }
-
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-import{
-getFirestore,
-doc,
-setDoc,
-getDoc
-} 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  
 import {
 getAuth,
 createUserWithEmailAndPassword,
 signInWithEmailAndPassword,
 onAuthStateChanged
-
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-/* YOUR FIREBASE CONFIG */
+import {
+getFirestore,
+collection,
+addDoc,
+getDocs,
+deleteDoc,
+doc,
+setDoc,
+getDoc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* CONFIG */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
-  authDomain: "expense-tracker-2ee7b.firebaseapp.com",
-  databaseURL: "https://expense-tracker-2ee7b-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "expense-tracker-2ee7b",
-  storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
-  messagingSenderId: "306376576940",
-  appId: "1:306376576940:web:f7bf235be67524c9c8b409",
-  measurementId: "G-V7B8WSWCZ8"
+apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+authDomain: "expense-tracker-2ee7b.firebaseapp.com",
+databaseURL: "https://expense-tracker-2ee7b-default-rtdb.europe-west1.firebasedatabase.app",
+projectId: "expense-tracker-2ee7b",
+storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
+messagingSenderId: "306376576940",
+appId: "1:306376576940:web:f7bf235be67524c9c8b409",
+measurementId: "G-V7B8WSWCZ8"
 };
 
-const app=initializeApp(firebaseConfig); 
-  
+const app=initializeApp(firebaseConfig);
+
 const auth=getAuth(app);
-  
+
 const db=getFirestore(app);
-  
+
 /* VARIABLES */
 
 let currentUser=null;
-  
+
 let transactions=[];
-  
+
 let budget=0;
-  
+
 let editMode=false;
-  
-let dailyChart=null;
-  
-let monthlyChart=null;
-  
-let donutChart=null;
 
-/* LOAD USER DATA */
+let dailyChart;
+let monthlyChart;
+let donutChart;
 
-async function loadUserData(){
-
-if(!currentUser) return;
-
-try{
-
-const docRef=doc(db,"users",currentUser.uid);
-
-const snap=await getDoc(docRef);
-
-if(snap.exists()){
-
-const data=snap.data();
-
-transactions=data.transactions || [];
-
-budget=data.budget || 0;
-
-}
-
-updateUI();
-
-}catch(err){
-
-console.log(err);
-
-}
-
-}
-
-/* AUTH */
+/* REGISTER */
 
 window.register=async()=>{
 
-const email=
-document.getElementById("email").value;
-
-const password=
-document.getElementById("password").value;
+const email=emailInput();
+const password=passwordInput();
 
 try{
 
-await createUserWithEmailAndPassword(
-auth,
-email,
-password
-);
+await createUserWithEmailAndPassword(auth,email,password);
 
-alert("Registration successful");
+alert("Registration Successful");
 
 }catch(err){
 
@@ -401,29 +362,18 @@ alert(err.message);
 
 }
 
-}
+};
+
+/* LOGIN */
 
 window.login=async()=>{
 
-const email=
-document.getElementById("email").value;
-
-const password=
-document.getElementById("password").value;
+const email=emailInput();
+const password=passwordInput();
 
 try{
-const userCredential=
-await signInWithEmailAndPassword(
-auth,
-email,
-password
-);
 
-currentUser=userCredential.user;
-
-await loadUserData();
-
-alert("Login successful");
+await signInWithEmailAndPassword(auth,email,password);
 
 }catch(err){
 
@@ -431,29 +381,25 @@ alert(err.message);
 
 }
 
-onAuthStateChanged(auth,(user)=>{
+};
+
+/* AUTH STATE */
+
+onAuthStateChanged(auth,async(user)=>{
 
 if(user){
 
-document
-.getElementById("loginPage")
-.classList.add("hidden");
+currentUser=user;
 
-document
-.getElementById("dashboard")
-.classList.remove("hidden");
+document.getElementById("authSection").classList.add("hidden");
 
-renderDashboard();
+document.getElementById("dashboard").classList.remove("hidden");
 
-}else{
+await loadBudget();
 
-document
-.getElementById("loginPage")
-.classList.remove("hidden");
+await loadTransactions();
 
-document
-.getElementById("dashboard")
-.classList.add("hidden");
+render();
 
 }
 
@@ -461,41 +407,59 @@ document
 
 /* HELPERS */
 
-function sum(type){
+function emailInput(){
 
-return transactions
-.filter(t=>t.type===type)
-.reduce((a,b)=>a+b.amount,0);
+return document.getElementById("email").value;
+
+}
+
+function passwordInput(){
+
+return document.getElementById("password").value;
 
 }
 
 /* BUDGET */
 
-window.setBudget=()=>{
+window.setBudget=async()=>{
 
-budget=
-Number(
-document.getElementById("budgetInput").value
+budget=Number(document.getElementById("budgetInput").value);
+
+await setDoc(
+
+doc(db,"users",currentUser.uid),
+
+{budget:budget}
+
 );
 
-localStorage.setItem("budget",budget);
-
-renderDashboard();
+render();
 
 };
 
-/* ADD */
+async function loadBudget(){
 
-window.addTransaction=()=>{
+const snap=await getDoc(doc(db,"users",currentUser.uid));
 
-const amount=
-Number(document.getElementById("amount").value);
+if(snap.exists()){
 
-const type=
-document.getElementById("type").value;
+budget=snap.data().budget||0;
 
-const category=
-document.getElementById("category").value;
+document.getElementById("budgetInput").value=budget;
+
+}
+
+}
+
+/* ADD TRANSACTION */
+
+window.addTransaction=async()=>{
+
+const amount=Number(document.getElementById("amount").value);
+
+const type=document.getElementById("type").value;
+
+const category=document.getElementById("category").value;
 
 if(!amount || !category){
 
@@ -505,45 +469,69 @@ return;
 
 }
 
-transactions.push({
+await addDoc(
 
+collection(db,"users",currentUser.uid,"transactions"),
+
+{
 amount,
 type,
 category,
 date:new Date().toISOString()
+}
+
+);
+
+document.getElementById("amount").value="";
+document.getElementById("category").value="";
+
+await loadTransactions();
+
+render();
+
+};
+
+/* LOAD TRANSACTIONS */
+
+async function loadTransactions(){
+
+transactions=[];
+
+const snap=await getDocs(
+
+collection(db,"users",currentUser.uid,"transactions")
+
+);
+
+snap.forEach(d=>{
+
+transactions.push({
+
+id:d.id,
+...d.data()
 
 });
 
-localStorage.setItem(
-"transactions",
-JSON.stringify(transactions)
-);
+});
 
-renderDashboard();
-
-};
+}
 
 /* DELETE */
 
-window.deleteGroup=(category,type)=>{
+window.deleteTransaction=async(id)=>{
 
-transactions=
-transactions.filter(
-t=>!(
-t.category===category &&
-t.type===type
-)
+await deleteDoc(
+
+doc(db,"users",currentUser.uid,"transactions",id)
+
 );
 
-localStorage.setItem(
-"transactions",
-JSON.stringify(transactions)
-);
+await loadTransactions();
 
-renderDashboard();
+render();
 
 };
-
+  
 /* EDIT */
 
 window.toggleEdit=()=>{
