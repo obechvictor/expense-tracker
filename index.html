@@ -697,8 +697,17 @@ drawCharts();
 
 function drawCharts(){
 
-setTimeout(()=>{
+if(typeof Chart==="undefined"){
+console.log("Chart.js missing");
+return;
+}
 
+if(!transactions.length){
+return;
+}
+
+setTimeout(()=>{
+  
 /* DAILY DATA */
 
 const daily={};
