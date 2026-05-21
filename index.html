@@ -409,16 +409,19 @@ const password=
 document.getElementById("password").value;
 
 try{
-
+const userCredential=
 await signInWithEmailAndPassword(
 auth,
 email,
 password
 );
+
 currentUser=userCredential.user;
 
 await loadUserData();
-  
+
+alert("Login successful");
+
 }catch(err){
 
 alert(err.message);
