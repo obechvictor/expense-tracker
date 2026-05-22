@@ -483,7 +483,7 @@ console.log(err);
 }
 
 }
-
+  
 /* ADD */
 async function addTransaction(){
 
@@ -519,28 +519,37 @@ currentUser.uid,
 tx
 
 );
+  
+async function loadTransactions(){
 
-loadTransactions();
+transactions=[];
+
+const q=
+await getDocs(
+
+collection(
+db,
+"users",
+currentUser.uid,
+"transactions"
+)
+
+);
+
+q.forEach(doc=>{
 
 transactions.push({
 
-id:Date.now(),
-
-amount:Number(amount),
-
-type:type,
-
-category:category,
-
-date:new Date().toISOString()
+id:doc.id,
+...doc.data()
 
 });
-  
-await saveUserData();
+
+});
 
 updateUI();
 
-};
+}
 
 /* BUDGET */
 
