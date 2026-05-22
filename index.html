@@ -485,8 +485,7 @@ console.log(err);
 }
 
 /* ADD */
-
-window.addTransaction=async()=>{
+async function addTransaction(){
 
 const amount=
 Number(document.getElementById("amount").value);
@@ -498,6 +497,30 @@ const category=
 document.getElementById("category").value;
 
 if(!amount || !category) return;
+
+const tx={
+
+amount:amount,
+type:type,
+category:category,
+date:new Date().toISOString()
+
+};
+
+await addDoc(
+
+collection(
+db,
+"users",
+currentUser.uid,
+"transactions"
+),
+
+tx
+
+);
+
+loadTransactions();
 
 transactions.push({
 
