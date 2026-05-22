@@ -11,10 +11,10 @@
 <style>
 
 body{
-font-family:"Times New Roman";
-background:#f4f7fb;
 margin:0;
 padding:15px;
+font-family:"Times New Roman";
+background:#f4f7fb;
 color:#222;
 }
 
@@ -23,77 +23,69 @@ display:none;
 }
 
 .card{
-background:white;
+background:#fff;
 padding:18px;
-border-radius:16px;
-margin-bottom:15px;
-box-shadow:0 4px 10px rgba(0,0,0,0.08);
+border-radius:18px;
+margin-bottom:18px;
+box-shadow:0 4px 12px rgba(0,0,0,0.08);
 }
 
 .header{
-display:flex;
-justify-content:space-between;
-align-items:flex-start;
 background:#16c94c;
 color:white;
-padding:20px;
-border-radius:16px;
-margin-bottom:15px;
-}
-
-.small-btn{
-width:auto;
-padding:8px 18px;
-border:none;
-border-radius:8px;
-background:white;
-color:#16c94c;
-font-weight:bold;
-cursor:pointer;
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
 
 .row{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
 gap:12px;
 }
 
 input,select,button{
 width:100%;
 padding:12px;
-margin:8px 0;
+margin-top:10px;
 border-radius:10px;
 border:1px solid #ddd;
 box-sizing:border-box;
+font-size:15px;
 }
 
 button{
 background:#16c94c;
 color:white;
 border:none;
-font-weight:bold;
 cursor:pointer;
+font-weight:bold;
 }
 
 .chart-container{
 position:relative;
 height:320px;
+width:100%;
+}
+
+canvas{
+width:100% !important;
+height:100% !important;
 }
 
 .transaction-item{
 display:flex;
 justify-content:space-between;
+align-items:center;
 padding:10px 0;
 border-bottom:1px solid #eee;
 }
 
 .del{
 background:red;
-color:white;
-border:none;
-padding:6px 10px;
-border-radius:6px;
 width:auto;
+padding:5px 10px;
+font-size:12px;
 }
 
 .green{
@@ -110,7 +102,6 @@ font-weight:bold;
 color:red;
 font-weight:bold;
 }
-
 
 </style>
 </head>
