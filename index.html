@@ -123,40 +123,42 @@ font-weight:bold;
 <button onclick="register()">Register</button>
 
 </div>
+  
+<!-- DASHBOARD -->
 
-<!-- APP -->
+<div id="dashboard" class="hidden">
 
-<div id="appSection" class="hidden">
-
-<div class="card dashboard">
+<div class="card header">
 
 <h1>Smart Banking Dashboard</h1>
 
-<button class="top-btn" onclick="toggleEdit()" id="editBtn">
+<button id="editBtn" onclick="toggleEdit()">
 Edit
 </button>
 
-<div class="stats">
+</div>
 
-<div class="stat">
-<h3>Income</h3>
+<!-- SUMMARY -->
+
+<div class="row">
+
+<div class="card">
+<h2>Income</h2>
 <p id="income">KSh 0</p>
 </div>
 
-<div class="stat">
-<h3>Expenses</h3>
-<p id="expense">KSh 0</p>
+<div class="card">
+<h2>Expenses</h2>
+<p id="expenses">KSh 0</p>
 </div>
 
-<div class="stat">
-<h3>Balance</h3>
+<div class="card">
+<h2>Balance</h2>
 <p id="balance">KSh 0</p>
 </div>
 
 </div>
-
-</div>
-
+  
 <!-- BUDGET -->
 
 <div class="card">
