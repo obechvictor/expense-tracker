@@ -1,27 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Smart Banking Dashboard</title>
 
-<link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#16c94c">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
 body{
-margin:0;
-padding:15px;
 font-family:"Times New Roman";
 background:#f4f7fb;
+margin:0;
+padding:15px;
 color:#222;
 }
 
@@ -30,69 +23,77 @@ display:none;
 }
 
 .card{
-background:#fff;
+background:white;
 padding:18px;
-border-radius:18px;
-margin-bottom:18px;
-box-shadow:0 4px 12px rgba(0,0,0,0.08);
+border-radius:16px;
+margin-bottom:15px;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
 }
 
 .header{
-background:#16c94c;
-color:white;
 display:flex;
 justify-content:space-between;
-align-items:center;
+align-items:flex-start;
+background:#16c94c;
+color:white;
+padding:20px;
+border-radius:16px;
+margin-bottom:15px;
+}
+
+.small-btn{
+width:auto;
+padding:8px 18px;
+border:none;
+border-radius:8px;
+background:white;
+color:#16c94c;
+font-weight:bold;
+cursor:pointer;
 }
 
 .row{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
 gap:12px;
 }
 
 input,select,button{
 width:100%;
 padding:12px;
-margin-top:10px;
+margin:8px 0;
 border-radius:10px;
 border:1px solid #ddd;
 box-sizing:border-box;
-font-size:15px;
 }
 
 button{
 background:#16c94c;
 color:white;
 border:none;
-cursor:pointer;
 font-weight:bold;
+cursor:pointer;
 }
 
 .chart-container{
 position:relative;
 height:320px;
-width:100%;
-}
-
-canvas{
-width:100% !important;
-height:100% !important;
 }
 
 .transaction-item{
 display:flex;
 justify-content:space-between;
-align-items:center;
 padding:10px 0;
 border-bottom:1px solid #eee;
 }
 
 .del{
 background:red;
+color:white;
+border:none;
+padding:6px 10px;
+border-radius:6px;
 width:auto;
-padding:5px 10px;
-font-size:12px;
 }
 
 .green{
@@ -111,20 +112,20 @@ font-weight:bold;
 }
 
 </style>
-
 </head>
-
 <body>
 
-<!-- LOGIN -->
+<!-- AUTH -->
 
-<div id="loginPage" class="card">
+<div id="authPage">
 
-<h2>Secure Login</h2>
+<div class="card">
 
-<input type="email" id="email" placeholder="Email">
+<h2>Login / Register</h2>
 
-<input type="password" id="password" placeholder="Password">
+<input id="email" type="email" placeholder="Email">
+
+<input id="password" type="password" placeholder="Password">
 
 <button onclick="register()">Register</button>
 
@@ -132,21 +133,23 @@ font-weight:bold;
 
 </div>
 
-<!-- DASHBOARD -->
+</div>
 
-<div id="dashboard" class="hidden">
+<!-- APP -->
 
-<div class="card header">
+<div id="appPage" class="hidden">
 
+<div class="header">
+
+<div>
 <h1>Smart Banking Dashboard</h1>
+</div>
 
-<button id="editBtn" onclick="toggleEdit()">
+<button id="editBtn" class="small-btn" onclick="toggleEdit()">
 Edit
 </button>
 
 </div>
-
-<!-- SUMMARY -->
 
 <div class="row">
 
@@ -175,13 +178,9 @@ Edit
 
 <input id="budgetInput" type="number" placeholder="Monthly Budget">
 
-<button onclick="setBudget()">
-Save Budget
-</button>
+<button onclick="setBudget()">Save Budget</button>
 
-<p id="budgetStatus">
-No budget set
-</p>
+<p id="budgetStatus">No budget set</p>
 
 </div>
 
@@ -194,18 +193,13 @@ No budget set
 <input id="amount" type="number" placeholder="Amount">
 
 <select id="type">
-
 <option value="income">Income</option>
-
 <option value="expense">Expense</option>
-
 </select>
 
 <input id="category" placeholder="Category">
 
-<button onclick="addTransaction()">
-Add Transaction
-</button>
+<button onclick="addTransaction()">Add Transaction</button>
 
 </div>
 
@@ -216,9 +210,7 @@ Add Transaction
 <h2>Daily Trend</h2>
 
 <div class="chart-container">
-
 <canvas id="dailyChart"></canvas>
-
 </div>
 
 </div>
@@ -230,9 +222,7 @@ Add Transaction
 <h2>Monthly Comparison</h2>
 
 <div class="chart-container">
-
 <canvas id="monthlyChart"></canvas>
-
 </div>
 
 </div>
@@ -244,9 +234,7 @@ Add Transaction
 <h2>Expense Breakdown</h2>
 
 <div class="chart-container">
-
 <canvas id="donutChart"></canvas>
-
 </div>
 
 </div>
@@ -266,7 +254,7 @@ Add Transaction
 <div class="card">
 
 <button onclick="downloadPDF()">
-Download Smart PDF Report
+PDF Report
 </button>
 
 </div>
@@ -275,7 +263,7 @@ Download Smart PDF Report
 
 <div class="card">
 
-<h2>Financial Records</h2>
+<h2>Records</h2>
 
 <div id="transactionList"></div>
 
@@ -284,8 +272,6 @@ Download Smart PDF Report
 </div>
 
 <script type="module">
-
-/* FIREBASE */
 
 import { initializeApp }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -300,27 +286,28 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
 getFirestore,
-collection,
-addDoc,
-getDocs,
-deleteDoc,
 doc,
 setDoc,
 getDoc
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* CONFIG */
+/* FIREBASE CONFIG */
 
 const firebaseConfig = {
-apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
-authDomain: "expense-tracker-2ee7b.firebaseapp.com",
-databaseURL: "https://expense-tracker-2ee7b-default-rtdb.europe-west1.firebasedatabase.app",
-projectId: "expense-tracker-2ee7b",
-storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
-messagingSenderId: "306376576940",
-appId: "1:306376576940:web:f7bf235be67524c9c8b409",
-measurementId: "G-V7B8WSWCZ8"
+
+apiKey:"YOUR_API_KEY",
+
+authDomain:"YOUR_DOMAIN",
+
+projectId:"YOUR_PROJECT_ID",
+
+storageBucket:"YOUR_BUCKET",
+
+messagingSenderId:"YOUR_ID",
+
+appId:"YOUR_APP_ID"
+
 };
 
 const app=initializeApp(firebaseConfig);
@@ -339,22 +326,29 @@ let budget=0;
 
 let editMode=false;
 
-let dailyChart;
-let monthlyChart;
-let donutChart;
+let dailyChart=null;
+let monthlyChart=null;
+let donutChart=null;
 
 /* REGISTER */
 
 window.register=async()=>{
 
-const email=emailInput();
-const password=passwordInput();
+const email=
+document.getElementById("email").value;
+
+const password=
+document.getElementById("password").value;
 
 try{
 
-await createUserWithEmailAndPassword(auth,email,password);
+await createUserWithEmailAndPassword(
+auth,
+email,
+password
+);
 
-alert("Registration Successful");
+alert("Registration successful");
 
 }catch(err){
 
@@ -368,12 +362,32 @@ alert(err.message);
 
 window.login=async()=>{
 
-const email=emailInput();
-const password=passwordInput();
+const email=
+document.getElementById("email").value;
+
+const password=
+document.getElementById("password").value;
 
 try{
 
-await signInWithEmailAndPassword(auth,email,password);
+const userCredential=
+await signInWithEmailAndPassword(
+auth,
+email,
+password
+);
+
+currentUser=userCredential.user;
+
+await loadUserData();
+
+document.getElementById("authPage")
+.classList.add("hidden");
+
+document.getElementById("appPage")
+.classList.remove("hidden");
+
+alert("Login successful");
 
 }catch(err){
 
@@ -383,7 +397,7 @@ alert(err.message);
 
 };
 
-/* AUTH STATE */
+/* AUTO LOGIN */
 
 onAuthStateChanged(auth,async(user)=>{
 
@@ -391,189 +405,185 @@ if(user){
 
 currentUser=user;
 
-document.getElementById("authSection").classList.add("hidden");
+document.getElementById("authPage")
+.classList.add("hidden");
 
-document.getElementById("dashboard").classList.remove("hidden");
+document.getElementById("appPage")
+.classList.remove("hidden");
 
-await loadBudget();
+await loadUserData();
 
-await loadTransactions();
+}else{
 
-render();
+document.getElementById("authPage")
+.classList.remove("hidden");
+
+document.getElementById("appPage")
+.classList.add("hidden");
 
 }
 
 });
 
-/* HELPERS */
+/* SAVE */
 
-function emailInput(){
+async function saveUserData(){
 
-return document.getElementById("email").value;
+if(!currentUser) return;
+
+await setDoc(
+doc(db,"users",currentUser.uid),
+{
+transactions:transactions,
+budget:budget
+}
+);
 
 }
 
-function passwordInput(){
+/* LOAD */
 
-return document.getElementById("password").value;
+async function loadUserData(){
+
+if(!currentUser) return;
+
+const docRef=
+doc(db,"users",currentUser.uid);
+
+const snap=
+await getDoc(docRef);
+
+if(snap.exists()){
+
+const data=snap.data();
+
+transactions=data.transactions || [];
+
+budget=data.budget || 0;
 
 }
+
+updateUI();
+
+}
+
+/* ADD */
+
+window.addTransaction=async()=>{
+
+const amount=
+Number(document.getElementById("amount").value);
+
+const type=
+document.getElementById("type").value;
+
+const category=
+document.getElementById("category").value;
+
+if(!amount || !category) return;
+
+transactions.push({
+
+id:Date.now(),
+
+amount:amount,
+
+type:type,
+
+category:category,
+
+date:new Date().toISOString()
+
+});
+
+await saveUserData();
+
+updateUI();
+
+};
 
 /* BUDGET */
 
 window.setBudget=async()=>{
 
-budget=Number(document.getElementById("budgetInput").value);
-
-await setDoc(
-
-doc(db,"users",currentUser.uid),
-
-{budget:budget}
-
+budget=
+Number(
+document.getElementById("budgetInput").value
 );
 
-render();
+await saveUserData();
+
+updateUI();
 
 };
 
-async function loadBudget(){
-
-const snap=await getDoc(doc(db,"users",currentUser.uid));
-
-if(snap.exists()){
-
-budget=snap.data().budget||0;
-
-document.getElementById("budgetInput").value=budget;
-
-}
-
-}
-
-/* ADD TRANSACTION */
-
-window.addTransaction=async()=>{
-
-const amount=Number(document.getElementById("amount").value);
-
-const type=document.getElementById("type").value;
-
-const category=document.getElementById("category").value;
-
-if(!amount || !category){
-
-alert("Fill all fields");
-
-return;
-
-}
-
-await addDoc(
-
-collection(db,"users",currentUser.uid,"transactions"),
-
-{
-amount,
-type,
-category,
-date:new Date().toISOString()
-}
-
-);
-
-document.getElementById("amount").value="";
-document.getElementById("category").value="";
-
-await loadTransactions();
-
-render();
-
-};
-
-/* LOAD TRANSACTIONS */
-
-async function loadTransactions(){
-
-transactions=[];
-
-const snap=await getDocs(
-
-collection(db,"users",currentUser.uid,"transactions")
-
-);
-
-snap.forEach(d=>{
-
-transactions.push({
-
-id:d.id,
-...d.data()
-
-});
-
-});
-
-}
-
-/* DELETE */
-
-window.deleteTransaction=async(id)=>{
-
-await deleteDoc(
-
-doc(db,"users",currentUser.uid,"transactions",id)
-
-);
-
-await loadTransactions();
-
-render();
-
-};
-  
-/* EDIT */
+/* TOGGLE */
 
 window.toggleEdit=()=>{
 
 editMode=!editMode;
 
-document.getElementById("editBtn").innerHTML=
-editMode
-?
-"Done"
-:
-"Edit";
+document.getElementById("editBtn")
+.innerText=editMode?"Done":"Edit";
 
-renderDashboard();
+updateUI();
 
 };
 
-/* RENDER */
+/* DELETE */
 
-function renderDashboard(){
+window.deleteGroup=async(id)=>{
+
+transactions=
+transactions.filter(t=>t.id!=id);
+
+await saveUserData();
+
+updateUI();
+
+};
+
+/* SUM */
+
+function sum(type){
+
+return transactions
+.filter(t=>t.type===type)
+.reduce((a,b)=>a+b.amount,0);
+
+}
+
+/* UPDATE */
+
+function updateUI(){
 
 const incomeTotal=sum("income");
 
 const expenseTotal=sum("expense");
 
-document.getElementById("income").innerHTML=
-"KSh "+incomeTotal;
+document.getElementById("income")
+.innerText="KSh "+incomeTotal;
 
-document.getElementById("expenses").innerHTML=
-"KSh "+expenseTotal;
+document.getElementById("expenses")
+.innerText="KSh "+expenseTotal;
 
-document.getElementById("balance").innerHTML=
-"KSh "+(incomeTotal-expenseTotal);
+document.getElementById("balance")
+.innerText="KSh "+(incomeTotal-expenseTotal);
 
-document.getElementById("budgetStatus").innerHTML=
+document.getElementById("budgetStatus")
+.innerText=
 budget
 ?
-"Remaining Budget: KSh "+(budget-expenseTotal)
+"Budget: KSh "+budget
 :
 "No budget set";
 
-/* GROUPED RECORDS */
+/* RECORDS */
+
+const transactionList=
+document.getElementById("transactionList");
+
+transactionList.innerHTML="";
 
 const grouped={};
 
@@ -584,52 +594,40 @@ const key=t.type+"-"+t.category;
 if(!grouped[key]){
 
 grouped[key]={
-
 amount:0,
-category:t.category,
-type:t.type
-
+ids:[]
 };
 
 }
 
 grouped[key].amount+=t.amount;
 
+grouped[key].ids.push(t.id);
+
 });
 
-const list=
-document.getElementById("transactionList");
+Object.keys(grouped).forEach(key=>{
 
-list.innerHTML="";
+const parts=key.split("-");
 
-Object.values(grouped).forEach(item=>{
+const category=parts[1];
 
-list.innerHTML+=`
+transactionList.innerHTML+=`
 
 <div class="transaction-item">
 
 <span>
-
-${item.category}
--
-KSh ${item.amount}
-
+${category} - KSh ${grouped[key].amount}
 </span>
 
 ${editMode
-
 ?
-
-`<button
-class="del"
-onclick="deleteGroup('${item.category}','${item.type}')">
+`<button class="del"
+onclick="deleteGroup('${grouped[key].ids[0]}')">
 X
 </button>`
-
 :
-
 ""
-
 }
 
 </div>
@@ -640,40 +638,30 @@ X
 
 /* INSIGHTS */
 
-const ratio=
+let ratio=
 budget>0
 ?
 ((expenseTotal/budget)*100).toFixed(1)
 :
 0;
 
-let advice="";
+let message="";
 let cls="green";
 
 if(ratio>100){
 
+message="Over budget. Reduce spending.";
 cls="red";
 
-advice=
-"Your spending exceeds your budget. Reduce non-essential expenses immediately.";
+}else if(ratio>75){
 
-}
-
-else if(ratio>75){
-
+message="Warning: high spending.";
 cls="orange";
 
-advice=
-"Spending is becoming high. Consider reducing lifestyle expenses.";
+}else{
 
-}
-
-else{
-
+message="Healthy spending.";
 cls="green";
-
-advice=
-"Excellent financial discipline. Savings potential is healthy.";
 
 }
 
@@ -683,55 +671,23 @@ document.getElementById("insights").innerHTML=`
 
 <p><b>Expenses:</b> KSh ${expenseTotal}</p>
 
-<p><b>Budget Usage:</b> ${ratio}%</p>
+<p><b>Usage:</b> ${ratio}%</p>
 
-<p class="${cls}">
-${advice}
-</p>
-
-<p>
-Suggested Savings:
-<b>KSh ${(incomeTotal-expenseTotal)*0.2}</b>
-</p>
-
-<p>
-Emergency Fund Status:
-<b>
-${incomeTotal-expenseTotal>5000
-?
-"Healthy"
-:
-"Needs Improvement"}
-</b>
-</p>
+<p class="${cls}">${message}</p>
 
 `;
 
-/* CHARTS */
+/* DRAW */
 
 drawCharts();
 
 }
 
-/* DRAW CHARTS */
+/* CHARTS */
 
 function drawCharts(){
 
-if(typeof Chart==="undefined"){
-
-console.log("Chart missing");
-
-return;
-
-}
-
-requestAnimationFrame(()=>{
-
-/* DESTROY */
-
-if(dailyChart) dailyChart.destroy();
-if(monthlyChart) monthlyChart.destroy();
-if(donutChart) donutChart.destroy();
+setTimeout(()=>{
 
 /* DAILY */
 
@@ -743,102 +699,66 @@ transactions
 
 const d=t.date.split("T")[0];
 
-daily[d]=(daily[d] || 0)+t.amount;
+daily[d]=(daily[d]||0)+t.amount;
 
 });
 
+const dailyLabels=Object.keys(daily);
+
+const dailyValues=Object.values(daily);
+
+if(dailyChart) dailyChart.destroy();
+
 dailyChart=new Chart(
-
 document.getElementById("dailyChart"),
-
 {
-
 type:"line",
-
 data:{
-
-labels:Object.keys(daily),
-
+labels:dailyLabels,
 datasets:[{
-
 label:"Daily Expenses",
-
-data:Object.values(daily),
-
+data:dailyValues,
 borderColor:"#16c94c",
-
 backgroundColor:"rgba(22,201,76,0.2)",
-
 fill:true,
-
 tension:0.4
-
 }]
-
 },
-
 options:{
-
 responsive:true,
-
 maintainAspectRatio:false
-
 }
-
 }
-
 );
 
 /* MONTHLY */
 
+if(monthlyChart) monthlyChart.destroy();
+
 monthlyChart=new Chart(
-
 document.getElementById("monthlyChart"),
-
 {
-
 type:"bar",
-
 data:{
-
 labels:["This Month"],
-
 datasets:[
-
 {
-
 label:"Income",
-
 data:[sum("income")],
-
 backgroundColor:"#36a2eb"
-
 },
-
 {
-
 label:"Expenses",
-
 data:[sum("expense")],
-
 backgroundColor:"#ff6384"
-
 }
-
 ]
-
 },
-
 options:{
-
 responsive:true,
-
 maintainAspectRatio:false
-
 }
-
 }
-
 );
 
 /* DONUT */
@@ -849,54 +769,39 @@ transactions
 .filter(t=>t.type==="expense")
 .forEach(t=>{
 
-cat[t.category]=(cat[t.category] || 0)+t.amount;
+cat[t.category]=(cat[t.category]||0)+t.amount;
 
 });
 
+if(donutChart) donutChart.destroy();
+
 donutChart=new Chart(
-
 document.getElementById("donutChart"),
-
 {
-
 type:"doughnut",
-
 data:{
-
 labels:Object.keys(cat),
-
 datasets:[{
-
 data:Object.values(cat),
-
 backgroundColor:[
-
 "#36a2eb",
 "#ff6384",
 "#ffce56",
 "#4bc0c0",
 "#9966ff",
+"#ff9f40",
 "#16c94c"
-
 ]
-
 }]
-
 },
-
 options:{
-
 responsive:true,
-
 maintainAspectRatio:false
-
 }
-
 }
-
 );
 
-});
+},300);
 
 }
 
@@ -904,54 +809,11 @@ maintainAspectRatio:false
 
 window.downloadPDF=()=>{
 
-const { jsPDF } = window.jspdf;
-
-const doc=new jsPDF();
-
-const income=sum("income");
-
-const expenses=sum("expense");
-
-const balance=income-expenses;
-
-doc.setFontSize(20);
-
-doc.text("Smart Financial Report",20,20);
-
-doc.setFontSize(12);
-
-doc.text("Income: KSh "+income,20,40);
-
-doc.text("Expenses: KSh "+expenses,20,50);
-
-doc.text("Balance: KSh "+balance,20,60);
-
-doc.text("Budget: KSh "+budget,20,70);
-
-doc.text("Financial Advice:",20,90);
-
-doc.text(
-balance>0
-?
-"Your finances are stable. Continue saving."
-:
-"Your spending exceeds income. Reduce expenses.",
-20,
-100
-);
-
-doc.save("financial-report.pdf");
+window.print();
 
 };
 
-/* PWA */
-
-if("serviceWorker" in navigator){
-
-navigator.serviceWorker.register("sw.js");
-
-}
-
 </script>
+
 </body>
 </html>
