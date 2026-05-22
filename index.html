@@ -553,18 +553,28 @@ updateUI();
 
 /* BUDGET */
 
-window.setBudget=async()=>{
+async function saveBudget(){
 
 budget=
 Number(
 document.getElementById("budgetInput").value
 );
 
-await saveUserData();
+await setDoc(
+
+doc(db,"users",currentUser.uid),
+
+{
+budget:budget
+},
+
+{merge:true}
+
+);
 
 updateUI();
 
-};
+}
 
 /* TOGGLE */
 
