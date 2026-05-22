@@ -561,12 +561,15 @@ updateUI();
 };
 
 /* SUM */
-
+  
 function sum(type){
 
 return transactions
 .filter(t=>t.type===type)
-.reduce((a,b)=>a+b.amount,0);
+.reduce(
+(total,item)=>total+Number(item.amount),
+0
+);
 
 }
 
