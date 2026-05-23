@@ -242,14 +242,6 @@ Edit
 
 </div>
 
-<button
-class="del"
-onclick="deleteGroup('${item.type}','${item.category}')">
-
-Delete
-
-</button>
-
 <!-- SUMMARY -->
 
 <div class="row">
@@ -896,9 +888,15 @@ ${
 editMode
 ?
 `
-<button class="del">
+
+<button
+class="del"
+onclick="deleteGroup('${item.type}','${item.category}')">
+
 Delete
+
 </button>
+
 `
 :
 ""
