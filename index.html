@@ -679,51 +679,85 @@ document.getElementById("balance").innerText=
 /* RECORDS */
 
 function renderRecords() {
-    const recordsContainer = document.getElementById("records");
-    recordsContainer.innerHTML = "";
+const records=
+document.getElementById("records");
 
-    const grouped = {};
+records.innerHTML="";
 
-    transactions.forEach((item, index) => {
-        const key = item.name + "-" + item.type;
+/* GROUP SAME CATEGORIES */
 
-        if (!grouped[key]) {
-            grouped[key] = {
-                name: item.name,
-                amount: 0,
-                indexes: [],
-                type: item.type
-            };
-        }
+const grouped={};
 
-        grouped[key].amount += Number(item.amount);
-        grouped[key].indexes.push(index);
-    });
+transactions.forEach(t=>{
 
-    Object.values(grouped).forEach(group => {
-        const div = document.createElement("div");
-        div.className = "record-item";
+const key=t.type+"-"+t.category;
 
-        div.innerHTML = `
-            <div class="record-left">
-                <strong>${group.name}</strong>
-                <p>KSh ${group.amount}</p>
-            </div>
+if(!grouped[key]){
 
-            <div class="record-actions">
-                <button onclick="editGrouped('${group.name}','${group.type}')">
-                    Edit
-                </button>
+grouped[key]={
 
-                <button onclick="deleteGrouped('${group.name}','${group.type}')">
-                    Delete
-                </button>
-            </div>
-        `;
+category:t.category,
+type:t.type,
+amount:0,
+count:0
 
-        recordsContainer.appendChild(div);
-    });
-  }
+};
+
+}
+
+grouped[key].amount+=Number(t.amount);
+
+grouped[key].count++;
+
+});
+
+/* SHOW RECORDS */
+
+Object.values(grouped).forEach(item=>{
+
+records.innerHTML+=`
+
+<div class="transaction-item">
+
+<div>
+
+<b>${item.category}</b><br>
+
+<small>
+${item.count} transaction(s)
+</small>
+
+</div>
+
+<div style="text-align:right;">
+
+<div class="${
+item.type==="income"
+?
+"green"
+:
+"red"
+}">
+KSh ${item.amount}
+</div>
+
+${
+editMode
+?
+`<button class="del">
+Delete
+</button>`
+:
+""
+}
+
+</div>
+
+</div>
+
+`;
+
+});
 /* INSIGHTS */
 
 const usage=
