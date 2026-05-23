@@ -42,6 +42,7 @@ box-shadow:0 4px 12px rgba(0,0,0,0.08);
 }
 
 .dashboard-header{
+position:relative;
 background:linear-gradient(135deg,#18c85a,#0ea53c);
 padding:22px 18px;
 border-radius:18px;
@@ -72,17 +73,22 @@ color:rgba(255,255,255,0.9);
 }
 
 .edit-btn{
+position:absolute;
+top:14px;
+right:14px;
 background:white;
 color:#18c85a;
 border:none;
-padding:7px 14px;
-border-radius:25px;
-font-size:12px;
+padding:5px 12px;
+border-radius:20px;
+font-size:11px;
 font-weight:bold;
 cursor:pointer;
-min-width:65px;
-height:34px;
+width:auto;
+min-width:55px;
+height:30px;
 box-shadow:0 2px 8px rgba(0,0,0,0.15);
+z-index:10;
 }
 
 .row{
@@ -235,6 +241,14 @@ Edit
 </button>
 
 </div>
+
+<button
+class="del"
+onclick="deleteGroup('${item.type}','${item.category}')">
+
+Delete
+
+</button>
 
 <!-- SUMMARY -->
 
@@ -404,7 +418,8 @@ setDoc,
 getDoc,
 collection,
 addDoc,
-getDocs
+getDocs,
+deleteDoc
 }
 from
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -899,6 +914,48 @@ Delete
 
 }
 
+window.deleteGroup=async(type,category)=>{
+
+try{
+
+const transRef=
+collection(
+db,
+"users",
+currentUser.uid,
+"transactions"
+);
+
+const querySnap=
+await getDocs(transRef);
+
+for(const docu of querySnap.docs){
+
+const data=docu.data();
+
+if(
+data.type===type &&
+data.category===category
+){
+
+await deleteDoc(docu.ref);
+
+}
+
+}
+
+await loadUserData();
+
+}catch(err){
+
+console.log(err);
+
+alert("Delete failed");
+
+}
+
+};
+  
 /* CHARTS */
 
 function renderCharts(){
