@@ -609,35 +609,37 @@ updateUI();
 function updateUI(){
 
 let income=0;
-let expense=0;
+let expenses=0;
 
 transactions.forEach(t=>{
 
 if(t.type==="income"){
 
-income+=t.amount;
+income+=Number(t.amount);
 
 }else{
 
-expense+=t.amount;
+expenses+=Number(t.amount);
 
 }
 
 });
 
-const balance=income-expense;
+const balance=income-expenses;
 
 document.getElementById("income").innerText=
-"KSh "+income;
+"KSh " + income;
 
-document.getElementById("expense").innerText=
-"KSh "+expense;
+document.getElementById("expenses").innerText=
+"KSh " + expenses;
 
 document.getElementById("balance").innerText=
-"KSh "+balance;
-
+"KSh " + balance;
+  
 document.getElementById("budgetDisplay").innerText=
 "Budget: KSh "+budget;
+  
+}
 
 const ratio=
 budget>0 ?
