@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
 <title>Smart Banking Dashboard</title>
 
@@ -12,11 +16,16 @@
 
 <style>
 
-body{
+*{
 margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f3f5f9;
 padding:15px;
-font-family:"Times New Roman",serif;
-background:#f4f7fb;
 color:#222;
 }
 
@@ -26,33 +35,32 @@ display:none;
 
 .card{
 background:white;
-padding:18px;
 border-radius:18px;
+padding:18px;
 margin-bottom:18px;
 box-shadow:0 4px 12px rgba(0,0,0,0.08);
 }
 
 .dashboard-header{
-background:linear-gradient(135deg,#16c94c,#0fa63d);
+background:linear-gradient(135deg,#18c85a,#0ea53c);
 padding:22px 18px;
 border-radius:18px;
 display:flex;
 justify-content:space-between;
 align-items:flex-start;
+gap:10px;
 margin-bottom:18px;
 box-shadow:0 5px 15px rgba(0,0,0,0.12);
-gap:12px;
 }
 
 .header-left{
 flex:1;
-padding-right:70px;
+padding-right:60px;
 }
 
 .dashboard-title{
-margin:0;
-font-size:26px;
-font-weight:700;
+font-size:28px;
+font-weight:bold;
 color:white;
 line-height:1.2;
 }
@@ -61,23 +69,19 @@ line-height:1.2;
 margin-top:6px;
 font-size:13px;
 color:rgba(255,255,255,0.9);
-line-height:1.4;
 }
 
 .edit-btn{
 background:white;
-color:#16c94c;
+color:#18c85a;
 border:none;
 padding:7px 14px;
 border-radius:25px;
 font-size:12px;
 font-weight:bold;
 cursor:pointer;
-width:auto;
 min-width:65px;
 height:34px;
-margin-top:2px;
-flex-shrink:0;
 box-shadow:0 2px 8px rgba(0,0,0,0.15);
 }
 
@@ -85,39 +89,39 @@ box-shadow:0 2px 8px rgba(0,0,0,0.15);
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
 gap:12px;
-margin-bottom:15px;
+margin-bottom:18px;
 }
 
 .summary-card{
 background:white;
-padding:14px;
-border-radius:14px;
+padding:15px;
+border-radius:15px;
 box-shadow:0 2px 10px rgba(0,0,0,0.08);
 }
 
 .summary-card h3{
-margin:0 0 10px;
-font-size:20px;
+font-size:16px;
+margin-bottom:10px;
 }
 
 .summary-card p{
-margin:0;
-font-size:18px;
+font-size:20px;
 font-weight:bold;
 }
 
-input,select,button{
+input,
+select,
+button{
 width:100%;
 padding:12px;
 margin-top:10px;
 border-radius:10px;
 border:1px solid #ddd;
-box-sizing:border-box;
 font-size:15px;
 }
 
 button{
-background:#16c94c;
+background:#18c85a;
 color:white;
 border:none;
 font-weight:bold;
@@ -145,9 +149,13 @@ border-bottom:1px solid #eee;
 
 .del{
 background:red;
-width:auto;
+color:white;
+border:none;
 padding:6px 10px;
+border-radius:8px;
 font-size:12px;
+width:auto;
+margin-top:8px;
 }
 
 .green{
@@ -166,6 +174,7 @@ font-weight:bold;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -176,9 +185,15 @@ font-weight:bold;
 
 <h2>Secure Login</h2>
 
-<input type="email" id="email" placeholder="Email">
+<input
+type="email"
+id="email"
+placeholder="Email">
 
-<input type="password" id="password" placeholder="Password">
+<input
+type="password"
+id="password"
+placeholder="Password">
 
 <button onclick="register()">
 Register
@@ -194,24 +209,29 @@ Login
 
 <div id="dashboard" class="hidden">
 
+<!-- HEADER -->
+
 <div class="dashboard-header">
 
 <div class="header-left">
 
-<h1 class="dashboard-title">
+<div class="dashboard-title">
 Smart Banking Dashboard
-</h1>
+</div>
 
-<p class="dashboard-subtitle">
+<div class="dashboard-subtitle">
 Track income, expenses and financial growth
-</p>
+</div>
 
 </div>
 
-<button id="editBtn"
+<button
+id="editBtn"
 class="edit-btn"
 onclick="toggleEdit()">
+
 Edit
+
 </button>
 
 </div>
@@ -243,7 +263,8 @@ Edit
 
 <h2>Budget</h2>
 
-<input id="budgetInput"
+<input
+id="budgetInput"
 type="number"
 placeholder="Monthly Budget">
 
@@ -251,19 +272,21 @@ placeholder="Monthly Budget">
 Save Budget
 </button>
 
-<p id="budgetDisplay">
+<p id="budgetDisplay"
+style="margin-top:12px;">
 No budget set
 </p>
 
 </div>
 
-<!-- ADD -->
+<!-- ADD TRANSACTION -->
 
 <div class="card">
 
 <h2>Add Transaction</h2>
 
-<input id="amount"
+<input
+id="amount"
 type="number"
 placeholder="Amount">
 
@@ -279,7 +302,8 @@ Expense
 
 </select>
 
-<input id="category"
+<input
+id="category"
 placeholder="Category">
 
 <button onclick="addTransaction()">
@@ -288,7 +312,7 @@ Add Transaction
 
 </div>
 
-<!-- DAILY -->
+<!-- DAILY CHART -->
 
 <div class="card">
 
@@ -339,7 +363,7 @@ Add Transaction
 <div class="card">
 
 <button onclick="downloadPDF()">
-PDF Report
+Download PDF Report
 </button>
 
 </div>
@@ -358,8 +382,11 @@ PDF Report
 
 <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+initializeApp
+}
+from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
 getAuth,
@@ -367,7 +394,8 @@ createUserWithEmailAndPassword,
 signInWithEmailAndPassword,
 onAuthStateChanged
 }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
 getFirestore,
@@ -376,27 +404,37 @@ setDoc,
 getDoc,
 collection,
 addDoc,
-getDocs,
-deleteDoc
+getDocs
 }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
-  authDomain: "expense-tracker-2ee7b.firebaseapp.com",
-  databaseURL: "https://expense-tracker-2ee7b-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "expense-tracker-2ee7b",
-  storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
-  messagingSenderId: "306376576940",
-  appId: "1:306376576940:web:f7bf235be67524c9c8b409",
-  measurementId: "G-V7B8WSWCZ8"
+/* FIREBASE */
+
+const firebaseConfig={
+
+apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+
+authDomain:"expense-tracker-2ee7b.firebaseapp.com",
+
+projectId:"expense-tracker-2ee7b",
+
+storageBucket:"expense-tracker-2ee7b.firebasestorage.app",
+
+messagingSenderId:"306376576940",
+
+appId:"1:306376576940:web:f7bf235be67524c9c8b409"
+
 };
 
-const app=initializeApp(firebaseConfig);
+const app=
+initializeApp(firebaseConfig);
 
-const auth=getAuth(app);
+const auth=
+getAuth(app);
 
-const db=getFirestore(app);
+const db=
+getFirestore(app);
 
 /* VARIABLES */
 
@@ -412,7 +450,7 @@ let dailyChart=null;
 let monthlyChart=null;
 let donutChart=null;
 
-/* AUTH */
+/* REGISTER */
 
 window.register=async()=>{
 
@@ -439,6 +477,8 @@ alert(err.message);
 }
 
 };
+
+/* LOGIN */
 
 window.login=async()=>{
 
@@ -503,7 +543,7 @@ document
 
 });
 
-/* LOAD USER DATA */
+/* LOAD */
 
 async function loadUserData(){
 
@@ -511,7 +551,7 @@ if(!currentUser) return;
 
 try{
 
-/* USER SETTINGS */
+/* USER */
 
 const userRef=
 doc(db,"users",currentUser.uid);
@@ -521,13 +561,11 @@ await getDoc(userRef);
 
 if(userSnap.exists()){
 
-const userData=userSnap.data();
+const data=
+userSnap.data();
 
-budget=userData.budget || 0;
-
-document.getElementById("budgetDisplay")
-.innerText=
-"Budget: KSh " + budget;
+budget=
+data.budget || 0;
 
 }
 
@@ -557,7 +595,7 @@ id:docu.id,
 
 });
 
-/* UPDATE SCREEN */
+/* REFRESH */
 
 updateUI();
 
@@ -581,23 +619,26 @@ document.getElementById("budgetInput").value
 );
 
 await setDoc(
-doc(db,"users",currentUser.uid),
+
+doc(
+db,
+"users",
+currentUser.uid
+),
+
 {
 budget:budget
 },
-{merge:true}
-);
 
-document.getElementById(
-"budgetDisplay"
-).innerText=
-"Budget: KSh " + budget;
+{merge:true}
+
+);
 
 updateUI();
 
 };
 
-/* ADD */
+/* ADD TRANSACTION */
 
 window.addTransaction=async()=>{
 
@@ -620,15 +661,6 @@ return;
 
 }
 
-const transaction={
-
-amount,
-type,
-category,
-date:new Date().toISOString()
-
-};
-
 await addDoc(
 
 collection(
@@ -638,7 +670,12 @@ currentUser.uid,
 "transactions"
 ),
 
-transaction
+{
+amount,
+type,
+category,
+date:new Date().toISOString()
+}
 
 );
 
@@ -649,7 +686,26 @@ document.getElementById("category").value="";
 
 };
 
+/* TOGGLE EDIT */
+
+window.toggleEdit=()=>{
+
+editMode=!editMode;
+
+document.getElementById("editBtn")
+.innerText=
+editMode
+?
+"Done"
+:
+"Edit";
+
+renderRecords();
+
+};
+
 /* UPDATE UI */
+
 function updateUI(){
 
 let income=0;
@@ -669,16 +725,24 @@ expenses+=Number(t.amount);
 
 });
 
-const balance=income-expenses;
+const balance=
+income-expenses;
 
-document.getElementById("income").innerText=
+document.getElementById("income")
+.innerText=
 "KSh " + income;
 
-document.getElementById("expenses").innerText=
+document.getElementById("expenses")
+.innerText=
 "KSh " + expenses;
 
-document.getElementById("balance").innerText=
+document.getElementById("balance")
+.innerText=
 "KSh " + balance;
+
+document.getElementById("budgetDisplay")
+.innerText=
+"Budget: KSh " + budget;
 
 /* INSIGHTS */
 
@@ -704,15 +768,18 @@ advice=
 }else{
 
 advice=
-"<p class='red'>Warning: high spending detected.</p>";
+"<p class='red'>Warning: High spending detected.</p>";
 
 }
 
-document.getElementById("insights").innerHTML=`
+document.getElementById("insights")
+.innerHTML=`
 
 <p><b>Income:</b> KSh ${income}</p>
 
 <p><b>Expenses:</b> KSh ${expenses}</p>
+
+<p><b>Balance:</b> KSh ${balance}</p>
 
 <p><b>Budget Usage:</b> ${usage}%</p>
 
@@ -737,8 +804,14 @@ if(transactions.length===0){
 
 records.innerHTML=`
 
-<p style="text-align:center;color:gray;padding:20px;">
+<p style="
+text-align:center;
+padding:20px;
+color:gray;
+">
+
 No transactions yet
+
 </p>
 
 `;
@@ -747,13 +820,12 @@ return;
 
 }
 
-/* GROUP SAME CATEGORIES */
-
 const grouped={};
 
 transactions.forEach(t=>{
 
-const key=t.type+"-"+t.category;
+const key=
+t.type+"-"+t.category;
 
 if(!grouped[key]){
 
@@ -768,13 +840,12 @@ count:0
 
 }
 
-grouped[key].amount+=Number(t.amount);
+grouped[key].amount+=
+Number(t.amount);
 
 grouped[key].count++;
 
 });
-
-/* SHOW RECORDS */
 
 Object.values(grouped).forEach(item=>{
 
@@ -801,15 +872,19 @@ item.type==="income"
 :
 "red"
 }">
+
 KSh ${item.amount}
+
 </div>
 
 ${
 editMode
 ?
-`<button class="del">
+`
+<button class="del">
 Delete
-</button>`
+</button>
+`
 :
 ""
 }
@@ -826,9 +901,7 @@ Delete
 
 /* CHARTS */
 
-function drawCharts(){
-
-/* DESTROY */
+function renderCharts(){
 
 if(dailyChart) dailyChart.destroy();
 if(monthlyChart) monthlyChart.destroy();
@@ -842,9 +915,11 @@ transactions
 .filter(t=>t.type==="expense")
 .forEach(t=>{
 
-const d=t.date.split("T")[0];
+const d=
+t.date.split("T")[0];
 
-daily[d]=(daily[d]||0)+Number(t.amount);
+daily[d]=
+(daily[d]||0)+Number(t.amount);
 
 });
 
@@ -867,9 +942,9 @@ label:"Daily Expenses",
 
 data:Object.values(daily),
 
-borderColor:"#16c94c",
+borderColor:"#18c85a",
 
-backgroundColor:"rgba(22,201,76,0.2)",
+backgroundColor:"rgba(24,200,90,0.2)",
 
 fill:true,
 
@@ -926,23 +1001,15 @@ labels:["This Month"],
 datasets:[
 
 {
-
 label:"Income",
-
 data:[income],
-
 backgroundColor:"blue"
-
 },
 
 {
-
 label:"Expenses",
-
 data:[expenses],
-
 backgroundColor:"red"
-
 }
 
 ]
@@ -950,11 +1017,8 @@ backgroundColor:"red"
 },
 
 options:{
-
 responsive:true,
-
 maintainAspectRatio:false
-
 }
 
 }
@@ -993,7 +1057,7 @@ data:Object.values(cat),
 
 backgroundColor:[
 
-"#16c94c",
+"#18c85a",
 "#36a2eb",
 "#ff6384",
 "#ffce56",
@@ -1007,11 +1071,8 @@ backgroundColor:[
 },
 
 options:{
-
 responsive:true,
-
 maintainAspectRatio:false
-
 }
 
 }
@@ -1020,102 +1081,28 @@ maintainAspectRatio:false
 
 }
 
-/* EDIT */
-
-function editGrouped(name, type) {
-    const item = transactions.find(
-        t => t.name === name && t.type === type
-    );
-
-    if (!item) return;
-
-    document.getElementById("name").value = item.name;
-    document.getElementById("amount").value = item.amount;
-    document.getElementById("type").value = item.type;
-
-    editingIndex = transactions.indexOf(item);
-
-    document.getElementById("saveBtn").innerText = "Update";
-  }
-  function deleteGrouped(name, type) {
-
-    transactions = transactions.filter(
-        t => !(t.name === name && t.type === type)
-    );
-
-    localStorage.setItem(
-        "transactions",
-        JSON.stringify(transactions)
-    );
-
-    updateUI();
-   }
 /* PDF */
 
 window.downloadPDF=()=>{
 
-const { jsPDF }=window.jspdf;
+const { jsPDF }=
+window.jspdf;
 
-const docPDF=new jsPDF();
+const pdf=
+new jsPDF();
 
-let income=0;
-let expenses=0;
+pdf.setFontSize(18);
 
-transactions.forEach(t=>{
-
-if(t.type==="income"){
-
-income+=Number(t.amount);
-
-}else{
-
-expenses+=Number(t.amount);
-
-}
-
-});
-
-const balance=income-expenses;
-
-docPDF.setFontSize(20);
-
-docPDF.text(
+pdf.text(
 "Financial Report",
 20,
 20
 );
 
-docPDF.setFontSize(12);
-
-docPDF.text(
-"Income: KSh "+income,
-20,
-40
-);
-
-docPDF.text(
-"Expenses: KSh "+expenses,
-20,
-50
-);
-
-docPDF.text(
-"Balance: KSh "+balance,
-20,
-60
-);
-
-docPDF.text(
-"Budget: KSh "+budget,
-20,
-70
-);
-
-docPDF.save("financial-report.pdf");
+pdf.save("financial-report.pdf");
 
 };
 
 </script>
-
 </body>
 </html>
