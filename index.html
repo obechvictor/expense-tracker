@@ -678,37 +678,52 @@ document.getElementById("balance").innerText=
 
 /* RECORDS */
 
-const records=
-document.getElementById("records");
+function renderRecords() {
+    const recordsContainer = document.getElementById("records");
+    recordsContainer.innerHTML = "";
 
-records.innerHTML="";
+    const grouped = {};
 
-transactions.forEach(t=>{
+    transactions.forEach((item, index) => {
+        const key = item.name + "-" + item.type;
 
-records.innerHTML+=`
+        if (!grouped[key]) {
+            grouped[key] = {
+                name: item.name,
+                amount: 0,
+                indexes: [],
+                type: item.type
+            };
+        }
 
-<div class="transaction-item">
+        grouped[key].amount += Number(item.amount);
+        grouped[key].indexes.push(index);
+    });
 
-<div>
+    Object.values(grouped).forEach(group => {
+        const div = document.createElement("div");
+        div.className = "record-item";
 
-<b>${t.category}</b><br>
+        div.innerHTML = `
+            <div class="record-left">
+                <strong>${group.name}</strong>
+                <p>KSh ${group.amount}</p>
+            </div>
 
-KSh ${t.amount}
+            <div class="record-actions">
+                <button onclick="editGrouped('${group.name}','${group.type}')">
+                    Edit
+                </button>
 
-</div>
+                <button onclick="deleteGrouped('${group.name}','${group.type}')">
+                    Delete
+                </button>
+            </div>
+        `;
 
-<div>
-
-${t.type}
-
-</div>
-
-</div>
-
-`;
-
-});
-
+        recordsContainer.appendChild(div);
+    });
+  }
 /* INSIGHTS */
 
 const usage=
@@ -949,20 +964,34 @@ maintainAspectRatio:false
 
 /* EDIT */
 
-window.toggleEdit=()=>{
+function editGrouped(name, type) {
+    const item = transactions.find(
+        t => t.name === name && t.type === type
+    );
 
-editMode=!editMode;
+    if (!item) return;
 
-document.getElementById("editBtn")
-.innerText=
-editMode
-?
-"Done"
-:
-"Edit";
+    document.getElementById("name").value = item.name;
+    document.getElementById("amount").value = item.amount;
+    document.getElementById("type").value = item.type;
 
-};
+    editingIndex = transactions.indexOf(item);
 
+    document.getElementById("saveBtn").innerText = "Update";
+  }
+  function deleteGrouped(name, type) {
+
+    transactions = transactions.filter(
+        t => !(t.name === name && t.type === type)
+    );
+
+    localStorage.setItem(
+        "transactions",
+        JSON.stringify(transactions)
+    );
+
+    updateUI();
+   }
 /* PDF */
 
 window.downloadPDF=()=>{
