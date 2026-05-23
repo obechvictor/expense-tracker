@@ -683,6 +683,19 @@ const records=
 document.getElementById("records");
 
 records.innerHTML="";
+if(transactions.length===0){
+
+records.innerHTML=`
+
+<p style="text-align:center;color:gray;padding:20px;">
+No transactions yet
+</p>
+
+`;
+
+return;
+
+}
 
 /* GROUP SAME CATEGORIES */
 
