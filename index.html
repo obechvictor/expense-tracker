@@ -511,6 +511,8 @@ if(!currentUser) return;
 
 try{
 
+/* USER SETTINGS */
+
 const userRef=
 doc(db,"users",currentUser.uid);
 
@@ -523,12 +525,13 @@ const userData=userSnap.data();
 
 budget=userData.budget || 0;
 
-document.getElementById(
-"budgetDisplay"
-).innerText=
+document.getElementById("budgetDisplay")
+.innerText=
 "Budget: KSh " + budget;
 
 }
+
+/* TRANSACTIONS */
 
 transactions=[];
 
@@ -540,23 +543,25 @@ currentUser.uid,
 "transactions"
 );
 
-const querySnapshot=
+const querySnap=
 await getDocs(transRef);
 
-querySnapshot.forEach((doc)=>{
+querySnap.forEach(docu=>{
 
 transactions.push({
 
-id:doc.id,
-...doc.data()
+id:docu.id,
+...docu.data()
 
 });
 
 });
+
+/* UPDATE SCREEN */
 
 updateUI();
 
-drawCharts();
+renderCharts();
 
 }catch(err){
 
