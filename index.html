@@ -645,7 +645,6 @@ document.getElementById("category").value="";
 };
 
 /* UPDATE UI */
-
 function updateUI(){
 
 let income=0;
@@ -676,13 +675,59 @@ document.getElementById("expenses").innerText=
 document.getElementById("balance").innerText=
 "KSh " + balance;
 
+/* INSIGHTS */
+
+const usage=
+budget>0
+?
+((expenses/budget)*100).toFixed(1)
+:
+0;
+
+let advice="";
+
+if(usage<50){
+
+advice=
+"<p class='green'>Excellent financial discipline.</p>";
+
+}else if(usage<80){
+
+advice=
+"<p class='orange'>Moderate spending. Stay cautious.</p>";
+
+}else{
+
+advice=
+"<p class='red'>Warning: high spending detected.</p>";
+
+}
+
+document.getElementById("insights").innerHTML=`
+
+<p><b>Income:</b> KSh ${income}</p>
+
+<p><b>Expenses:</b> KSh ${expenses}</p>
+
+<p><b>Budget Usage:</b> ${usage}%</p>
+
+${advice}
+
+`;
+
+renderRecords();
+
+}
+
 /* RECORDS */
 
-function renderRecords() {
+function renderRecords(){
+
 const records=
 document.getElementById("records");
 
 records.innerHTML="";
+
 if(transactions.length===0){
 
 records.innerHTML=`
@@ -771,45 +816,6 @@ Delete
 `;
 
 });
-/* INSIGHTS */
-
-const usage=
-budget>0
-?
-((expenses/budget)*100).toFixed(1)
-:
-0;
-
-let advice="";
-
-if(usage<50){
-
-advice=
-"<p class='green'>Excellent financial discipline.</p>";
-
-}else if(usage<80){
-
-advice=
-"<p class='orange'>Moderate spending. Stay cautious.</p>";
-
-}else{
-
-advice=
-"<p class='red'>Warning: high spending detected.</p>";
-
-}
-
-document.getElementById("insights").innerHTML=`
-
-<p><b>Income:</b> KSh ${income}</p>
-
-<p><b>Expenses:</b> KSh ${expenses}</p>
-
-<p><b>Budget Usage:</b> ${usage}%</p>
-
-${advice}
-
-`;
 
 }
 
