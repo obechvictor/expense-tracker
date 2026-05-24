@@ -20,7 +20,7 @@ content="width=device-width, initial-scale=1.0">
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:Arial,sans-serif;
+font-family:Arial,"Times New Roman";
 }
 
 body{
@@ -368,8 +368,8 @@ Add Transaction
 
 <div class="card">
 
-<button onclick="downloadPDF()">
-Download PDF Report
+<button onclick="generatePDF()">
+PDF Report
 </button>
 
 </div>
@@ -1138,7 +1138,6 @@ maintainAspectRatio:false
 
 /* PDF */
 
-window.downloadPDF=()=>{
 async function generatePDF(){
 
 const { jsPDF } = window.jspdf;
