@@ -1,28 +1,33 @@
-const CACHE = "finance-v3";
+const CACHE_NAME = "banking-dashboard-v1";
 
-self.addEventListener("install", e => {
-  e.waitUntil(
-    caches.open(CACHE).then(cache => {
-      return cache.addAll([
-        "/",
-        "./index.html"
-      ]);
+const urlsToCache = [
+  "./",
+  "./index.html",
+  "./manifest.json"
+];
+
+self.addEventListener("install", event => {
+
+  event.waitUntil(
+
+    caches.open(CACHE_NAME)
+    .then(cache => {
+      return cache.addAll(urlsToCache);
     })
+
   );
+
 });
 
-self.addEventListener("activate", e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE).map(k => caches.delete(k))
-      )
-    )
-  );
-});
+self.addEventListener("fetch", event => {
 
-self.addEventListener("fetch", e => {
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
+  event.respondWith(
+
+    caches.match(event.request)
+    .then(response => {
+      return response || fetch(event.request);
+    })
+
   );
+
 });
