@@ -5,8 +5,7 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Smart Banking Dashboard</title>
 
@@ -20,11 +19,11 @@ content="width=device-width, initial-scale=1.0">
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:"Times New Roman";
+font-family:Arial,sans-serif;
 }
 
 body{
-background:#f3f5f9;
+background:#f4f7fb;
 padding:15px;
 color:#222;
 }
@@ -35,83 +34,68 @@ display:none;
 
 .card{
 background:white;
-border-radius:18px;
 padding:18px;
+border-radius:18px;
 margin-bottom:18px;
 box-shadow:0 4px 12px rgba(0,0,0,0.08);
 }
 
-.dashboard-header{
-position:relative;
-background:linear-gradient(135deg,#18c85a,#0ea53c);
-padding:22px 18px;
-border-radius:18px;
-display:flex;
-justify-content:space-between;
-align-items:flex-start;
-gap:10px;
-margin-bottom:18px;
-box-shadow:0 5px 15px rgba(0,0,0,0.12);
-}
-
-.header-left{
-flex:1;
-padding-right:60px;
-}
-
-.dashboard-title{
-font-size:28px;
-font-weight:bold;
+.header{
+background:linear-gradient(135deg,#13c953,#0ca53b);
+padding:22px;
+border-radius:22px;
 color:white;
-line-height:1.2;
+position:relative;
+margin-bottom:18px;
+box-shadow:0 5px 15px rgba(0,0,0,0.15);
 }
 
-.dashboard-subtitle{
-margin-top:6px;
-font-size:13px;
-color:rgba(255,255,255,0.9);
+.header h1{
+font-size:28px;
+margin-bottom:5px;
 }
 
-.edit-btn{
+.header p{
+font-size:14px;
+opacity:0.9;
+}
+
+#editBtn{
 position:absolute;
-top:14px;
-right:14px;
-background:white;
-color:#18c85a;
-border:none;
-padding:5px 12px;
-border-radius:20px;
-font-size:11px;
-font-weight:bold;
-cursor:pointer;
+top:15px;
+right:15px;
 width:auto;
-min-width:55px;
-height:30px;
-box-shadow:0 2px 8px rgba(0,0,0,0.15);
-z-index:10;
+padding:6px 14px;
+font-size:12px;
+border-radius:30px;
+background:white;
+color:#13c953;
+font-weight:bold;
+border:none;
+cursor:pointer;
 }
 
-.row{
+.summary-grid{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
 gap:12px;
 margin-bottom:18px;
 }
 
-.summary-card{
+.summary{
 background:white;
-padding:15px;
-border-radius:15px;
-box-shadow:0 2px 10px rgba(0,0,0,0.08);
+padding:16px;
+border-radius:18px;
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
 }
 
-.summary-card h3{
-font-size:16px;
+.summary h3{
+font-size:15px;
 margin-bottom:10px;
 }
 
-.summary-card p{
-font-size:20px;
+.summary p{
+font-size:22px;
 font-weight:bold;
 }
 
@@ -121,28 +105,21 @@ button{
 width:100%;
 padding:12px;
 margin-top:10px;
-border-radius:10px;
+border-radius:12px;
 border:1px solid #ddd;
 font-size:15px;
 }
 
 button{
-background:#18c85a;
+background:#13c953;
 color:white;
-border:none;
 font-weight:bold;
+border:none;
 cursor:pointer;
 }
 
-.chart-container{
-position:relative;
+.chart-box{
 height:320px;
-width:100%;
-}
-
-canvas{
-width:100% !important;
-height:100% !important;
 }
 
 .transaction-item{
@@ -157,11 +134,11 @@ border-bottom:1px solid #eee;
 background:red;
 color:white;
 border:none;
-padding:6px 10px;
+padding:6px 12px;
+font-size:11px;
 border-radius:8px;
-font-size:12px;
+margin-top:5px;
 width:auto;
-margin-top:8px;
 }
 
 .green{
@@ -169,13 +146,13 @@ color:green;
 font-weight:bold;
 }
 
-.orange{
-color:orange;
+.red{
+color:red;
 font-weight:bold;
 }
 
-.red{
-color:red;
+.orange{
+color:orange;
 font-weight:bold;
 }
 
@@ -189,17 +166,11 @@ font-weight:bold;
 
 <div id="loginPage" class="card">
 
-<h2>Secure Login</h2>
+<h2>Login</h2>
 
-<input
-type="email"
-id="email"
-placeholder="Email">
+<input type="email" id="email" placeholder="Email">
 
-<input
-type="password"
-id="password"
-placeholder="Password">
+<input type="password" id="password" placeholder="Password">
 
 <button onclick="register()">
 Register
@@ -215,48 +186,35 @@ Login
 
 <div id="dashboard" class="hidden">
 
-<!-- HEADER -->
+<div class="header">
 
-<div class="dashboard-header">
+<h1>Smart Banking Dashboard</h1>
 
-<div class="header-left">
-
-<div class="dashboard-title">
-Smart Banking Dashboard
-</div>
-
-<div class="dashboard-subtitle">
+<p>
 Track income, expenses and financial growth
-</div>
+</p>
 
-</div>
-
-<button
-id="editBtn"
-class="edit-btn"
-onclick="toggleEdit()">
-
+<button id="editBtn" onclick="toggleEdit()">
 Edit
-
 </button>
 
 </div>
 
 <!-- SUMMARY -->
 
-<div class="row">
+<div class="summary-grid">
 
-<div class="summary-card">
+<div class="summary">
 <h3>Income</h3>
 <p id="income">KSh 0</p>
 </div>
 
-<div class="summary-card">
+<div class="summary">
 <h3>Expenses</h3>
 <p id="expenses">KSh 0</p>
 </div>
 
-<div class="summary-card">
+<div class="summary">
 <h3>Balance</h3>
 <p id="balance">KSh 0</p>
 </div>
@@ -267,12 +225,12 @@ Edit
 
 <div class="card">
 
-<h2>Budget</h2>
+<h2>Monthly Budget</h2>
 
 <input
-id="budgetInput"
 type="number"
-placeholder="Monthly Budget">
+id="budgetInput"
+placeholder="Enter budget">
 
 <button onclick="saveBudget()">
 Save Budget
@@ -285,15 +243,15 @@ No budget set
 
 </div>
 
-<!-- ADD TRANSACTION -->
+<!-- TRANSACTION -->
 
 <div class="card">
 
 <h2>Add Transaction</h2>
 
 <input
-id="amount"
 type="number"
+id="amount"
 placeholder="Amount">
 
 <select id="type">
@@ -322,21 +280,21 @@ Add Transaction
 
 <div class="card">
 
-<h2>Daily Trend</h2>
+<h2>Daily Expenses</h2>
 
-<div class="chart-container">
+<div class="chart-box">
 <canvas id="dailyChart"></canvas>
 </div>
 
 </div>
 
-<!-- MONTHLY -->
+<!-- MONTHLY CHART -->
 
 <div class="card">
 
 <h2>Monthly Comparison</h2>
 
-<div class="chart-container">
+<div class="chart-box">
 <canvas id="monthlyChart"></canvas>
 </div>
 
@@ -348,8 +306,8 @@ Add Transaction
 
 <h2>Expense Breakdown</h2>
 
-<div class="chart-container">
-<canvas id="donutChart"></canvas>
+<div class="chart-box">
+<canvas id="expenseChart"></canvas>
 </div>
 
 </div>
@@ -368,8 +326,8 @@ Add Transaction
 
 <div class="card">
 
-<button onclick="generatePDF()">
-PDF Report
+<button onclick="downloadPDF()">
+Download PDF Report
 </button>
 
 </div>
@@ -420,28 +378,25 @@ from
 
 const firebaseConfig={
 
-apiKey:"AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+apiKey:"YOUR_API_KEY",
 
-authDomain:"expense-tracker-2ee7b.firebaseapp.com",
+authDomain:"YOUR_AUTH_DOMAIN",
 
-projectId:"expense-tracker-2ee7b",
+projectId:"YOUR_PROJECT_ID",
 
-storageBucket:"expense-tracker-2ee7b.firebasestorage.app",
+storageBucket:"YOUR_STORAGE_BUCKET",
 
-messagingSenderId:"306376576940",
+messagingSenderId:"YOUR_SENDER_ID",
 
-appId:"1:306376576940:web:f7bf235be67524c9c8b409"
+appId:"YOUR_APP_ID"
 
 };
 
-const app=
-initializeApp(firebaseConfig);
+const app=initializeApp(firebaseConfig);
 
-const auth=
-getAuth(app);
+const auth=getAuth(app);
 
-const db=
-getFirestore(app);
+const db=getFirestore(app);
 
 /* VARIABLES */
 
@@ -455,7 +410,7 @@ let editMode=false;
 
 let dailyChart=null;
 let monthlyChart=null;
-let donutChart=null;
+let expenseChart=null;
 
 /* REGISTER */
 
@@ -497,16 +452,11 @@ document.getElementById("password").value;
 
 try{
 
-const userCredential=
 await signInWithEmailAndPassword(
 auth,
 email,
 password
 );
-
-currentUser=userCredential.user;
-
-await loadUserData();
 
 alert("Login successful");
 
@@ -526,24 +476,20 @@ if(user){
 
 currentUser=user;
 
-document
-.getElementById("loginPage")
+document.getElementById("loginPage")
 .classList.add("hidden");
 
-document
-.getElementById("dashboard")
+document.getElementById("dashboard")
 .classList.remove("hidden");
 
 await loadUserData();
 
 }else{
 
-document
-.getElementById("loginPage")
+document.getElementById("loginPage")
 .classList.remove("hidden");
 
-document
-.getElementById("dashboard")
+document.getElementById("dashboard")
 .classList.add("hidden");
 
 }
@@ -554,31 +500,26 @@ document
 
 async function loadUserData(){
 
-if(!currentUser) return;
+transactions=[];
 
-try{
+const settingsRef=
+doc(
+db,
+"users",
+currentUser.uid,
+"settings",
+"finance"
+);
 
-/* USER */
+const settingsSnap=
+await getDoc(settingsRef);
 
-const userRef=
-doc(db,"users",currentUser.uid);
-
-const userSnap=
-await getDoc(userRef);
-
-if(userSnap.exists()){
-
-const data=
-userSnap.data();
+if(settingsSnap.exists()){
 
 budget=
-data.budget || 0;
+settingsSnap.data().budget || 0;
 
 }
-
-/* TRANSACTIONS */
-
-transactions=[];
 
 const transRef=
 collection(
@@ -602,17 +543,7 @@ id:docu.id,
 
 });
 
-/* REFRESH */
-
 updateUI();
-
-renderCharts();
-
-}catch(err){
-
-console.log(err);
-
-}
 
 }
 
@@ -630,14 +561,14 @@ await setDoc(
 doc(
 db,
 "users",
-currentUser.uid
+currentUser.uid,
+"settings",
+"finance"
 ),
 
 {
 budget:budget
-},
-
-{merge:true}
+}
 
 );
 
@@ -645,7 +576,7 @@ updateUI();
 
 };
 
-/* ADD TRANSACTION */
+/* ADD */
 
 window.addTransaction=async()=>{
 
@@ -660,7 +591,7 @@ document.getElementById("type").value;
 const category=
 document.getElementById("category").value;
 
-if(!amount || !category){
+if(amount<=0 || category===""){
 
 alert("Fill all fields");
 
@@ -681,7 +612,9 @@ currentUser.uid,
 amount,
 type,
 category,
-date:new Date().toISOString()
+date:new Date()
+.toISOString()
+.split("T")[0]
 }
 
 );
@@ -690,24 +623,6 @@ await loadUserData();
 
 document.getElementById("amount").value="";
 document.getElementById("category").value="";
-
-};
-
-/* TOGGLE EDIT */
-
-window.toggleEdit=()=>{
-
-editMode=!editMode;
-
-document.getElementById("editBtn")
-.innerText=
-editMode
-?
-"Done"
-:
-"Edit";
-
-renderRecords();
 
 };
 
@@ -737,64 +652,29 @@ income-expenses;
 
 document.getElementById("income")
 .innerText=
-"KSh " + income;
+"KSh "+income;
 
 document.getElementById("expenses")
 .innerText=
-"KSh " + expenses;
+"KSh "+expenses;
 
 document.getElementById("balance")
 .innerText=
-"KSh " + balance;
+"KSh "+balance;
 
 document.getElementById("budgetDisplay")
 .innerText=
-"Budget: KSh " + budget;
-
-/* INSIGHTS */
-
-const usage=
-budget>0
-?
-((expenses/budget)*100).toFixed(1)
-:
-0;
-
-let advice="";
-
-if(usage<50){
-
-advice=
-"<p class='green'>Excellent financial discipline.</p>";
-
-}else if(usage<80){
-
-advice=
-"<p class='orange'>Moderate spending. Stay cautious.</p>";
-
-}else{
-
-advice=
-"<p class='red'>Warning: High spending detected.</p>";
-
-}
-
-document.getElementById("insights")
-.innerHTML=`
-
-<p><b>Income:</b> KSh ${income}</p>
-
-<p><b>Expenses:</b> KSh ${expenses}</p>
-
-<p><b>Balance:</b> KSh ${balance}</p>
-
-<p><b>Budget Usage:</b> ${usage}%</p>
-
-${advice}
-
-`;
+"Budget: KSh "+budget;
 
 renderRecords();
+
+renderCharts();
+
+renderInsights(
+income,
+expenses,
+balance
+);
 
 }
 
@@ -811,14 +691,8 @@ if(transactions.length===0){
 
 records.innerHTML=`
 
-<p style="
-text-align:center;
-padding:20px;
-color:gray;
-">
-
+<p style="text-align:center;color:gray;">
 No transactions yet
-
 </p>
 
 `;
@@ -854,7 +728,8 @@ grouped[key].count++;
 
 });
 
-Object.values(grouped).forEach(item=>{
+Object.values(grouped)
+.forEach(item=>{
 
 records.innerHTML+=`
 
@@ -879,16 +754,13 @@ item.type==="income"
 :
 "red"
 }">
-
 KSh ${item.amount}
-
 </div>
 
 ${
 editMode
 ?
 `
-
 <button
 class="del"
 onclick="deleteGroup('${item.type}','${item.category}')">
@@ -896,7 +768,6 @@ onclick="deleteGroup('${item.type}','${item.category}')">
 Delete
 
 </button>
-
 `
 :
 ""
@@ -912,9 +783,9 @@ Delete
 
 }
 
-window.deleteGroup=async(type,category)=>{
+/* DELETE */
 
-try{
+window.deleteGroup=async(type,category)=>{
 
 const transRef=
 collection(
@@ -929,7 +800,8 @@ await getDocs(transRef);
 
 for(const docu of querySnap.docs){
 
-const data=docu.data();
+const data=
+docu.data();
 
 if(
 data.type===type &&
@@ -944,39 +816,56 @@ await deleteDoc(docu.ref);
 
 await loadUserData();
 
-}catch(err){
+};
 
-console.log(err);
+/* TOGGLE */
 
-alert("Delete failed");
+window.toggleEdit=()=>{
 
-}
+editMode=!editMode;
+
+document.getElementById("editBtn")
+.innerText=
+editMode
+?
+"Done"
+:
+"Edit";
+
+renderRecords();
 
 };
-  
+
 /* CHARTS */
 
 function renderCharts(){
 
 if(dailyChart) dailyChart.destroy();
 if(monthlyChart) monthlyChart.destroy();
-if(donutChart) donutChart.destroy();
+if(expenseChart) expenseChart.destroy();
 
 /* DAILY */
 
 const daily={};
 
-transactions
-.filter(t=>t.type==="expense")
-.forEach(t=>{
+transactions.forEach(t=>{
 
-const d=
-t.date.split("T")[0];
+if(t.type==="expense"){
 
-daily[d]=
-(daily[d]||0)+Number(t.amount);
+if(!daily[t.date]){
+
+daily[t.date]=0;
+
+}
+
+daily[t.date]+=Number(t.amount);
+
+}
 
 });
+
+const orderedDates=
+Object.keys(daily).sort();
 
 dailyChart=
 new Chart(
@@ -989,21 +878,24 @@ type:"line",
 
 data:{
 
-labels:Object.keys(daily),
+labels:orderedDates,
 
 datasets:[{
 
-label:"Daily Expenses",
+label:"Expenses",
 
-data:Object.values(daily),
+data:orderedDates.map(
+d=>daily[d]
+),
 
-borderColor:"#18c85a",
+borderColor:"green",
 
-backgroundColor:"rgba(24,200,90,0.2)",
+backgroundColor:
+"rgba(0,255,0,0.2)",
 
 fill:true,
 
-tension:0.4
+tension:0.3
 
 }]
 
@@ -1012,7 +904,6 @@ tension:0.4
 options:{
 
 responsive:true,
-
 maintainAspectRatio:false
 
 }
@@ -1082,21 +973,29 @@ maintainAspectRatio:false
 
 /* DONUT */
 
-const cat={};
+const categories={};
 
-transactions
-.filter(t=>t.type==="expense")
-.forEach(t=>{
+transactions.forEach(t=>{
 
-cat[t.category]=
-(cat[t.category]||0)+Number(t.amount);
+if(t.type==="expense"){
+
+if(!categories[t.category]){
+
+categories[t.category]=0;
+
+}
+
+categories[t.category]+=
+Number(t.amount);
+
+}
 
 });
 
-donutChart=
+expenseChart=
 new Chart(
 
-document.getElementById("donutChart"),
+document.getElementById("expenseChart"),
 
 {
 
@@ -1104,22 +1003,11 @@ type:"doughnut",
 
 data:{
 
-labels:Object.keys(cat),
+labels:Object.keys(categories),
 
 datasets:[{
 
-data:Object.values(cat),
-
-backgroundColor:[
-
-"#18c85a",
-"#36a2eb",
-"#ff6384",
-"#ffce56",
-"#9966ff",
-"#ff9f40"
-
-]
+data:Object.values(categories)
 
 }]
 
@@ -1136,116 +1024,13 @@ maintainAspectRatio:false
 
 }
 
-/* PDF */
+/* INSIGHTS */
 
-function generatePDF(){
-
-try{
-
-const { jsPDF } = window.jspdf;
-
-const doc=new jsPDF();
-
-let income=0;
-let expenses=0;
-
-const categoryTotals={};
-const dailyTotals={};
-
-transactions.forEach(t=>{
-
-const amount=Number(t.amount);
-
-if(t.type==="income"){
-
-income+=amount;
-
-}else{
-
-expenses+=amount;
-
-/* CATEGORY */
-
-if(!categoryTotals[t.category]){
-
-categoryTotals[t.category]=0;
-
-}
-
-categoryTotals[t.category]+=amount;
-
-/* DAILY */
-
-const day=
-new Date(
-t.date || Date.now()
-).toLocaleDateString();
-
-if(!dailyTotals[day]){
-
-dailyTotals[day]=0;
-
-}
-
-dailyTotals[day]+=amount;
-
-}
-
-});
-
-const balance=
-income-expenses;
-
-/* MOST BOUGHT */
-
-let topCategory="None";
-let topAmount=0;
-
-Object.keys(categoryTotals)
-.forEach(cat=>{
-
-if(categoryTotals[cat]>topAmount){
-
-topAmount=
-categoryTotals[cat];
-
-topCategory=cat;
-
-}
-
-});
-
-/* HIGHEST & LOWEST DAYS */
-
-let highDay="N/A";
-let highAmount=0;
-
-let lowDay="N/A";
-let lowAmount=999999999;
-
-Object.keys(dailyTotals)
-.forEach(day=>{
-
-const amount=
-dailyTotals[day];
-
-if(amount>highAmount){
-
-highAmount=amount;
-highDay=day;
-
-}
-
-if(amount<lowAmount){
-
-lowAmount=amount;
-lowDay=day;
-
-}
-
-});
-
-/* BUDGET USAGE */
+function renderInsights(
+income,
+expenses,
+balance
+){
 
 const usage=
 budget>0
@@ -1255,99 +1040,226 @@ budget>0
 :
 0;
 
-/* SMART ADVICE */
-
 let advice="";
 
-if(usage>=100){
+if(usage>90){
 
 advice=
-"Critical overspending detected. Reduce non-essential purchases immediately.";
+"Critical overspending detected.";
 
-}else if(usage>=80){
-
-advice=
-"You are nearing your monthly budget limit. Spend cautiously.";
-
-}else if(usage>=50){
+}else if(usage>70){
 
 advice=
-"Moderate spending observed. Maintain healthy financial discipline.";
+"High spending observed.";
+
+}else if(usage>50){
+
+advice=
+"Moderate spending.";
 
 }else{
 
 advice=
-"Excellent financial management. Your spending remains healthy.";
+"Excellent financial control.";
 
 }
 
-/* HEADER */
+document.getElementById("insights")
+.innerHTML=`
 
-doc.setFillColor(24,200,90);
+<p><b>Income:</b> KSh ${income}</p>
 
-doc.rect(0,0,220,35,"F");
+<p><b>Expenses:</b> KSh ${expenses}</p>
 
-doc.setTextColor(255,255,255);
+<p><b>Balance:</b> KSh ${balance}</p>
 
-doc.setFontSize(22);
+<p><b>Budget Usage:</b> ${usage}%</p>
 
-doc.text(
+<p class="orange">
+<b>${advice}</b>
+</p>
+
+`;
+
+}
+
+/* PDF */
+
+window.downloadPDF=()=>{
+
+const { jsPDF }=
+window.jspdf;
+
+const docPdf=
+new jsPDF();
+
+let income=0;
+let expenses=0;
+
+const categoryMap={};
+const dayMap={};
+
+transactions.forEach(t=>{
+
+if(t.type==="income"){
+
+income+=Number(t.amount);
+
+}else{
+
+expenses+=Number(t.amount);
+
+}
+
+if(t.type==="expense"){
+
+if(!categoryMap[t.category]){
+
+categoryMap[t.category]=0;
+
+}
+
+categoryMap[t.category]+=
+Number(t.amount);
+
+if(!dayMap[t.date]){
+
+dayMap[t.date]=0;
+
+}
+
+dayMap[t.date]+=
+Number(t.amount);
+
+}
+
+});
+
+const balance=
+income-expenses;
+
+/* TOP ITEM */
+
+let topCategory="None";
+let topAmount=0;
+
+Object.entries(categoryMap)
+.forEach(([k,v])=>{
+
+if(v>topAmount){
+
+topAmount=v;
+topCategory=k;
+
+}
+
+});
+
+/* HIGH LOW DAYS */
+
+let highestDay="None";
+let highestValue=0;
+
+let lowestDay="None";
+let lowestValue=999999;
+
+Object.entries(dayMap)
+.forEach(([k,v])=>{
+
+if(v>highestValue){
+
+highestValue=v;
+highestDay=k;
+
+}
+
+if(v<lowestValue){
+
+lowestValue=v;
+lowestDay=k;
+
+}
+
+});
+
+/* ADVICE */
+
+const usage=
+budget>0
+?
+((expenses/budget)*100)
+.toFixed(1)
+:
+0;
+
+let advice="";
+
+if(usage>90){
+
+advice=
+"Reduce unnecessary spending immediately.";
+
+}else if(usage>70){
+
+advice=
+"Spend cautiously and improve savings.";
+
+}else{
+
+advice=
+"Healthy financial discipline maintained.";
+
+}
+
+/* PDF */
+
+let y=20;
+
+docPdf.setFontSize(20);
+
+docPdf.text(
 "SMART FINANCIAL REPORT",
 20,
-22
+y
 );
 
-doc.setTextColor(0,0,0);
+y+=15;
 
-let y=50;
+docPdf.setFontSize(12);
 
-/* SUMMARY */
-
-doc.setFontSize(16);
-
-doc.text(
-"MONTHLY SUMMARY",
+docPdf.text(
+"Monthly Income: KSh "+income,
 20,
 y
 );
 
-y+=12;
+y+=10;
 
-doc.setFontSize(12);
-
-doc.text(
-"Income: KSh "+income,
+docPdf.text(
+"Monthly Expenses: KSh "+expenses,
 20,
 y
 );
 
-y+=8;
+y+=10;
 
-doc.text(
-"Expenses: KSh "+expenses,
-20,
-y
-);
-
-y+=8;
-
-doc.text(
+docPdf.text(
 "Balance: KSh "+balance,
 20,
 y
 );
 
-y+=8;
+y+=10;
 
-doc.text(
-"Budget: KSh "+budget,
+docPdf.text(
+"Monthly Budget: KSh "+budget,
 20,
 y
 );
 
-y+=8;
+y+=10;
 
-doc.text(
+docPdf.text(
 "Budget Usage: "+usage+"%",
 20,
 y
@@ -1355,84 +1267,60 @@ y
 
 y+=15;
 
-/* MOST BOUGHT */
-
-doc.setFontSize(16);
-
-doc.text(
-"TOP EXPENSE CATEGORY",
+docPdf.text(
+"Most Bought Item: "+topCategory,
 20,
 y
 );
 
 y+=10;
 
-doc.setFontSize(12);
+docPdf.text(
+"Highest Spending Day: "+highestDay,
+20,
+y
+);
 
-doc.text(
-topCategory+
-" - KSh "+topAmount,
+y+=10;
+
+docPdf.text(
+"Lowest Spending Day: "+lowestDay,
 20,
 y
 );
 
 y+=15;
 
-/* DAY ANALYSIS */
-
-doc.setFontSize(16);
-
-doc.text(
-"SPENDING ANALYSIS",
+docPdf.text(
+"Financial Advice:",
 20,
 y
 );
 
 y+=10;
 
-doc.setFontSize(12);
-
-doc.text(
-"Highest Spending Day: "+
-highDay+
-" (KSh "+highAmount+")",
+docPdf.text(
+advice,
 20,
-y
+y,
+{maxWidth:160}
 );
 
-y+=8;
+y+=20;
 
-doc.text(
-"Lowest Spending Day: "+
-lowDay+
-" (KSh "+lowAmount+")",
-20,
-y
-);
-
-y+=15;
-
-/* CATEGORY BREAKDOWN */
-
-doc.setFontSize(16);
-
-doc.text(
-"EXPENSE BREAKDOWN",
+docPdf.text(
+"Expense Breakdown:",
 20,
 y
 );
 
 y+=10;
 
-doc.setFontSize(12);
+Object.entries(categoryMap)
+.forEach(([k,v])=>{
 
-Object.keys(categoryTotals)
-.forEach(cat=>{
-
-doc.text(
-cat+
-": KSh "+
-categoryTotals[cat],
+docPdf.text(
+k+": KSh "+v,
 25,
 y
 );
@@ -1441,63 +1329,11 @@ y+=8;
 
 });
 
-/* ADVICE */
-
-y+=10;
-
-doc.setFontSize(16);
-
-doc.text(
-"FINANCIAL ADVICE",
-20,
-y
+docPdf.save(
+"Financial_Report.pdf"
 );
 
-y+=12;
-
-doc.setFontSize(12);
-
-const splitAdvice=
-doc.splitTextToSize(
-advice,
-170
-);
-
-doc.text(
-splitAdvice,
-20,
-y
-);
-
-/* FOOTER */
-
-doc.setFontSize(10);
-
-doc.setTextColor(120);
-
-doc.text(
-"Generated by Smart Banking Dashboard",
-20,
-285
-);
-
-/* DOWNLOAD */
-
-doc.save(
-"Smart_Financial_Report.pdf"
-);
-
-}catch(err){
-
-console.log(err);
-
-alert(
-"PDF generation failed"
-);
-
-}
-
-}
+};
 
 </script>
 </body>
