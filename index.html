@@ -1139,24 +1139,313 @@ maintainAspectRatio:false
 /* PDF */
 
 window.downloadPDF=()=>{
+async function generatePDF(){
 
-const { jsPDF }=
-window.jspdf;
+const { jsPDF } = window.jspdf;
 
-const pdf=
-new jsPDF();
+const doc = new jsPDF();
 
-pdf.setFontSize(18);
+let income=0;
+let expenses=0;
 
-pdf.text(
-"Financial Report",
+const expenseCategories={};
+const dailyExpenses={};
+
+transactions.forEach(t=>{
+
+const amount=Number(t.amount);
+
+if(t.type==="income"){
+
+income+=amount;
+
+}else{
+
+expenses+=amount;
+
+/* CATEGORY TOTALS */
+
+if(!expenseCategories[t.category]){
+
+expenseCategories[t.category]=0;
+
+}
+
+expenseCategories[t.category]+=amount;
+
+/* DAILY TOTALS */
+
+const day=
+new Date(t.date)
+.toLocaleDateString();
+
+if(!dailyExpenses[day]){
+
+dailyExpenses[day]=0;
+
+}
+
+dailyExpenses[day]+=amount;
+
+}
+
+});
+
+const balance=income-expenses;
+
+const usage=
+budget>0
+?
+((expenses/budget)*100).toFixed(1)
+:
+0;
+
+/* MOST BOUGHT ITEM */
+
+let mostItem="None";
+let mostAmount=0;
+
+Object.keys(expenseCategories).forEach(cat=>{
+
+if(expenseCategories[cat]>mostAmount){
+
+mostAmount=expenseCategories[cat];
+mostItem=cat;
+
+}
+
+});
+
+/* MOST & LEAST SPENDING DAYS */
+
+let highestDay="N/A";
+let highestAmount=0;
+
+let lowestDay="N/A";
+let lowestAmount=Infinity;
+
+Object.keys(dailyExpenses).forEach(day=>{
+
+const amount=dailyExpenses[day];
+
+if(amount>highestAmount){
+
+highestAmount=amount;
+highestDay=day;
+
+}
+
+if(amount<lowestAmount){
+
+lowestAmount=amount;
+lowestDay=day;
+
+}
+
+});
+
+/* SMART ADVICE */
+
+let advice="";
+
+if(usage>=100){
+
+advice=
+"Critical overspending detected. Reduce unnecessary expenses immediately and prioritize essential spending only.";
+
+}else if(usage>=80){
+
+advice=
+"Warning: You are close to exceeding your monthly budget. Minimize luxury and impulse purchases.";
+
+}else if(usage>=50){
+
+advice=
+"Moderate spending observed. Maintain discipline and continue monitoring recurring expenses.";
+
+}else{
+
+advice=
+"Excellent financial control. Your spending is healthy and well managed.";
+
+}
+
+/* PDF DESIGN */
+
+doc.setFillColor(24,200,90);
+doc.rect(0,0,220,35,"F");
+
+doc.setTextColor(255,255,255);
+doc.setFontSize(22);
+doc.text("SMART FINANCIAL REPORT",20,22);
+
+doc.setTextColor(0,0,0);
+
+doc.setFontSize(12);
+
+let y=50;
+
+doc.text(
+"Generated: "+
+new Date().toLocaleString(),
 20,
-20
+y
 );
 
-pdf.save("financial-report.pdf");
+y+=15;
 
-};
+/* SUMMARY */
+
+doc.setFontSize(16);
+doc.text("MONTHLY SUMMARY",20,y);
+
+y+=10;
+
+doc.setFontSize(12);
+
+doc.text(
+"Total Income: KSh "+income,
+20,
+y
+);
+
+y+=8;
+
+doc.text(
+"Total Expenses: KSh "+expenses,
+20,
+y
+);
+
+y+=8;
+
+doc.text(
+"Balance: KSh "+balance,
+20,
+y
+);
+
+y+=8;
+
+doc.text(
+"Monthly Budget: KSh "+budget,
+20,
+y
+);
+
+y+=8;
+
+doc.text(
+"Budget Usage: "+usage+"%",
+20,
+y
+);
+
+y+=15;
+
+/* TOP CATEGORY */
+
+doc.setFontSize(16);
+doc.text("TOP EXPENSE CATEGORY",20,y);
+
+y+=10;
+
+doc.setFontSize(12);
+
+doc.text(
+mostItem+
+" - KSh "+mostAmount,
+20,
+y
+);
+
+y+=15;
+
+/* DAILY ANALYSIS */
+
+doc.setFontSize(16);
+doc.text("DAILY SPENDING ANALYSIS",20,y);
+
+y+=10;
+
+doc.setFontSize(12);
+
+doc.text(
+"Highest Spending Day: "+
+highestDay+
+" (KSh "+highestAmount+")",
+20,
+y
+);
+
+y+=8;
+
+doc.text(
+"Lowest Spending Day: "+
+lowestDay+
+" (KSh "+lowestAmount+")",
+20,
+y
+);
+
+y+=15;
+
+/* CATEGORY BREAKDOWN */
+
+doc.setFontSize(16);
+doc.text("EXPENSE BREAKDOWN",20,y);
+
+y+=10;
+
+doc.setFontSize(12);
+
+Object.keys(expenseCategories).forEach(cat=>{
+
+doc.text(
+cat+
+": KSh "+
+expenseCategories[cat],
+25,
+y
+);
+
+y+=8;
+
+});
+
+/* FINANCIAL ADVICE */
+
+y+=10;
+
+doc.setFontSize(16);
+doc.text("FINANCIAL ADVICE",20,y);
+
+y+=12;
+
+doc.setFontSize(12);
+
+const splitAdvice=
+doc.splitTextToSize(advice,170);
+
+doc.text(splitAdvice,20,y);
+
+y+=30;
+
+/* FOOTER */
+
+doc.setTextColor(120);
+
+doc.text(
+"Smart Banking Dashboard • Secure Financial Analytics",
+20,
+285
+);
+
+/* SAVE */
+
+doc.save("Smart_Financial_Report.pdf");
+
+}
 
 </script>
 </body>
