@@ -374,25 +374,29 @@ deleteDoc
 from
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* FIREBASE CONFIG */
+/* FIREBASE */
 
 const firebaseConfig = {
 
 apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
 
-authDomain: "expense-tracker-2ee7b.firebaseapp.com",
+authDomain:
+"expense-tracker-2ee7b.firebaseapp.com",
 
-databaseURL: "https://expense-tracker-2ee7b-default-rtdb.europe-west1.firebasedatabase.app",
+projectId:
+"expense-tracker-2ee7b",
 
-projectId: "expense-tracker-2ee7b",
+storageBucket:
+"expense-tracker-2ee7b.firebasestorage.app",
 
-storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
+messagingSenderId:
+"306376576940",
 
-messagingSenderId: "306376576940",
+appId:
+"1:306376576940:web:f7bf235be67524c9c8b409",
 
-appId: "1:306376576940:web:f7bf235be67524c9c8b409",
-
-measurementId: "G-V7B8WSWCZ8"
+measurementId:
+"G-V7B8WSWCZ8"
 
 };
 
@@ -410,13 +414,7 @@ let transactions=[];
 
 let budget=0;
 
-let editMode=false;
-
-let dailyChart=null;
-let monthlyChart=null;
-let expenseChart=null;
-
-/* REGISTER */
+/* AUTH */
 
 window.register=async()=>{
 
@@ -438,13 +436,13 @@ alert("Registration successful");
 
 }catch(err){
 
+console.log(err);
+
 alert(err.message);
 
 }
 
 };
-
-/* LOGIN */
 
 window.login=async()=>{
 
@@ -462,9 +460,9 @@ email,
 password
 );
 
-alert("Login successful");
-
 }catch(err){
+
+console.log(err);
 
 alert(err.message);
 
@@ -472,7 +470,7 @@ alert(err.message);
 
 };
 
-/* AUTH STATE */
+/* LOGIN STATE */
 
 onAuthStateChanged(auth,async(user)=>{
 
@@ -504,9 +502,15 @@ document.getElementById("dashboard")
 
 async function loadUserData(){
 
+if(!currentUser) return;
+
 transactions=[];
 
-const settingsRef=
+try{
+
+/* BUDGET */
+
+const budgetRef=
 doc(
 db,
 "users",
@@ -515,15 +519,21 @@ currentUser.uid,
 "finance"
 );
 
-const settingsSnap=
-await getDoc(settingsRef);
+const budgetSnap=
+await getDoc(budgetRef);
 
-if(settingsSnap.exists()){
+if(budgetSnap.exists()){
 
 budget=
-settingsSnap.data().budget || 0;
+budgetSnap.data().budget || 0;
+
+}else{
+
+budget=0;
 
 }
+
+/* TRANSACTIONS */
 
 const transRef=
 collection(
@@ -533,10 +543,10 @@ currentUser.uid,
 "transactions"
 );
 
-const querySnap=
+const snap=
 await getDocs(transRef);
 
-querySnap.forEach(docu=>{
+snap.forEach(docu=>{
 
 transactions.push({
 
@@ -547,7 +557,17 @@ id:docu.id,
 
 });
 
+console.log(transactions);
+
 updateUI();
+
+}catch(err){
+
+console.log(err);
+
+alert("Failed loading data");
+
+}
 
 }
 
@@ -555,10 +575,14 @@ updateUI();
 
 window.saveBudget=async()=>{
 
+if(!currentUser) return;
+
 budget=
 Number(
 document.getElementById("budgetInput").value
 );
+
+try{
 
 await setDoc(
 
@@ -580,11 +604,27 @@ updateUI();
 
 alert("Budget saved");
 
+}catch(err){
+
+console.log(err);
+
+alert("Budget failed");
+
+}
+
 };
 
 /* ADD TRANSACTION */
 
 window.addTransaction=async()=>{
+
+if(!currentUser){
+
+alert("Login first");
+
+return;
+
+}
 
 const amount=
 Number(
@@ -605,6 +645,8 @@ return;
 
 }
 
+try{
+
 await addDoc(
 
 collection(
@@ -615,9 +657,9 @@ currentUser.uid,
 ),
 
 {
-amount,
-type,
-category,
+amount:amount,
+type:type,
+category:category,
 date:new Date()
 .toISOString()
 .split("T")[0]
@@ -625,10 +667,21 @@ date:new Date()
 
 );
 
+document.getElementById("amount").value="";
+
+document.getElementById("category").value="";
+
 await loadUserData();
 
-document.getElementById("amount").value="";
-document.getElementById("category").value="";
+alert("Transaction added");
+
+}catch(err){
+
+console.log(err);
+
+alert("Failed adding transaction");
+
+}
 
 };
 
@@ -637,6 +690,7 @@ document.getElementById("category").value="";
 function updateUI(){
 
 let income=0;
+
 let expenses=0;
 
 transactions.forEach(t=>{
@@ -656,16 +710,27 @@ expenses+=Number(t.amount);
 const balance=
 income-expenses;
 
-document.getElementById("income")
-.innerText=
+/* IMPORTANT */
+
+const incomeEl=
+document.getElementById("income");
+
+const expensesEl=
+document.getElementById("expenses");
+
+const balanceEl=
+document.getElementById("balance");
+
+if(incomeEl)
+incomeEl.innerText=
 "KSh "+income;
 
-document.getElementById("expenses")
-.innerText=
+if(expensesEl)
+expensesEl.innerText=
 "KSh "+expenses;
 
-document.getElementById("balance")
-.innerText=
+if(balanceEl)
+balanceEl.innerText=
 "KSh "+balance;
 
 document.getElementById("budgetDisplay")
@@ -673,14 +738,6 @@ document.getElementById("budgetDisplay")
 "Budget: KSh "+budget;
 
 renderRecords();
-
-renderCharts();
-
-renderInsights(
-income,
-expenses,
-balance
-);
 
 }
 
