@@ -437,6 +437,7 @@ Download PDF Report
 
 </div>
 <div id="toast"></div>
+  
 <script type="module">
 
 import {
@@ -531,11 +532,11 @@ email,
 password
 );
 
-alert("Registration successful");
+showToast("Registration successful");
 
 }catch(err){
 
-alert(err.message);
+showToast(err.message);
 
 }
 
@@ -559,7 +560,7 @@ password
 
 }catch(err){
 
-alert(err.message);
+showToast(err.message);
 
 }
 
@@ -652,7 +653,7 @@ updateUI();
 
 console.log(err);
 
-alert(err.message);
+showToast(err.message);
 
 }
 
@@ -704,7 +705,7 @@ document.getElementById("category").value;
 
 if(amount<=0 || category===""){
 
-alert("Fill all fields");
+showToast("Fill all fields");
 
 return;
 
