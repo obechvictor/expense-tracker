@@ -215,6 +215,28 @@ transform:rotate(360deg);
 }
 
 }
+  
+#toast{
+position:fixed;
+bottom:30px;
+left:50%;
+transform:translateX(-50%);
+background:#222;
+color:white;
+padding:14px 22px;
+border-radius:12px;
+font-size:14px;
+opacity:0;
+pointer-events:none;
+transition:0.4s;
+z-index:99999;
+box-shadow:0 4px 12px rgba(0,0,0,0.2);
+}
+
+#toast.show{
+opacity:1;
+bottom:50px;
+}
 </style>
 </head>
 
