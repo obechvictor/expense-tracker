@@ -1158,6 +1158,24 @@ Delete
 
 }
 
+function toggleGroup(index){
+
+const box =
+document.getElementById(
+"group-"+index
+);
+
+if(box.style.display==="none"){
+
+box.style.display="block";
+
+}else{
+
+box.style.display="none";
+
+}
+
+}
 /* PDF */
 
 window.downloadPDF=()=>{
