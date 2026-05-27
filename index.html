@@ -1042,7 +1042,6 @@ document.getElementById("insights")
 }
 
 /* RECORDS */
-
 function renderRecords(){
 
 const records =
@@ -1053,20 +1052,20 @@ records.innerHTML = "";
 if(transactions.length===0){
 
 records.innerHTML = `
-<p style="
-text-align:center;
+
+<p style="text-align:center;
 color:gray;
-padding:20px;
-">
+padding:20px;">
 No transactions yet
 </p>
+
 `;
 
 return;
 
 }
 
-/* GROUP */
+/* GROUP RECORDS */
 
 const grouped = {};
 
@@ -1077,39 +1076,41 @@ t.type + "-" + t.category;
 
 if(!grouped[key]){
 
-grouped[key]={
+grouped[key] = {
 
-category:t.category,
-type:t.type,
-amount:0,
-items:[]
+category: t.category,
+type: t.type,
+amount: 0,
+count: 0,
+items: []
 
 };
 
 }
 
-grouped[key].amount += Number(t.amount);
+grouped[key].amount +=
+Number(t.amount);
+
+grouped[key].count++;
 
 grouped[key].items.push(t);
 
 });
 
-/* SHOW */
+/* SHOW GROUPS */
 
-Object.values(grouped).forEach((group,index)=>{
+Object.values(grouped).forEach((item,index)=>{
 
 records.innerHTML += `
-
-<div class="group-card">
 
 <div class="transaction-item">
 
 <div>
 
-<b>${group.category}</b><br>
+<b>${item.category}</b><br>
 
 <small>
-${group.items.length} transaction(s)
+${item.count} transaction(s)
 </small>
 
 </div>
@@ -1117,19 +1118,27 @@ ${group.items.length} transaction(s)
 <div style="text-align:right;">
 
 <div class="${
-group.type==="income"
+item.type==="income"
 ?
 "green"
 :
 "red"
 }">
-KSh ${group.amount.toLocaleString()}
+KSh ${item.amount}
 </div>
 
 <button
-class="view-btn"
-onclick="toggleGroup(${index})"
->
+onclick="toggleGroup('group-${index}')"
+style="
+margin-top:5px;
+padding:4px 10px;
+font-size:12px;
+background:#16c94c;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+">
 View
 </button>
 
@@ -1139,25 +1148,50 @@ View
 
 <div
 id="group-${index}"
-class="group-details"
-style="display:none;"
->
+style="
+display:none;
+padding:10px;
+background:#f8f8f8;
+border-radius:10px;
+margin-bottom:10px;
+">
 
-${group.items.map(item=>`
+${item.items.map(t=>`
 
-<div class="sub-transaction">
+<div class="sub-record"
+style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:8px 0;
+border-bottom:1px solid #ddd;
+">
 
 <div>
 
-KSh ${Number(item.amount)
-.toLocaleString()}
+<div style="font-size:13px;">
+${t.date || ""}
+</div>
 
-<br>
+<div style="
+font-size:12px;
+color:gray;
+">
+${t.type}
+</div>
 
-<small>
-${item.date}
-</small>
+</div>
 
+<div style="text-align:right;">
+
+<div class="${
+t.type==="income"
+?
+"green"
+:
+"red"
+}">
+KSh ${t.amount}
 </div>
 
 ${
@@ -1166,10 +1200,12 @@ editMode
 `
 <button
 class="del"
-onclick="deleteTransaction(
-'${item.id}'
-)"
->
+onclick="deleteTransaction('${t.id}')"
+style="
+margin-top:4px;
+padding:4px 10px;
+font-size:11px;
+">
 Delete
 </button>
 `
@@ -1179,62 +1215,15 @@ Delete
 
 </div>
 
-`).join("")}
-
 </div>
+
+`).join("")}
 
 </div>
 
 `;
 
 });
-
-}
-
-function toggleGroup(index){
-
-const box =
-document.getElementById(
-"group-"+index
-);
-
-if(box.style.display==="none"){
-
-box.style.display="block";
-
-}else{
-
-box.style.display="none";
-
-}
-
-}
-  
-async function deleteTransaction(id){
-
-try{
-
-await deleteDoc(
-doc(
-db,
-"users",
-currentUser.uid,
-"transactions",
-id
-)
-);
-
-showToast("Deleted");
-
-await loadUserData();
-
-}catch(err){
-
-console.log(err);
-
-showToast("Delete failed");
-
-}
 
 }
 /* PDF */
