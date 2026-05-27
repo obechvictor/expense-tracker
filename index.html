@@ -1012,35 +1012,71 @@ document.getElementById("insights")
 
 function renderRecords(){
 
-const records=
+const records =
 document.getElementById("records");
 
-records.innerHTML="";
+records.innerHTML = "";
 
 if(transactions.length===0){
 
-records.innerHTML=
-"<p>No transactions yet</p>";
+records.innerHTML = `
+<p style="
+text-align:center;
+color:gray;
+padding:20px;
+">
+No transactions yet
+</p>
+`;
 
 return;
 
 }
 
-transactions
-.slice()
-.reverse()
-.forEach(t=>{
+/* GROUP */
 
-records.innerHTML+=`
+const grouped = {};
+
+transactions.forEach(t=>{
+
+const key =
+t.type + "-" + t.category;
+
+if(!grouped[key]){
+
+grouped[key]={
+
+category:t.category,
+type:t.type,
+amount:0,
+items:[]
+
+};
+
+}
+
+grouped[key].amount += Number(t.amount);
+
+grouped[key].items.push(t);
+
+});
+
+/* SHOW */
+
+Object.values(grouped).forEach((group,index)=>{
+
+records.innerHTML += `
+
+<div class="group-card">
 
 <div class="transaction-item">
 
 <div>
 
-<b>${t.category}</b><br>
+<b>${group.category}</b><br>
 
 <small>
-${t.type} • ${t.date}
+${group.items.length} transaction(s)
 </small>
 
 </div>
@@ -1048,13 +1084,47 @@ ${t.type} • ${t.date}
 <div style="text-align:right;">
 
 <div class="${
-t.type==="income"
+group.type==="income"
 ?
 "green"
 :
 "red"
 }">
-KSh ${t.amount}
+KSh ${group.amount.toLocaleString()}
+</div>
+
+<button
+class="view-btn"
+onclick="toggleGroup(${index})"
+>
+View
+</button>
+
+</div>
+
+</div>
+
+<div
+id="group-${index}"
+class="group-details"
+style="display:none;"
+>
+
+${group.items.map(item=>`
+
+<div class="sub-transaction">
+
+<div>
+
+KSh ${Number(item.amount)
+.toLocaleString()}
+
+<br>
+
+<small>
+${item.date}
+</small>
+
 </div>
 
 ${
@@ -1063,7 +1133,9 @@ editMode
 `
 <button
 class="del"
-onclick="deleteTransaction('${t.id}')"
+onclick="deleteTransaction(
+'${item.id}'
+)"
 >
 Delete
 </button>
@@ -1071,6 +1143,10 @@ Delete
 :
 ""
 }
+
+</div>
+
+`).join("")}
 
 </div>
 
