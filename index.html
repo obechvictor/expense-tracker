@@ -776,7 +776,9 @@ renderRecords();
 
 /* DELETE */
 
-window.deleteTransaction=async(id)=>{
+window.deleteTransaction = async(id)=>{
+
+try{
 
 await deleteDoc(
 
@@ -790,9 +792,36 @@ id
 
 );
 
+showToast("Deleted successfully");
+
 await loadUserData();
 
+}catch(err){
+
+console.log(err);
+
+showToast("Delete failed");
+
+}
+
 };
+  
+function toggleGroup(id){
+
+const box =
+document.getElementById(id);
+
+if(box.style.display==="none"){
+
+box.style.display="block";
+
+}else{
+
+box.style.display="none";
+
+}
+
+}
 
 /* UPDATE UI */
 
