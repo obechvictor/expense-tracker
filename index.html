@@ -1209,6 +1209,34 @@ box.style.display="none";
 }
 
 }
+  
+async function deleteTransaction(id){
+
+try{
+
+await deleteDoc(
+doc(
+db,
+"users",
+currentUser.uid,
+"transactions",
+id
+)
+);
+
+showToast("Deleted");
+
+await loadUserData();
+
+}catch(err){
+
+console.log(err);
+
+showToast("Delete failed");
+
+}
+
+}
 /* PDF */
 
 window.downloadPDF=()=>{
