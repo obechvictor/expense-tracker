@@ -1110,62 +1110,112 @@ window.downloadPDF=()=>{
 
 const { jsPDF } = window.jspdf;
 
-const doc=new jsPDF();
+const pdf=new jsPDF();
 
-let income=0;
-let expenses=0;
+const incomeTotal=sum('income');
+const expenseTotal=sum('expense');
+const balanceTotal=incomeTotal-expenseTotal;
+
+const usage=
+budget>0
+?
+((expenseTotal/budget)*100).toFixed(1)
+:
+0;
+
+const categories={};
+const dailySpend={};
 
 transactions.forEach(t=>{
 
-if(t.type==="income"){
+if(t.type==='expense'){
 
-income+=Number(t.amount);
+categories[t.category]=
+(categories[t.category]||0)+t.amount;
 
-}else{
+const d=
+new Date(t.timestamp)
+.toISOString()
+.split('T')[0];
 
-expenses+=Number(t.amount);
+dailySpend[d]=
+(dailySpend[d]||0)+t.amount;
 
 }
 
 });
 
-doc.setFontSize(20);
+let topCategory='None';
+let topAmount=0;
 
-doc.text(
-"Monthly Financial Report",
-20,
-20
-);
+Object.entries(categories).forEach(([k,v])=>{
 
-doc.setFontSize(12);
+if(v>topAmount){
 
-doc.text(
-`Income: KSh ${income}`,
-20,
-40
-);
+topAmount=v;
+topCategory=k;
 
-doc.text(
-`Expenses: KSh ${expenses}`,
-20,
-50
-);
+}
 
-doc.text(
-`Budget: KSh ${budget}`,
-20,
-60
-);
+});
 
-doc.text(
-`Balance: KSh ${income-expenses}`,
-20,
-70
-);
+let maxDay='N/A';
+let maxSpend=0;
 
-doc.save("financial-report.pdf");
+Object.entries(dailySpend).forEach(([d,v])=>{
+
+if(v>maxSpend){
+maxSpend=v;
+maxDay=d;
+}
+
+});
+
+let advice='';
+
+if(usage<50){
+advice='Excellent financial discipline and healthy savings rate.';
+}else if(usage<80){
+advice='Moderate spending. Continue monitoring recurring expenses.';
+}else if(usage<=100){
+advice='Warning: You are close to exhausting your budget.';
+}else{
+advice='Critical overspending detected. Reduce non-essential spending immediately.';
+}
+
+pdf.setFontSize(22);
+pdf.text('SMART FINANCIAL REPORT',20,20);
+
+pdf.setFontSize(12);
+pdf.text('Generated: '+new Date().toLocaleString(),20,30);
+
+pdf.line(20,35,190,35);
+
+pdf.text('Income: KSh '+incomeTotal,20,50);
+pdf.text('Expenses: KSh '+expenseTotal,20,60);
+pdf.text('Balance: KSh '+balanceTotal,20,70);
+pdf.text('Budget: KSh '+budget,20,80);
+pdf.text('Budget Usage: '+usage+'%',20,90);
+
+pdf.line(20,100,190,100);
+
+pdf.text('Most Purchased Category: '+topCategory,20,115);
+pdf.text('Highest Spending Day: '+maxDay,20,125);
+
+pdf.text('Financial Advice:',20,145);
+
+const lines=pdf.splitTextToSize(advice,160);
+pdf.text(lines,20,155);
+
+pdf.save('Financial_Report.pdf');
 
 };
+
+if('serviceWorker' in navigator){
+window.addEventListener('load',()=>{
+navigator.serviceWorker.register('sw.js');
+});
+}
 
 </script>
 </body>
