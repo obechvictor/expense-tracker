@@ -267,22 +267,34 @@ z-index:999;
 <!-- DASHBOARD -->
 
 <div id="dashboard" class="hidden">
-
 <div class="header">
 
-<button id="editBtn" onclick="toggleEdit()">
+<div class="top-actions">
+
+<button
+id="editBtn"
+class="top-btn"
+onclick="toggleEdit()"
+>
 Edit
 </button>
 
-<h1>Smart Banking Dashboard</h1>
-
-<p>Track income, expenses and financial growth</p>
+<button
+class="top-btn"
+onclick="downloadPDF()"
+>
+PDF
+</button>
 
 </div>
 
-<br>
+<h1>Smart Banking Dashboard</h1>
 
-<div class="row">
+<p>
+Track income, expenses and financial growth
+</p>
+
+</div>
 
 <div class="summary-card">
 <h3>Income</h3>
