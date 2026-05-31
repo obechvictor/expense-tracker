@@ -1099,44 +1099,45 @@ Moderate spending. Financial health stable.
 
 }
 
-window.downloadPDF=()=>{
+window.downloadPDF = () => {
 
-const { jsPDF } = window.jspdf;
+try {
 
-const pdf=new jsPDF();
+    const { jsPDF } = window.jspdf;
 
-const incomeTotal=sum('income');
-const expenseTotal=sum('expense');
-const balanceTotal=incomeTotal-expenseTotal;
+    if(!jsPDF){
+        showToast("PDF library not loaded");
+        return;
+    }
 
-const usage=
-budget>0
-?
-((expenseTotal/budget)*100).toFixed(1)
-:
-0;
+    const pdf = new jsPDF();
 
-const categories={};
-const dailySpend={};
+    const incomeTotal = sum("income");
+    const expenseTotal = sum("expense");
 
-transactions.forEach(t=>{
+    const balanceTotal =
+    incomeTotal - expenseTotal;
 
-if(t.type==='expense'){
+    pdf.setFontSize(22);
+    pdf.text(
+        "SMART FINANCIAL REPORT",
+        20,
+        20
+    );
 
-categories[t.category]=
-(categories[t.category]||0)+t.amount;
+    pdf.save("Financial_Report.pdf");
 
-const d=
-new Date(t.timestamp)
-.toISOString()
-.split('T')[0];
+} catch(err){
 
-dailySpend[d]=
-(dailySpend[d]||0)+t.amount;
+    console.error(err);
+
+    showToast(
+        "PDF Error: " + err.message
+    );
 
 }
 
-});
+};
 
 let topCategory='None';
 let topAmount=0;
