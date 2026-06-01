@@ -917,114 +917,92 @@ function updateCharts(){
    CURRENT MONTH DAILY CHART
 ========================= */
 
-const dailyData = {};
+function renderDailyChart(){
 
 const now = new Date();
 
-const currentMonth = now.getMonth();
-const currentYear = now.getFullYear();
+const currentMonth =
+now.getMonth();
+
+const currentYear =
+now.getFullYear();
+
+const dailyTotals = {};
 
 transactions.forEach(t=>{
 
-let dateObj;
+if(
+t.type !== "expense" ||
+!t.timestamp
+) return;
 
-if(t.timestamp?.toDate){
-
-dateObj = t.timestamp.toDate();
-
-}else if(t.date){
-
-dateObj = new Date(t.date);
-
-}else{
-
-return;
-
-}
+const d =
+new Date(t.timestamp);
 
 if(
-dateObj.getMonth()!==currentMonth ||
-dateObj.getFullYear()!==currentYear
+d.getMonth() !== currentMonth ||
+d.getFullYear() !== currentYear
 ){
 return;
 }
 
-if(t.type==="expense"){
-
 const day =
-dateObj.toISOString().split("T")[0];
+d.toISOString().split("T")[0];
 
-dailyData[day] =
-(dailyData[day]||0) +
+dailyTotals[day] =
+(dailyTotals[day] || 0)
++
 Number(t.amount);
-
-}
 
 });
 
-const dailyLabels =
-Object.keys(dailyData)
-.sort((a,b)=>new Date(a)-new Date(b));
+const labels =
+Object.keys(dailyTotals)
+.sort();
 
-const dailyValues =
-dailyLabels.map(d=>dailyData[d]);
+const values =
+labels.map(
+d=>dailyTotals[d]
+);
 
-if(dailyChart){
+const ctx =
+document.getElementById("dailyChart");
 
-dailyChart.destroy();
-
+if(window.dailyChart){
+window.dailyChart.destroy();
 }
 
-dailyChart = new Chart(
+window.dailyChart =
+new Chart(ctx,{
 
-document.getElementById("dailyChart"),
-
-{
 type:"line",
 
 data:{
 
-labels:dailyLabels,
+labels:labels,
 
 datasets:[{
 
 label:"Daily Expenses",
 
-data:dailyValues,
-
-borderColor:"#16c94c",
-
-backgroundColor:"rgba(22,201,76,0.15)",
+data:values,
 
 fill:true,
 
-tension:0.35,
-
-pointRadius:4
+tension:0.4
 
 }]
 
 },
 
 options:{
-
 responsive:true,
-
-maintainAspectRatio:false,
-
-plugins:{
-
-legend:{
-display:true
+maintainAspectRatio:false
 }
 
-}
+});
 
 }
-
-}
-
-);
 
 /* =========================
    MONTHLY COMPARISON
