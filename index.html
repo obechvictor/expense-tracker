@@ -1008,150 +1008,99 @@ maintainAspectRatio:false
    MONTHLY COMPARISON
 ========================= */
 
+function renderMonthlyChart(){
+
+const currentDate = new Date();
+
+const currentMonth = currentDate.getMonth();
+const currentYear = currentDate.getFullYear();
+
 const previousMonth =
-currentMonth===0
-?
-11
-:
-currentMonth-1;
+currentMonth === 0 ? 11 : currentMonth - 1;
 
 const previousYear =
-currentMonth===0
-?
-currentYear-1
-:
-currentYear;
+currentMonth === 0
+? currentYear - 1
+: currentYear;
 
-let currentIncome=0;
-let currentExpenses=0;
+let currentIncome = 0;
+let currentExpense = 0;
 
-let previousIncome=0;
-let previousExpenses=0;
+let previousIncome = 0;
+let previousExpense = 0;
 
 transactions.forEach(t=>{
 
-let dateObj;
+if(!t.timestamp) return;
 
-if(t.timestamp?.toDate){
+const d = new Date(t.timestamp);
 
-dateObj = t.timestamp.toDate();
-
-}else if(t.date){
-
-dateObj = new Date(t.date);
-
-}else{
-
-return;
-
-}
-
-const month =
-dateObj.getMonth();
-
-const year =
-dateObj.getFullYear();
+const month = d.getMonth();
+const year = d.getFullYear();
 
 if(
-month===currentMonth &&
-year===currentYear
+month === currentMonth &&
+year === currentYear
 ){
 
-if(t.type==="income"){
-
+if(t.type === "income"){
 currentIncome += Number(t.amount);
-
 }else{
-
-currentExpenses += Number(t.amount);
-
+currentExpense += Number(t.amount);
 }
 
 }
 
 if(
-month===previousMonth &&
-year===previousYear
+month === previousMonth &&
+year === previousYear
 ){
 
-if(t.type==="income"){
-
+if(t.type === "income"){
 previousIncome += Number(t.amount);
-
 }else{
-
-previousExpenses += Number(t.amount);
-
+previousExpense += Number(t.amount);
 }
 
 }
 
 });
 
-const monthLabels = [
+const ctx =
+document.getElementById("monthlyChart");
 
-new Date(
-previousYear,
-previousMonth
-).toLocaleString(
-"default",
-{month:"short"}
-),
-
-new Date(
-currentYear,
-currentMonth
-).toLocaleString(
-"default",
-{month:"short"}
-)
-
-];
-
-if(monthlyChart){
-
-monthlyChart.destroy();
-
+if(window.monthChart){
+window.monthChart.destroy();
 }
 
-monthlyChart = new Chart(
-
-document.getElementById("monthlyChart"),
-
-{
+window.monthChart =
+new Chart(ctx,{
 
 type:"bar",
 
 data:{
 
-labels:monthLabels,
+labels:[
+"Previous Month",
+"Current Month"
+],
 
 datasets:[
 
 {
-
 label:"Income",
-
 data:[
 previousIncome,
 currentIncome
-],
-
-backgroundColor:"#2563eb"
-
+]
 },
 
 {
-
 label:"Expenses",
-
 data:[
-previousExpenses,
-currentExpenses
-],
-
-backgroundColor:"#ef4444"
-
+previousExpense,
+currentExpense
+]
 }
 
 ]
@@ -1159,24 +1108,13 @@ backgroundColor:"#ef4444"
 },
 
 options:{
-
 responsive:true,
-
-maintainAspectRatio:false,
-
-plugins:{
-
-legend:{
-position:"top"
+maintainAspectRatio:false
 }
 
-}
+});
 
 }
-
-}
-
-);
 
 /* =========================
    DONUT CHART
