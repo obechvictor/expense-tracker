@@ -457,25 +457,50 @@ window.deleteTransaction = async (id) => {
         showToast("Delete failed");
     }
 };
+    
+function updateUI(){
 
-function updateUI() {
+    const now = new Date();
+
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
     let income = 0;
     let expenses = 0;
 
-    transactions.forEach(t => {
-        if (t.type === "income") {
-            income += Number(t.amount);
-        } else {
-            expenses += Number(t.amount);
+    transactions.forEach(t=>{
+
+        const d = getTransactionDate(t);
+
+        if(
+            d.getMonth() === currentMonth &&
+            d.getFullYear() === currentYear
+        ){
+
+            if(t.type === "income"){
+                income += Number(t.amount);
+            }else{
+                expenses += Number(t.amount);
+            }
+
         }
+
     });
 
-    document.getElementById("income").innerText = "KSh " + income;
-    document.getElementById("expenses").innerText = "KSh " + expenses;
-    document.getElementById("balance").innerText = "KSh " + (income - expenses);
+    const balance = income - expenses;
 
-    renderRecords();
-    updateCharts(income, expenses);
+    document.getElementById("income").innerText =
+        "KSh " + income.toLocaleString();
+
+    document.getElementById("expenses").innerText =
+        "KSh " + expenses.toLocaleString();
+
+    document.getElementById("balance").innerText =
+        "KSh " + balance.toLocaleString();
+
+    updateInsights(income,expenses,balance);
+
+    updateCharts(income, expense);
 }
 
 function renderRecords() {
