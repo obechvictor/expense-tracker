@@ -913,33 +913,61 @@ records.appendChild(wrapper);
 
 function updateCharts(){
 
-const dailyData={};
+/* =========================
+   CURRENT MONTH DAILY CHART
+========================= */
+
+const dailyData = {};
+
+const now = new Date();
+
+const currentMonth = now.getMonth();
+const currentYear = now.getFullYear();
 
 transactions.forEach(t=>{
 
-if(t.type==="expense"){
+let dateObj;
 
-const date=
-formatDate(t.date);
+if(t.timestamp?.toDate){
 
-if(!dailyData[date]){
+dateObj = t.timestamp.toDate();
 
-dailyData[date]=0;
+}else if(t.date){
+
+dateObj = new Date(t.date);
+
+}else{
+
+return;
 
 }
 
-dailyData[date]+=Number(t.amount);
+if(
+dateObj.getMonth()!==currentMonth ||
+dateObj.getFullYear()!==currentYear
+){
+return;
+}
+
+if(t.type==="expense"){
+
+const day =
+dateObj.toISOString().split("T")[0];
+
+dailyData[day] =
+(dailyData[day]||0) +
+Number(t.amount);
 
 }
 
 });
 
-const sortedDates=
+const dailyLabels =
 Object.keys(dailyData)
 .sort((a,b)=>new Date(a)-new Date(b));
 
-const dailyAmounts=
-sortedDates.map(d=>dailyData[d]);
+const dailyValues =
+dailyLabels.map(d=>dailyData[d]);
 
 if(dailyChart){
 
@@ -947,52 +975,160 @@ dailyChart.destroy();
 
 }
 
-dailyChart=
-new Chart(
+dailyChart = new Chart(
+
 document.getElementById("dailyChart"),
+
 {
 type:"line",
 
 data:{
-labels:sortedDates,
+
+labels:dailyLabels,
 
 datasets:[{
 
 label:"Daily Expenses",
 
-data:dailyAmounts,
+data:dailyValues,
 
 borderColor:"#16c94c",
 
-backgroundColor:"rgba(22,201,76,0.2)",
+backgroundColor:"rgba(22,201,76,0.15)",
 
 fill:true,
 
-tension:0.3
+tension:0.35,
+
+pointRadius:4
 
 }]
 
+},
+
+options:{
+
+responsive:true,
+
+maintainAspectRatio:false,
+
+plugins:{
+
+legend:{
+display:true
 }
 
 }
+
+}
+
+}
+
 );
 
-let income=0;
-let expenses=0;
+/* =========================
+   MONTHLY COMPARISON
+========================= */
+
+const previousMonth =
+currentMonth===0
+?
+11
+:
+currentMonth-1;
+
+const previousYear =
+currentMonth===0
+?
+currentYear-1
+:
+currentYear;
+
+let currentIncome=0;
+let currentExpenses=0;
+
+let previousIncome=0;
+let previousExpenses=0;
 
 transactions.forEach(t=>{
 
-if(t.type==="income"){
+let dateObj;
 
-income+=Number(t.amount);
+if(t.timestamp?.toDate){
+
+dateObj = t.timestamp.toDate();
+
+}else if(t.date){
+
+dateObj = new Date(t.date);
 
 }else{
 
-expenses+=Number(t.amount);
+return;
+
+}
+
+const month =
+dateObj.getMonth();
+
+const year =
+dateObj.getFullYear();
+
+if(
+month===currentMonth &&
+year===currentYear
+){
+
+if(t.type==="income"){
+
+currentIncome += Number(t.amount);
+
+}else{
+
+currentExpenses += Number(t.amount);
+
+}
+
+}
+
+if(
+month===previousMonth &&
+year===previousYear
+){
+
+if(t.type==="income"){
+
+previousIncome += Number(t.amount);
+
+}else{
+
+previousExpenses += Number(t.amount);
+
+}
 
 }
 
 });
+
+const monthLabels = [
+
+new Date(
+previousYear,
+previousMonth
+).toLocaleString(
+"default",
+{month:"short"}
+),
+
+new Date(
+currentYear,
+currentMonth
+).toLocaleString(
+"default",
+{month:"short"}
+)
+
+];
 
 if(monthlyChart){
 
@@ -1000,35 +1136,73 @@ monthlyChart.destroy();
 
 }
 
-monthlyChart=
-new Chart(
+monthlyChart = new Chart(
+
 document.getElementById("monthlyChart"),
+
 {
+
 type:"bar",
 
 data:{
-labels:["This Month"],
+
+labels:monthLabels,
 
 datasets:[
 
 {
+
 label:"Income",
-data:[income],
-backgroundColor:"blue"
+
+data:[
+previousIncome,
+currentIncome
+],
+
+backgroundColor:"#2563eb"
+
 },
 
 {
+
 label:"Expenses",
-data:[expenses],
-backgroundColor:"red"
+
+data:[
+previousExpenses,
+currentExpenses
+],
+
+backgroundColor:"#ef4444"
+
 }
 
 ]
 
+},
+
+options:{
+
+responsive:true,
+
+maintainAspectRatio:false,
+
+plugins:{
+
+legend:{
+position:"top"
 }
 
 }
+
+}
+
+}
+
 );
+
+/* =========================
+   DONUT CHART
+========================= */
 
 const categoryData={};
 
@@ -1054,10 +1228,12 @@ donutChart.destroy();
 
 }
 
-donutChart=
-new Chart(
+donutChart = new Chart(
+
 document.getElementById("donutChart"),
+
 {
+
 type:"doughnut",
 
 data:{
@@ -1070,10 +1246,29 @@ data:Object.values(categoryData)
 
 }]
 
+},
+
+options:{
+
+responsive:true,
+
+maintainAspectRatio:false,
+
+plugins:{
+
+legend:{
+position:"bottom"
 }
 
 }
+
+}
+
+}
+
 );
+
+}
 
 const usage=
 budget>0
