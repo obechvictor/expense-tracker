@@ -503,6 +503,65 @@ window.deleteTransaction = async (id) => {
         showToast("Delete failed");
     }
 };
+    /* =========================
+       FINANCIAL INSIGHTS UPDATE
+    ========================= */
+function updateInsights(income, expenses, balance){
+
+    const usage =
+        budget > 0
+        ? ((expenses / budget) * 100).toFixed(1)
+        : 0;
+
+    let advice = "";
+
+    if(usage <= 50){
+
+        advice =
+        "Excellent financial discipline. Savings potential is high.";
+
+    }else if(usage <= 80){
+
+        advice =
+        "Moderate spending. Continue monitoring recurring expenses.";
+
+    }else if(usage <= 100){
+
+        advice =
+        "Budget nearly exhausted. Reduce non-essential spending.";
+
+    }else{
+
+        advice =
+        "Budget exceeded. Immediate spending review recommended.";
+
+    }
+
+    document.getElementById(
+        "financialInsights"
+    ).innerHTML = `
+
+        <p><b>Income:</b> KSh ${income.toLocaleString()}</p>
+
+        <p><b>Expenses:</b> KSh ${expenses.toLocaleString()}</p>
+
+        <p><b>Balance:</b> KSh ${balance.toLocaleString()}</p>
+
+        <p><b>Budget Usage:</b> ${usage}%</p>
+
+        <p style="
+            color:${
+                usage > 100
+                ? 'red'
+                : '#16c94c'
+            };
+            font-weight:600;
+        ">
+            ${advice}
+        </p>
+
+    `;
+}
     
 function updateUI(){
 
@@ -740,66 +799,6 @@ function updateCharts(income, expenses) {
             }
         }
     });
-
-    /* =========================
-       FINANCIAL INSIGHTS UPDATE
-    ========================= */
-function updateInsights(income, expenses, balance){
-
-    const usage =
-        budget > 0
-        ? ((expenses / budget) * 100).toFixed(1)
-        : 0;
-
-    let advice = "";
-
-    if(usage <= 50){
-
-        advice =
-        "Excellent financial discipline. Savings potential is high.";
-
-    }else if(usage <= 80){
-
-        advice =
-        "Moderate spending. Continue monitoring recurring expenses.";
-
-    }else if(usage <= 100){
-
-        advice =
-        "Budget nearly exhausted. Reduce non-essential spending.";
-
-    }else{
-
-        advice =
-        "Budget exceeded. Immediate spending review recommended.";
-
-    }
-
-    document.getElementById(
-        "financialInsights"
-    ).innerHTML = `
-
-        <p><b>Income:</b> KSh ${income.toLocaleString()}</p>
-
-        <p><b>Expenses:</b> KSh ${expenses.toLocaleString()}</p>
-
-        <p><b>Balance:</b> KSh ${balance.toLocaleString()}</p>
-
-        <p><b>Budget Usage:</b> ${usage}%</p>
-
-        <p style="
-            color:${
-                usage > 100
-                ? 'red'
-                : '#16c94c'
-            };
-            font-weight:600;
-        ">
-            ${advice}
-        </p>
-
-    `;
-}
 
 window.downloadPDF = () => {
     try {
