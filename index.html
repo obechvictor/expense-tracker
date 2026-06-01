@@ -511,9 +511,12 @@ function updateUI(){
     document.getElementById("balance").innerText =
         "KSh " + balance.toLocaleString();
 
-    updateInsights(income,expenses,balance);
+updateInsights(income,expenses,balance);
 
-    updateCharts(income, expense);
+updateCharts(income,expenses);
+
+renderRecords();
+    
 }
 
 function renderRecords() {
