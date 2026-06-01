@@ -400,6 +400,39 @@ function getTransactionDate(t){
     return new Date();
 }
     
+ function formatDate(value){
+
+    try{
+
+        let d;
+
+        if(typeof value === "object" &&
+           value?.toDate){
+
+            d=value.toDate();
+
+        }else{
+
+            d=new Date(value);
+
+        }
+
+        return d.toLocaleDateString(
+            "en-GB",
+            {
+                day:"2-digit",
+                month:"short",
+                year:"numeric"
+            }
+        );
+
+    }catch{
+
+        return "Unknown Date";
+
+    }
+
+}   
 async function loadUserData() {
     transactions = [];
     const budgetRef = doc(db, "users", currentUser.uid);
