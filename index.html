@@ -582,7 +582,7 @@ function updateCharts(income, expenses) {
         const dateSrc = t.date || t.timestamp;
         if (t.type !== "expense" || !dateSrc) return;
 
-        const d = new Date(dateSrc);
+        const d = getTransactionDate(t)
         if (d.getMonth() !== currentMonth || d.getFullYear() !== currentYear) return;
 
         const day = d.toISOString().split("T")[0];
@@ -630,7 +630,7 @@ function updateCharts(income, expenses) {
         const dateSrc = t.date || t.timestamp;
         if (!dateSrc) return;
 
-        const d = new Date(dateSrc);
+        const d = getTransactionDate(t)
         const month = d.getMonth();
         const year = d.getFullYear();
 
