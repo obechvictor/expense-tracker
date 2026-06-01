@@ -376,17 +376,22 @@ window.login = async () => {
     }
 };
 
-function formatDate(dateValue) {
-    if (!dateValue) return "No Date";
-    try {
-        const d = new Date(dateValue);
-        if (isNaN(d.getTime())) return "No Date";
-        return d.toISOString().split("T")[0];
-    } catch {
-        return "No Date";
-    }
-}
+function getTransactionDate(t){
 
+    if(!t.timestamp)
+        return new Date();
+
+    if(typeof t.timestamp.toDate === "function")
+        return t.timestamp.toDate();
+
+    if(t.timestamp.seconds)
+        return new Date(
+            t.timestamp.seconds * 1000
+        );
+
+    return new Date(t.timestamp);
+
+}
 async function loadUserData() {
     transactions = [];
     const budgetRef = doc(db, "users", currentUser.uid);
