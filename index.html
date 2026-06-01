@@ -375,23 +375,31 @@ window.login = async () => {
         showToast(err.message);
     }
 };
-
+    
 function getTransactionDate(t){
 
-    if(!t.timestamp)
-        return new Date();
+    if(t.date){
+        return new Date(t.date);
+    }
 
-    if(typeof t.timestamp.toDate === "function")
-        return t.timestamp.toDate();
+    if(t.timestamp){
 
-    if(t.timestamp.seconds)
-        return new Date(
-            t.timestamp.seconds * 1000
-        );
+        if(typeof t.timestamp.toDate === "function"){
+            return t.timestamp.toDate();
+        }
 
-    return new Date(t.timestamp);
+        if(t.timestamp.seconds){
+            return new Date(
+                t.timestamp.seconds * 1000
+            );
+        }
 
+        return new Date(t.timestamp);
+    }
+
+    return new Date();
 }
+    
 async function loadUserData() {
     transactions = [];
     const budgetRef = doc(db, "users", currentUser.uid);
