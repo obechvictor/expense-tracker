@@ -16,11 +16,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-
 *{
 box-sizing:border-box;
 }
@@ -46,89 +44,52 @@ box-shadow:0 2px 10px rgba(0,0,0,0.06);
 }
 
 .header{
-
 background:#16c94c;
-
 color:white;
-
 border-radius:20px;
-
 padding:22px 18px;
-
 position:relative;
-
 box-shadow:0 4px 12px rgba(0,0,0,0.12);
-
 }
 
 .header h1{
-
 margin:0;
-
 font-size:24px;
-
 font-weight:700;
-
 padding-right:100px;
-
 }
 
 .header p{
-
 margin-top:5px;
-
 font-size:13px;
-
 opacity:0.9;
-
 }
 
 .top-actions{
-
 position:absolute;
-
 top:15px;
-
 right:15px;
-
 display:flex;
-
 gap:8px;
-
 }
 
 .top-btn{
-
 background:white;
-
 color:#16c94c;
-
 border:none;
-
 padding:6px 12px;
-
 border-radius:20px;
-
 font-size:11px;
-
 font-weight:600;
-
 cursor:pointer;
-
 width:auto;
-
 min-width:55px;
-
 box-shadow:0 2px 6px rgba(0,0,0,0.15);
-
 transition:0.2s;
-
 }
 
 .top-btn:hover{
-
 transform:scale(1.05);
-
 }
 
 .summary-card{
@@ -136,6 +97,7 @@ background:#fff;
 padding:15px;
 border-radius:16px;
 box-shadow:0 2px 8px rgba(0,0,0,0.05);
+margin-top: 12px;
 }
 
 .summary-card h3{
@@ -168,6 +130,7 @@ cursor:pointer;
 
 .chart-box{
 height:300px;
+position: relative;
 }
 
 .transaction-item{
@@ -210,12 +173,14 @@ width:auto;
 
 .del{
 background:red;
+color: white;
 padding:5px 10px;
 border:none;
 border-radius:8px;
 font-size:11px;
 width:auto;
 margin-top:5px;
+cursor: pointer;
 }
 
 .inner-record{
@@ -240,7 +205,6 @@ border-radius:10px;
 display:none;
 z-index:999;
 }
-
 </style>
 </head>
 
@@ -248,1261 +212,584 @@ z-index:999;
 
 <div id="toast" class="toast"></div>
 
-<!-- LOGIN -->
-
 <div id="loginPage" class="card">
-
-<h2>Secure Login</h2>
-
-<input type="email" id="email" placeholder="Email">
-
-<input type="password" id="password" placeholder="Password">
-
-<button onclick="register()">Register</button>
-
-<button onclick="login()">Login</button>
-
+    <h2>Secure Login</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="register()">Register</button>
+    <button onclick="login()">Login</button>
 </div>
-
-<!-- DASHBOARD -->
 
 <div id="dashboard" class="hidden">
-<div class="header">
+    <div class="header">
+        <div class="top-actions">
+            <button id="editBtn" class="top-btn" onclick="toggleEdit()">Edit</button>
+        </div>
+        <h1>Smart Banking Dashboard</h1>
+        <p>Track income, expenses and financial growth</p>
+    </div>
 
-<div class="top-actions">
+    <div class="summary-card">
+        <h3>Income</h3>
+        <p id="income">KSh 0</p>
+    </div>
 
-<button
-id="editBtn"
-class="top-btn"
-onclick="toggleEdit()"
->
-Edit
-</button>
+    <div class="summary-card">
+        <h3>Expenses</h3>
+        <p id="expenses">KSh 0</p>
+    </div>
 
-</div>
+    <div class="summary-card">
+        <h3>Balance</h3>
+        <p id="balance">KSh 0</p>
+    </div>
 
-<h1>Smart Banking Dashboard</h1>
+    <br>
 
-<p>
-Track income, expenses and financial growth
-</p>
+    <div class="card">
+        <h2>Monthly Budget</h2>
+        <input type="number" id="budgetInput" placeholder="Enter budget">
+        <button onclick="saveBudget()">Save Budget</button>
+        <p id="budgetDisplay">No budget set</p>
+    </div>
 
-</div>
+    <div class="card">
+        <h2>Add Transaction</h2>
+        <input type="number" id="amount" placeholder="Amount">
+        <select id="type">
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+        </select>
+        <input type="text" id="category" placeholder="Category">
+        <button onclick="addTransaction()">Add Transaction</button>
+    </div>
 
-<div class="summary-card">
-<h3>Income</h3>
-<p id="income">KSh 0</p>
-</div>
+    <div class="card">
+        <h2>Daily Expenses</h2>
+        <div class="chart-box">
+            <canvas id="dailyChart"></canvas>
+        </div>
+    </div>
 
-<div class="summary-card">
-<h3>Expenses</h3>
-<p id="expenses">KSh 0</p>
-</div>
+    <div class="card">
+        <h2>Monthly Comparison</h2>
+        <div class="chart-box">
+            <canvas id="monthlyChart"></canvas>
+        </div>
+    </div>
 
-<div class="summary-card">
-<h3>Balance</h3>
-<p id="balance">KSh 0</p>
-</div>
+    <div class="card">
+        <h2>Expense Breakdown</h2>
+        <div class="chart-box">
+            <canvas id="donutChart"></canvas>
+        </div>
+    </div>
 
-</div>
+    <div class="card">
+        <h2>Financial Insights</h2>
+        <div id="financialInsights"></div>
+    </div>
 
-<br>
+    <div class="card">
+        <button onclick="downloadPDF()">Download PDF Report</button>
+    </div>
 
-<div class="card">
-
-<h2>Monthly Budget</h2>
-
-<input type="number" id="budgetInput" placeholder="Enter budget">
-
-<button onclick="saveBudget()">
-Save Budget
-</button>
-
-<p id="budgetDisplay">
-No budget set
-</p>
-
-</div>
-
-<div class="card">
-
-<h2>Add Transaction</h2>
-
-<input type="number" id="amount" placeholder="Amount">
-
-<select id="type">
-
-<option value="income">Income</option>
-
-<option value="expense">Expense</option>
-
-</select>
-
-<input type="text" id="category" placeholder="Category">
-
-<button onclick="addTransaction()">
-Add Transaction
-</button>
-
-</div>
-
-<div class="card">
-
-<h2>Daily Expenses</h2>
-
-<div class="chart-box">
-<canvas id="dailyChart"></canvas>
-</div>
-
-</div>
-
-<div class="card">
-
-<h2>Monthly Comparison</h2>
-
-<div class="chart-box">
-<canvas id="monthlyChart"></canvas>
-</div>
-
-</div>
-
-<div class="card">
-
-<h2>Expense Breakdown</h2>
-
-<div class="chart-box">
-<canvas id="donutChart"></canvas>
-</div>
-
-</div>
-
-<div class="card">
-
-<h2>Financial Insights</h2>
-
-<div id="financialInsights"></div>
-
-</div>
-
-<div class="card">
-
-<button onclick="downloadPDF()">
-Download PDF Report
-</button>
-
-</div>
-
-<div class="card">
-
-<h2>Records</h2>
-
-<div id="records"></div>
-
-</div>
-
+    <div class="card">
+        <h2>Records</h2>
+        <div id="records"></div>
+    </div>
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
 import {
-getAuth,
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-
-getFirestore,
-doc,
-setDoc,
-getDoc,
-collection,
-addDoc,
-getDocs,
-deleteDoc
-
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    getFirestore,
+    doc,
+    setDoc,
+    getDoc,
+    collection,
+    addDoc,
+    getDocs,
+    deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-
-apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
-
-authDomain: "expense-tracker-2ee7b.firebaseapp.com",
-
-projectId: "expense-tracker-2ee7b",
-
-storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
-
-messagingSenderId: "306376576940",
-
-appId: "1:306376576940:web:f7bf235be67524c9c8b409"
-
+    apiKey: "AIzaSyAZL45LCOAQxpRVYbq0P_xnplxLstnVHIA",
+    authDomain: "expense-tracker-2ee7b.firebaseapp.com",
+    projectId: "expense-tracker-2ee7b",
+    storageBucket: "expense-tracker-2ee7b.firebasestorage.app",
+    messagingSenderId: "306376576940",
+    appId: "1:306376576940:web:f7bf235be67524c9c8b409"
 };
 
-const app=initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-const auth=getAuth(app);
+let currentUser = null;
+let transactions = [];
+let budget = 0;
+let editMode = false;
 
-const db=getFirestore(app);
+let dailyChart = null;
+let monthlyChart = null;
+let donutChart = null;
 
-let currentUser=null;
-let transactions=[];
-let budget=0;
-let editMode=false;
-
-let dailyChart=null;
-let monthlyChart=null;
-let donutChart=null;
-
-function showToast(message){
-
-const toast=document.getElementById("toast");
-
-toast.innerText=message;
-
-toast.style.display="block";
-
-setTimeout(()=>{
-
-toast.style.display="none";
-
-},2500);
-
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.style.display = "block";
+    setTimeout(() => {
+        toast.style.display = "none";
+    }, 2500);
 }
 
-window.register=async()=>{
-
-try{
-
-const email=
-document.getElementById("email").value;
-
-const password=
-document.getElementById("password").value;
-
-await createUserWithEmailAndPassword(
-auth,
-email,
-password
-);
-
-showToast("Registration successful");
-
-}catch(err){
-
-showToast(err.message);
-
-}
-
+window.register = async () => {
+    try {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        await createUserWithEmailAndPassword(auth, email, password);
+        showToast("Registration successful");
+    } catch (err) {
+        showToast(err.message);
+    }
 };
 
-window.login=async()=>{
+window.login = async () => {
+    try {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        currentUser = userCredential.user;
 
-try{
-
-const email=
-document.getElementById("email").value;
-
-const password=
-document.getElementById("password").value;
-
-const userCredential=
-await signInWithEmailAndPassword(
-auth,
-email,
-password
-);
-
-currentUser=userCredential.user;
-
-document.getElementById("loginPage")
-.classList.add("hidden");
-
-document.getElementById("dashboard")
-.classList.remove("hidden");
-
-showToast("Login successful");
-
-await loadUserData();
-
-}catch(err){
-
-showToast(err.message);
-
-}
-
+        document.getElementById("loginPage").classList.add("hidden");
+        document.getElementById("dashboard").classList.remove("hidden");
+        showToast("Login successful");
+        await loadUserData();
+    } catch (err) {
+        showToast(err.message);
+    }
 };
 
-function formatDate(dateValue){
-
-if(!dateValue) return "No Date";
-
-try{
-
-const d=new Date(dateValue);
-
-if(isNaN(d.getTime())){
-
-return "No Date";
-
+function formatDate(dateValue) {
+    if (!dateValue) return "No Date";
+    try {
+        const d = new Date(dateValue);
+        if (isNaN(d.getTime())) return "No Date";
+        return d.toISOString().split("T")[0];
+    } catch {
+        return "No Date";
+    }
 }
 
-return d.toISOString().split("T")[0];
+async function loadUserData() {
+    transactions = [];
+    const budgetRef = doc(db, "users", currentUser.uid);
+    const budgetSnap = await getDoc(budgetRef);
 
-}catch{
+    if (budgetSnap.exists()) {
+        budget = budgetSnap.data().budget || 0;
+    }
 
-return "No Date";
+    document.getElementById("budgetDisplay").innerText = "Budget: KSh " + budget;
 
+    const transRef = collection(db, "users", currentUser.uid, "transactions");
+    const querySnapshot = await getDocs(transRef);
+
+    querySnapshot.forEach((docSnap) => {
+        transactions.push({
+            id: docSnap.id,
+            ...docSnap.data()
+        });
+    });
+
+    updateUI();
 }
 
-}
-
-async function loadUserData(){
-
-transactions=[];
-
-const budgetRef=
-doc(db,"users",currentUser.uid);
-
-const budgetSnap=
-await getDoc(budgetRef);
-
-if(budgetSnap.exists()){
-
-budget=
-budgetSnap.data().budget || 0;
-
-}
-
-document.getElementById("budgetDisplay")
-.innerText=
-"Budget: KSh " + budget;
-
-const transRef=
-collection(
-db,
-"users",
-currentUser.uid,
-"transactions"
-);
-
-const querySnapshot=
-await getDocs(transRef);
-
-querySnapshot.forEach((docSnap)=>{
-
-transactions.push({
-
-id:docSnap.id,
-...docSnap.data()
-
-});
-
-});
-
-updateUI();
-
-}
-
-window.saveBudget=async()=>{
-
-budget=
-Number(
-document.getElementById("budgetInput").value
-);
-
-await setDoc(
-
-doc(db,"users",currentUser.uid),
-
-{budget},
-
-{merge:true}
-
-);
-
-document.getElementById("budgetDisplay")
-.innerText=
-"Budget: KSh " + budget;
-
-showToast("Budget saved");
-
-updateCharts();
-
+window.saveBudget = async () => {
+    budget = Number(document.getElementById("budgetInput").value);
+    await setDoc(doc(db, "users", currentUser.uid), { budget }, { merge: true });
+    document.getElementById("budgetDisplay").innerText = "Budget: KSh " + budget;
+    showToast("Budget saved");
+    updateUI();
 };
 
-window.addTransaction=async()=>{
+window.addTransaction = async () => {
+    const amount = document.getElementById("amount").value;
+    const type = document.getElementById("type").value;
+    const category = document.getElementById("category").value;
 
-const amount=
-document.getElementById("amount").value;
+    if (!amount || !category) {
+        showToast("Fill all fields");
+        return;
+    }
 
-const type=
-document.getElementById("type").value;
+    await addDoc(collection(db, "users", currentUser.uid, "transactions"), {
+        amount: Number(amount),
+        type,
+        category,
+        date: new Date().toISOString()
+    });
 
-const category=
-document.getElementById("category").value;
-
-if(!amount || !category){
-
-showToast("Fill all fields");
-
-return;
-
-}
-
-await addDoc(
-
-collection(
-db,
-"users",
-currentUser.uid,
-"transactions"
-),
-
-{
-amount:Number(amount),
-type,
-category,
-date:new Date().toISOString()
-}
-
-);
-
-showToast("Transaction added");
-
-document.getElementById("amount").value="";
-document.getElementById("category").value="";
-
-await loadUserData();
-
+    showToast("Transaction added");
+    document.getElementById("amount").value = "";
+    document.getElementById("category").value = "";
+    await loadUserData();
 };
 
-window.toggleEdit=()=>{
-
-editMode=!editMode;
-
-document.getElementById("editBtn")
-.innerText=
-editMode
-?
-"Done"
-:
-"Edit";
-
-renderRecords();
-
+window.toggleEdit = () => {
+    editMode = !editMode;
+    document.getElementById("editBtn").innerText = editMode ? "Done" : "Edit";
+    renderRecords();
 };
 
-window.deleteTransaction=async(id)=>{
-
-try{
-
-await deleteDoc(
-
-doc(
-db,
-"users",
-currentUser.uid,
-"transactions",
-id
-)
-
-);
-
-showToast("Deleted");
-
-await loadUserData();
-
-}catch{
-
-showToast("Delete failed");
-
-}
-
+window.deleteTransaction = async (id) => {
+    try {
+        await deleteDoc(doc(db, "users", currentUser.uid, "transactions", id));
+        showToast("Deleted");
+        await loadUserData();
+    } catch {
+        showToast("Delete failed");
+    }
 };
 
-function updateUI(){
+function updateUI() {
+    let income = 0;
+    let expenses = 0;
 
-let income=0;
-let expenses=0;
+    transactions.forEach(t => {
+        if (t.type === "income") {
+            income += Number(t.amount);
+        } else {
+            expenses += Number(t.amount);
+        }
+    });
 
-transactions.forEach(t=>{
+    document.getElementById("income").innerText = "KSh " + income;
+    document.getElementById("expenses").innerText = "KSh " + expenses;
+    document.getElementById("balance").innerText = "KSh " + (income - expenses);
 
-if(t.type==="income"){
-
-income+=Number(t.amount);
-
-}else{
-
-expenses+=Number(t.amount);
-
+    renderRecords();
+    updateCharts(income, expenses);
 }
 
-});
+function renderRecords() {
+    const records = document.getElementById("records");
+    records.innerHTML = "";
+    const grouped = {};
 
-document.getElementById("income")
-.innerText=
-"KSh " + income;
+    transactions.forEach(t => {
+        const key = t.type + "-" + t.category;
+        if (!grouped[key]) {
+            grouped[key] = {
+                category: t.category,
+                type: t.type,
+                amount: 0,
+                items: []
+            };
+        }
+        grouped[key].amount += Number(t.amount);
+        grouped[key].items.push(t);
+    });
 
-document.getElementById("expenses")
-.innerText=
-"KSh " + expenses;
+    Object.values(grouped).forEach(group => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "transaction-item";
+        wrapper.innerHTML = `
+            <div class="transaction-header">
+                <div>
+                    <b>${group.category}</b>
+                    <div class="transaction-sub">${group.items.length} transaction(s)</div>
+                </div>
+                <div style="text-align:right;">
+                    <div class="${group.type === "income" ? "green" : "red"}">KSh ${group.amount}</div>
+                    <button class="view-btn">View</button>
+                </div>
+            </div>
+            <div class="details hidden"></div>
+        `;
 
-document.getElementById("balance")
-.innerText=
-"KSh " + (income-expenses);
+        const details = wrapper.querySelector(".details");
+        const viewBtn = wrapper.querySelector(".view-btn");
+        viewBtn.onclick = () => {
+            details.classList.toggle("hidden");
+        };
 
-renderRecords();
-
-updateCharts();
-
+        group.items.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "inner-record";
+            div.innerHTML = `
+                <div>
+                    <div>${item.category}</div>
+                    <small>${formatDate(item.date || item.timestamp)}</small>
+                </div>
+                <div>
+                    <span class="${item.type === "income" ? "green" : "red"}">KSh ${item.amount}</span>
+                    ${editMode ? `<br><button class="del" onclick="deleteTransaction('${item.id}')">Delete</button>` : ""}
+                </div>
+            `;
+            details.appendChild(div);
+        });
+        records.appendChild(wrapper);
+    });
 }
 
-function renderRecords(){
+function updateCharts(income, expenses) {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
 
-const records=
-document.getElementById("records");
+    /* =========================
+       CURRENT MONTH DAILY CHART
+    ========================= */
+    const dailyTotals = {};
+    transactions.forEach(t => {
+        const dateSrc = t.date || t.timestamp;
+        if (t.type !== "expense" || !dateSrc) return;
 
-records.innerHTML="";
+        const d = new Date(dateSrc);
+        if (d.getMonth() !== currentMonth || d.getFullYear() !== currentYear) return;
 
-const grouped={};
+        const day = d.toISOString().split("T")[0];
+        dailyTotals[day] = (dailyTotals[day] || 0) + Number(t.amount);
+    });
 
-transactions.forEach(t=>{
+    const dailyLabels = Object.keys(dailyTotals).sort();
+    const dailyValues = dailyLabels.map(d => dailyTotals[d]);
+    const ctxDaily = document.getElementById("dailyChart");
 
-const key=t.type+"-"+t.category;
+    if (dailyChart) {
+        dailyChart.destroy();
+    }
+    dailyChart = new Chart(ctxDaily, {
+        type: "line",
+        data: {
+            labels: dailyLabels,
+            datasets: [{
+                label: "Daily Expenses",
+                data: dailyValues,
+                fill: true,
+                backgroundColor: 'rgba(22, 201, 76, 0.1)',
+                borderColor: '#16c94c',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
 
-if(!grouped[key]){
+    /* =========================
+       MONTHLY COMPARISON CHART
+    ========================= */
+    const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
-grouped[key]={
+    let currentIncome = 0;
+    let currentExpense = 0;
+    let previousIncome = 0;
+    let previousExpense = 0;
 
-category:t.category,
-type:t.type,
-amount:0,
-items:[]
+    transactions.forEach(t => {
+        const dateSrc = t.date || t.timestamp;
+        if (!dateSrc) return;
 
-};
+        const d = new Date(dateSrc);
+        const month = d.getMonth();
+        const year = d.getFullYear();
 
+        if (month === currentMonth && year === currentYear) {
+            if (t.type === "income") currentIncome += Number(t.amount);
+            else currentExpense += Number(t.amount);
+        }
+        if (month === previousMonth && year === previousYear) {
+            if (t.type === "income") previousIncome += Number(t.amount);
+            else previousExpense += Number(t.amount);
+        }
+    });
+
+    const ctxMonthly = document.getElementById("monthlyChart");
+    if (monthlyChart) {
+        monthlyChart.destroy();
+    }
+    monthlyChart = new Chart(ctxMonthly, {
+        type: "bar",
+        data: {
+            labels: ["Previous Month", "Current Month"],
+            datasets: [
+                { label: "Income", data: [previousIncome, currentIncome], backgroundColor: '#16c94c' },
+                { label: "Expenses", data: [previousExpense, currentExpense], backgroundColor: '#ff4d4d' }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    /* =========================
+       DONUT CHART
+    ========================= */
+    const categoryData = {};
+    transactions.forEach(t => {
+        if (t.type === "expense") {
+            if (!categoryData[t.category]) {
+                categoryData[t.category] = 0;
+            }
+            categoryData[t.category] += Number(t.amount);
+        }
+    });
+
+    const ctxDonut = document.getElementById("donutChart");
+    if (donutChart) {
+        donutChart.destroy();
+    }
+    donutChart = new Chart(ctxDonut, {
+        type: "doughnut",
+        data: {
+            labels: Object.keys(categoryData),
+            datasets: [{
+                data: Object.values(categoryData),
+                backgroundColor: ['#16c94c', '#ff9f43', '#ff6b6b', '#54a0ff', '#5f27cd', '#c8d6e5']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "bottom" }
+            }
+        }
+    });
+
+    /* =========================
+       FINANCIAL INSIGHTS UPDATE
+    ========================= */
+    const usage = budget > 0 ? ((expenses / budget) * 100).toFixed(1) : 0;
+    document.getElementById("financialInsights").innerHTML = `
+        <p><b>Income:</b> KSh ${income}</p>
+        <p><b>Expenses:</b> KSh ${expenses}</p>
+        <p><b>Budget Usage:</b> ${usage}%</p>
+        <p style="color:${usage > 100 ? 'red' : 'orange'};">
+            ${usage > 100 ? 'Over budget! Review spending immediately.' : 'Moderate spending. Financial health stable.'}
+        </p>
+    `;
 }
 
-grouped[key].amount+=Number(t.amount);
-
-grouped[key].items.push(t);
-
-});
-
-Object.values(grouped).forEach(group=>{
-
-const wrapper=
-document.createElement("div");
-
-wrapper.className="transaction-item";
-
-wrapper.innerHTML=`
-
-<div class="transaction-header">
-
-<div>
-
-<b>${group.category}</b>
-
-<div class="transaction-sub">
-${group.items.length} transaction(s)
-</div>
-
-</div>
-
-<div style="text-align:right;">
-
-<div class="${
-group.type==="income"
-?
-"green"
-:
-"red"
-}">
-KSh ${group.amount}
-</div>
-
-<button class="view-btn">
-View
-</button>
-
-</div>
-
-</div>
-
-<div class="details hidden"></div>
-
-`;
-
-const details=
-wrapper.querySelector(".details");
-
-const viewBtn=
-wrapper.querySelector(".view-btn");
-
-viewBtn.onclick=()=>{
-
-details.classList.toggle("hidden");
-
-};
-
-group.items.forEach(item=>{
-
-const div=
-document.createElement("div");
-
-div.className="inner-record";
-
-div.innerHTML=`
-
-<div>
-
-<div>${item.category}</div>
-
-<small>
-${formatDate(item.date)}
-</small>
-
-</div>
-
-<div>
-
-<span class="${
-item.type==="income"
-?
-"green"
-:
-"red"
-}">
-KSh ${item.amount}
-</span>
-
-${
-editMode
-?
-`
-<br>
-
-<button class="del"
-onclick="deleteTransaction('${item.id}')">
-Delete
-</button>
-`
-:
-""
-}
-
-</div>
-
-`;
-
-details.appendChild(div);
-
-});
-
-records.appendChild(wrapper);
-
-});
-
-}
-
-function updateCharts(){
-
-/* =========================
-   CURRENT MONTH DAILY CHART
-========================= */
-
-function renderDailyChart(){
-
-const now = new Date();
-
-const currentMonth =
-now.getMonth();
-
-const currentYear =
-now.getFullYear();
-
-const dailyTotals = {};
-
-transactions.forEach(t=>{
-
-if(
-t.type !== "expense" ||
-!t.timestamp
-) return;
-
-const d =
-new Date(t.timestamp);
-
-if(
-d.getMonth() !== currentMonth ||
-d.getFullYear() !== currentYear
-){
-return;
-}
-
-const day =
-d.toISOString().split("T")[0];
-
-dailyTotals[day] =
-(dailyTotals[day] || 0)
-+
-Number(t.amount);
-
-});
-
-const labels =
-Object.keys(dailyTotals)
-.sort();
-
-const values =
-labels.map(
-d=>dailyTotals[d]
-);
-
-const ctx =
-document.getElementById("dailyChart");
-
-if(window.dailyChart){
-window.dailyChart.destroy();
-}
-
-window.dailyChart =
-new Chart(ctx,{
-
-type:"line",
-
-data:{
-
-labels:labels,
-
-datasets:[{
-
-label:"Daily Expenses",
-
-data:values,
-
-fill:true,
-
-tension:0.4
-
-}]
-
-},
-
-options:{
-responsive:true,
-maintainAspectRatio:false
-}
-
-});
-
-}
-
-/* =========================
-   MONTHLY COMPARISON
-========================= */
-
-function renderMonthlyChart(){
-
-const currentDate = new Date();
-
-const currentMonth = currentDate.getMonth();
-const currentYear = currentDate.getFullYear();
-
-const previousMonth =
-currentMonth === 0 ? 11 : currentMonth - 1;
-
-const previousYear =
-currentMonth === 0
-? currentYear - 1
-: currentYear;
-
-let currentIncome = 0;
-let currentExpense = 0;
-
-let previousIncome = 0;
-let previousExpense = 0;
-
-transactions.forEach(t=>{
-
-if(!t.timestamp) return;
-
-const d = new Date(t.timestamp);
-
-const month = d.getMonth();
-const year = d.getFullYear();
-
-if(
-month === currentMonth &&
-year === currentYear
-){
-
-if(t.type === "income"){
-currentIncome += Number(t.amount);
-}else{
-currentExpense += Number(t.amount);
-}
-
-}
-
-if(
-month === previousMonth &&
-year === previousYear
-){
-
-if(t.type === "income"){
-previousIncome += Number(t.amount);
-}else{
-previousExpense += Number(t.amount);
-}
-
-}
-
-});
-
-const ctx =
-document.getElementById("monthlyChart");
-
-if(window.monthChart){
-window.monthChart.destroy();
-}
-
-window.monthChart =
-new Chart(ctx,{
-
-type:"bar",
-
-data:{
-
-labels:[
-"Previous Month",
-"Current Month"
-],
-
-datasets:[
-
-{
-label:"Income",
-data:[
-previousIncome,
-currentIncome
-]
-},
-
-{
-label:"Expenses",
-data:[
-previousExpense,
-currentExpense
-]
-}
-
-]
-
-},
-
-options:{
-responsive:true,
-maintainAspectRatio:false
-}
-
-});
-
-}
-
-/* =========================
-   DONUT CHART
-========================= */
-
-const categoryData={};
-
-transactions.forEach(t=>{
-
-if(t.type==="expense"){
-
-if(!categoryData[t.category]){
-
-categoryData[t.category]=0;
-
-}
-
-categoryData[t.category]+=Number(t.amount);
-
-}
-
-});
-
-if(donutChart){
-
-donutChart.destroy();
-
-}
-
-donutChart = new Chart(
-
-document.getElementById("donutChart"),
-
-{
-
-type:"doughnut",
-
-data:{
-
-labels:Object.keys(categoryData),
-
-datasets:[{
-
-data:Object.values(categoryData)
-
-}]
-
-},
-
-options:{
-
-responsive:true,
-
-maintainAspectRatio:false,
-
-plugins:{
-
-legend:{
-position:"bottom"
-}
-
-}
-
-}
-
-}
-
-);
-
-}
-
-const usage=
-budget>0
-?
-((expenses/budget)*100).toFixed(1)
-:
-0;
-
-document.getElementById("financialInsights")
-.innerHTML=`
-
-<p><b>Income:</b> KSh ${income}</p>
-
-<p><b>Expenses:</b> KSh ${expenses}</p>
-
-<p><b>Budget Usage:</b> ${usage}%</p>
-
-<p style="color:orange;">
-Moderate spending. Financial health stable.
-</p>
-
-`;
-
-}
 window.downloadPDF = () => {
-
-try{
-
-const { jsPDF } = window.jspdf;
-
-const pdf = new jsPDF();
-
-const incomeTotal =
-transactions
-.filter(t=>t.type==="income")
-.reduce((a,b)=>a+Number(b.amount||0),0);
-
-const expenseTotal =
-transactions
-.filter(t=>t.type==="expense")
-.reduce((a,b)=>a+Number(b.amount||0),0);
-
-const balance =
-incomeTotal-expenseTotal;
-
-const budgetUsage =
-budget>0
-?
-((expenseTotal/budget)*100).toFixed(1)
-:
-0;
-
-/* CATEGORY ANALYSIS */
-
-const categories={};
-
-transactions.forEach(t=>{
-
-if(t.type==="expense"){
-
-categories[t.category]=
-(categories[t.category]||0)+
-Number(t.amount);
-
-}
-
-});
-
-let topCategory="None";
-let topAmount=0;
-
-Object.entries(categories)
-.forEach(([cat,val])=>{
-
-if(val>topAmount){
-
-topAmount=val;
-topCategory=cat;
-
-}
-
-});
-
-/* DAILY ANALYSIS */
-
-const daily={};
-
-transactions.forEach(t=>{
-
-if(t.type==="expense"){
-
-let dateStr="Unknown";
-
-if(t.timestamp){
-
-try{
-
-const d=
-t.timestamp.toDate
-?
-t.timestamp.toDate()
-:
-new Date(t.timestamp);
-
-dateStr=
-d.toISOString().split("T")[0];
-
-}catch(e){}
-
-}
-
-daily[dateStr]=
-(daily[dateStr]||0)+
-Number(t.amount);
-
-}
-
-});
-
-let highestDay="N/A";
-let highestAmount=0;
-
-let lowestDay="N/A";
-let lowestAmount=999999999;
-
-Object.entries(daily)
-.forEach(([d,val])=>{
-
-if(val>highestAmount){
-
-highestAmount=val;
-highestDay=d;
-
-}
-
-if(val<lowestAmount){
-
-lowestAmount=val;
-lowestDay=d;
-
-}
-
-});
-
-/* ADVICE */
-
-let advice="";
-
-if(budgetUsage<=50){
-
-advice=
-"Excellent financial discipline. Savings potential is high.";
-
-}else if(budgetUsage<=80){
-
-advice=
-"Moderate spending. Continue monitoring recurring expenses.";
-
-}else if(budgetUsage<=100){
-
-advice=
-"Budget nearly exhausted. Reduce non-essential spending.";
-
-}else{
-
-advice=
-"Budget exceeded. Immediate spending review recommended.";
-
-}
-
-/* PDF */
-
-pdf.setFontSize(20);
-
-pdf.text(
-"SMART FINANCIAL REPORT",
-20,
-20
-);
-
-pdf.setFontSize(11);
-
-pdf.text(
-"Generated: "+
-new Date().toLocaleString(),
-20,
-30
-);
-
-pdf.line(20,35,190,35);
-
-pdf.text(
-"Income: KSh "+incomeTotal,
-20,
-50
-);
-
-pdf.text(
-"Expenses: KSh "+expenseTotal,
-20,
-60
-);
-
-pdf.text(
-"Balance: KSh "+balance,
-20,
-70
-);
-
-pdf.text(
-"Monthly Budget: KSh "+budget,
-20,
-80
-);
-
-pdf.text(
-"Budget Usage: "+
-budgetUsage+
-"%",
-20,
-90
-);
-
-pdf.line(20,100,190,100);
-
-pdf.text(
-"Most Purchased Category:",
-20,
-115
-);
-
-pdf.text(
-topCategory+
-" (KSh "+topAmount+")",
-90,
-115
-);
-
-pdf.text(
-"Highest Spending Day:",
-20,
-130
-);
-
-pdf.text(
-highestDay+
-" (KSh "+highestAmount+")",
-90,
-130
-);
-
-pdf.text(
-"Lowest Spending Day:",
-20,
-145
-);
-
-pdf.text(
-lowestDay+
-" (KSh "+lowestAmount+")",
-90,
-145
-);
-
-pdf.text(
-"Financial Advice:",
-20,
-165
-);
-
-const adviceLines=
-pdf.splitTextToSize(
-advice,
-160
-);
-
-pdf.text(
-adviceLines,
-20,
-175
-);
-
-pdf.line(20,220,190,220);
-
-pdf.setFontSize(10);
-
-pdf.text(
-"Generated by Smart Banking Dashboard",
-20,
-230
-);
-
-pdf.save(
-"Financial_Report.pdf"
-);
-
-showToast(
-"PDF downloaded"
-);
-
-}catch(err){
-
-console.error(err);
-
-showToast(
-"PDF generation failed"
-);
-
-}
-
+    try {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+
+        const incomeTotal = transactions.filter(t => t.type === "income").reduce((a, b) => a + Number(b.amount || 0), 0);
+        const expenseTotal = transactions.filter(t => t.type === "expense").reduce((a, b) => a + Number(b.amount || 0), 0);
+        const balance = incomeTotal - expenseTotal;
+        const budgetUsage = budget > 0 ? ((expenseTotal / budget) * 100).toFixed(1) : 0;
+
+        const categories = {};
+        transactions.forEach(t => {
+            if (t.type === "expense") {
+                categories[t.category] = (categories[t.category] || 0) + Number(t.amount);
+            }
+        });
+
+        let topCategory = "None";
+        let topAmount = 0;
+        Object.entries(categories).forEach(([cat, val]) => {
+            if (val > topAmount) {
+                topAmount = val;
+                topCategory = cat;
+            }
+        });
+
+        const daily = {};
+        transactions.forEach(t => {
+            if (t.type === "expense") {
+                let dateStr = "Unknown";
+                const dateSrc = t.date || t.timestamp;
+                if (dateSrc) {
+                    try {
+                        const d = new Date(dateSrc);
+                        dateStr = d.toISOString().split("T")[0];
+                    } catch (e) {}
+                }
+                daily[dateStr] = (daily[dateStr] || 0) + Number(t.amount);
+            }
+        });
+
+        let highestDay = "N/A";
+        let highestAmount = 0;
+        let lowestDay = "N/A";
+        let lowestAmount = 999999999;
+
+        if (Object.keys(daily).length > 0) {
+            Object.entries(daily).forEach(([d, val]) => {
+                if (val > highestAmount) {
+                    highestAmount = val;
+                    highestDay = d;
+                }
+                if (val < lowestAmount) {
+                    lowestAmount = val;
+                    lowestDay = d;
+                }
+            });
+        } else {
+            lowestAmount = 0;
+        }
+
+        let advice = "";
+        if (budgetUsage <= 50) advice = "Excellent financial discipline. Savings potential is high.";
+        else if (budgetUsage <= 80) advice = "Moderate spending. Continue monitoring recurring expenses.";
+        else if (budgetUsage <= 100) advice = "Budget nearly exhausted. Reduce non-essential spending.";
+        else advice = "Budget exceeded. Immediate spending review recommended.";
+
+        pdf.setFontSize(20);
+        pdf.text("SMART FINANCIAL REPORT", 20, 20);
+        pdf.setFontSize(11);
+        pdf.text("Generated: " + new Date().toLocaleString(), 20, 30);
+        pdf.line(20, 35, 190, 35);
+
+        pdf.text("Income: KSh " + incomeTotal, 20, 50);
+        pdf.text("Expenses: KSh " + expenseTotal, 20, 60);
+        pdf.text("Balance: KSh " + balance, 20, 70);
+        pdf.text("Monthly Budget: KSh " + budget, 20, 80);
+        pdf.text("Budget Usage: " + budgetUsage + "%", 20, 90);
+        pdf.line(20, 100, 190, 100);
+
+        pdf.text("Most Purchased Category:", 20, 115);
+        pdf.text(topCategory + " (KSh " + topAmount + ")", 90, 115);
+        pdf.text("Highest Spending Day:", 20, 130);
+        pdf.text(highestDay + " (KSh " + highestAmount + ")", 90, 130);
+        pdf.text("Lowest Spending Day:", 20, 145);
+        pdf.text(lowestDay + " (KSh " + (lowestAmount === 999999999 ? 0 : lowestAmount) + ")", 90, 145);
+
+        pdf.text("Financial Advice:", 20, 165);
+        const adviceLines = pdf.splitTextToSize(advice, 160);
+        pdf.text(adviceLines, 20, 175);
+
+        pdf.line(20, 220, 190, 220);
+        pdf.setFontSize(10);
+        pdf.text("Generated by Smart Banking Dashboard", 20, 230);
+
+        pdf.save("Financial_Report.pdf");
+        showToast("PDF downloaded");
+    } catch (err) {
+        console.error(err);
+        showToast("PDF generation failed");
+    }
 };
 
-if('serviceWorker' in navigator){
-window.addEventListener('load',()=>{
-navigator.serviceWorker.register('sw.js');
-});
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
 }
-
 </script>
 </body>
 </html>
