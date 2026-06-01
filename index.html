@@ -32,7 +32,7 @@ color:#222;
 }
 
 .hidden{
-display:none;
+display:none !important;
 }
 
 .card{
@@ -377,46 +377,29 @@ window.login = async () => {
 };
     
 function getTransactionDate(t){
-
     if(t.date){
         return new Date(t.date);
     }
-
     if(t.timestamp){
-
         if(typeof t.timestamp.toDate === "function"){
             return t.timestamp.toDate();
         }
-
         if(t.timestamp.seconds){
-            return new Date(
-                t.timestamp.seconds * 1000
-            );
+            return new Date(t.timestamp.seconds * 1000);
         }
-
         return new Date(t.timestamp);
     }
-
     return new Date();
 }
     
- function formatDate(value){
-
+function formatDate(value){
     try{
-
         let d;
-
-        if(typeof value === "object" &&
-           value?.toDate){
-
-            d=value.toDate();
-
-        }else{
-
-            d=new Date(value);
-
+        if(typeof value === "object" && value?.toDate){
+            d = value.toDate();
+        } else {
+            d = new Date(value);
         }
-
         return d.toLocaleDateString(
             "en-GB",
             {
@@ -425,14 +408,11 @@ function getTransactionDate(t){
                 year:"numeric"
             }
         );
-
-    }catch{
-
+    } catch {
         return "Unknown Date";
-
     }
-
 }   
+
 async function loadUserData() {
     transactions = [];
     const budgetRef = doc(db, "users", currentUser.uid);
@@ -503,70 +483,34 @@ window.deleteTransaction = async (id) => {
         showToast("Delete failed");
     }
 };
-    /* =========================
-       FINANCIAL INSIGHTS UPDATE
-    ========================= */
+
 function updateInsights(income, expenses, balance){
-
-    const usage =
-        budget > 0
-        ? ((expenses / budget) * 100).toFixed(1)
-        : 0;
-
+    const usage = budget > 0 ? ((expenses / budget) * 100).toFixed(1) : 0;
     let advice = "";
 
     if(usage <= 50){
-
-        advice =
-        "Excellent financial discipline. Savings potential is high.";
-
+        advice = "Excellent financial discipline. Savings potential is high.";
     }else if(usage <= 80){
-
-        advice =
-        "Moderate spending. Continue monitoring recurring expenses.";
-
+        advice = "Moderate spending. Continue monitoring recurring expenses.";
     }else if(usage <= 100){
-
-        advice =
-        "Budget nearly exhausted. Reduce non-essential spending.";
-
+        advice = "Budget nearly exhausted. Reduce non-essential spending.";
     }else{
-
-        advice =
-        "Budget exceeded. Immediate spending review recommended.";
-
+        advice = "Budget exceeded. Immediate spending review recommended.";
     }
 
-    document.getElementById(
-        "financialInsights"
-    ).innerHTML = `
-
+    document.getElementById("financialInsights").innerHTML = `
         <p><b>Income:</b> KSh ${income.toLocaleString()}</p>
-
         <p><b>Expenses:</b> KSh ${expenses.toLocaleString()}</p>
-
         <p><b>Balance:</b> KSh ${balance.toLocaleString()}</p>
-
         <p><b>Budget Usage:</b> ${usage}%</p>
-
-        <p style="
-            color:${
-                usage > 100
-                ? 'red'
-                : '#16c94c'
-            };
-            font-weight:600;
-        ">
+        <p style="color:${usage > 100 ? 'red' : '#16c94c'}; font-weight:600;">
             ${advice}
         </p>
-
     `;
 }
     
 function updateUI(){
-
     const now = new Date();
-
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
@@ -574,40 +518,25 @@ function updateUI(){
     let expenses = 0;
 
     transactions.forEach(t=>{
-
         const d = getTransactionDate(t);
-
-        if(
-            d.getMonth() === currentMonth &&
-            d.getFullYear() === currentYear
-        ){
-
+        if(d.getMonth() === currentMonth && d.getFullYear() === currentYear){
             if(t.type === "income"){
                 income += Number(t.amount);
             }else{
                 expenses += Number(t.amount);
             }
-
         }
-
     });
 
     const balance = income - expenses;
 
-    document.getElementById("income").innerText =
-        "KSh " + income.toLocaleString();
+    document.getElementById("income").innerText = "KSh " + income.toLocaleString();
+    document.getElementById("expenses").innerText = "KSh " + expenses.toLocaleString();
+    document.getElementById("balance").innerText = "KSh " + balance.toLocaleString();
 
-    document.getElementById("expenses").innerText =
-        "KSh " + expenses.toLocaleString();
-
-    document.getElementById("balance").innerText =
-        "KSh " + balance.toLocaleString();
-
-updateInsights(income,expenses,balance);
-
-updateCharts(income,expenses);
-
-renderRecords();
+    updateInsights(income, expenses, balance);
+    updateCharts(income, expenses);
+    renderRecords();
 }
 
 function renderRecords() {
@@ -655,6 +584,8 @@ function renderRecords() {
         group.items.forEach(item => {
             const div = document.createElement("div");
             div.className = "inner-record";
+            
+            // Fixed line: evaluating dynamically inside modules or explicit setups
             div.innerHTML = `
                 <div>
                     <div>${item.category}</div>
@@ -662,9 +593,15 @@ function renderRecords() {
                 </div>
                 <div>
                     <span class="${item.type === "income" ? "green" : "red"}">KSh ${item.amount}</span>
-                    ${editMode ? `<br><button class="del" onclick="deleteTransaction('${item.id}')">Delete</button>` : ""}
+                    ${editMode ? `<br><button class="del delete-action-btn" data-id="${item.id}">Delete</button>` : ""}
                 </div>
             `;
+            
+            if (editMode) {
+                div.querySelector(".delete-action-btn").onclick = () => {
+                    window.deleteTransaction(item.id);
+                };
+            }
             details.appendChild(div);
         });
         records.appendChild(wrapper);
@@ -684,7 +621,7 @@ function updateCharts(income, expenses) {
         const dateSrc = t.date || t.timestamp;
         if (t.type !== "expense" || !dateSrc) return;
 
-        const d = getTransactionDate(t)
+        const d = getTransactionDate(t);
         if (d.getMonth() !== currentMonth || d.getFullYear() !== currentYear) return;
 
         const day = d.toISOString().split("T")[0];
@@ -732,7 +669,7 @@ function updateCharts(income, expenses) {
         const dateSrc = t.date || t.timestamp;
         if (!dateSrc) return;
 
-        const d = getTransactionDate(t)
+        const d = getTransactionDate(t);
         const month = d.getMonth();
         const year = d.getFullYear();
 
@@ -799,6 +736,7 @@ function updateCharts(income, expenses) {
             }
         }
     });
+} // Added the missing curly brace for updateCharts here!
 
 window.downloadPDF = () => {
     try {
